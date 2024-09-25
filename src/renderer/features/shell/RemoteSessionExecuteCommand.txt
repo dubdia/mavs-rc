@@ -1,0 +1,69 @@
+import { Button, Card, CardBody, Input } from "@nextui-org/react";
+import { useAppDispatch, useRemote } from "../../store/store";
+import {
+  sessionExecuteCommand,
+  setSessionCommand,
+} from "../../store/remotesSlice";
+
+export const RemoteSessionExecuteCommand = ({ id }: { id: string }) => {
+  const dispatch = useAppDispatch();
+  const remote = useRemote(id)
+  const result = remote.session.commandResult;
+
+  console.log("RENDER RemoteSessionExecuteCommand", remote);
+
+  return (
+    <div className="w-full">
+      {/* Remote Connection Info */}
+      <Card className="mb-4">
+        <CardBody>
+          <div className="flex flex-row gap-4">
+            <Input
+              className="grid-span-12-3"
+              type="text"
+              label="Command"
+              placeholder="Enter the command"
+              value={remote.session.command}
+              isDisabled={remote.session.commandLoading}
+              onChange={(e) =>
+                dispatch(setSessionCommand({ id: id, command: e.target.value }))
+              }
+            />
+            <Button
+              color="primary"
+              onClick={() =>
+                dispatch(
+                  sessionExecuteCommand({
+                    id: id,
+                    command: remote.session.command,
+                  })
+                )
+              }
+              className="h-100"
+              isLoading={remote.session.commandLoading}
+            >
+              Execute
+            </Button>
+          </div>
+          {result && (
+            <div className="flex flex-col gap-1 mt-4">
+              {result.success && result.output != null && result.output != "" && (
+                <code className="font-mono pl-4 whitespace-pre-wrap">
+                  {result.output}
+                </code>
+              )}
+              {!result.success && result.output != "" && (
+                <code className="font-mono pl-4 text-red-800 whitespace-pre-wrap">
+                  {result.output}
+                </code>
+              )}
+              {/*result.exitCode != null && result.exitCode != 0 && (
+                <p className="text-right">Exit code: {result.exitCode}</p>
+              )*/}
+            </div>
+          )}
+        </CardBody>
+      </Card>
+    </div>
+  );
+};
