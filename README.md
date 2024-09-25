@@ -16,10 +16,10 @@ The application should be multi-platform because it was build using electron, bu
 
 ### Features
 
-<table>
+<table style="width:100%">
   <tbody>
     <tr style="vertical-align:top">
-      <td><b>Connect</b></td>
+      <td width=100><b>Connect</b></td>
       <td align="left">
         <ul>
           <li>Connect to Linux</li>
@@ -27,23 +27,23 @@ The application should be multi-platform because it was build using electron, bu
          <li>Manage multiple remotes</li>
         </ul>
       </td>
-      <td align="right">
+      <td width=200 align="right">
          <img width=200 src="./doc/img/connect.jpg" alt="Connect Screen">
       </td>
     </tr>
     <tr style="vertical-align:top">
-      <td><b>Shell</td>
+      <td width=100><b>Shell</td>
       <td align="left">
         <ul>
           <li>Integrated Shell</b></li>
         </ul>
       </td>
-      <td align="right">
+      <td width=200 align="right">
       <img width=200 src="./doc/img/shell.jpg" alt="Shell Screen">
       </td>
     </tr>
     <tr style="vertical-align:top">
-      <td><b>Services</b></td>
+      <td width=100><b>Services</b></td>
       <td align="left">
         <ul>
           <li>Manage services (start, stop, enable, disable...)</li>
@@ -51,12 +51,12 @@ The application should be multi-platform because it was build using electron, bu
           <li>Edit service files</li>
         </ul>
       </td>
-      <td align="right">
+      <td width=200 align="right">
       <img width=200 src="./doc/img/services.jpg" alt="Service Screen">
       </td>
     </tr>
     <tr style="vertical-align:top">
-      <td><b>Explorer</b></td>
+      <td width=100><b>Explorer</b></td>
       <td align="left">
         <ul>
           <li>View all files and folders on the remote system</li>
@@ -65,24 +65,24 @@ The application should be multi-platform because it was build using electron, bu
           <li>Folder download</li>
         </ul>
       </td>
-      <td align="right">
+      <td width=200 align="right">
       <img width=200 src="./doc/img/explorer.jpg" alt="Explorer Screen">
       </td>
     </tr>
     <tr style="vertical-align:top">
-      <td><b>Editor</b></td>
+      <td width=100><b>Editor</b></td>
       <td align="left">
         <ul>
           <li>Edit files on the remote system</li>
           <li>Extended options when editing service files</li>
         </ul>
       </td>
-      <td align="right">
+      <td width=200 align="right">
       <img width=200 src="./doc/img/file.jpg" alt="File Editor Screen">
       </td>
     </tr>
     <tr style="vertical-align:top">
-      <td><b>Tunnels</b></td>
+      <td width=100><b>Tunnels</b></td>
       <td align="left">
         <ul>
           <li>Manage tunnels between localhost and remote</li>
@@ -90,7 +90,7 @@ The application should be multi-platform because it was build using electron, bu
           <li>Auto connect option</li>
         </ul>
       </td>
-      <td align="right">
+      <td width=200 align="right">
       <img width=200 src="./doc/img/tunnels.jpg" alt="Tunnels Screen">
       </td>
     </tr>
@@ -193,7 +193,7 @@ They are from next-ui
 
 ## ⬇️ Screenshots
 
-![Connect](/doc/screenshots/connect.jpg) ![Shell](/doc/screenshots/shell.jpg) ![Service Management](/doc/screenshots/services.jpg) ![Explorer](/doc/screenshots/explorer.jpg) ![File Editor](/doc/screenshots/file.jpg)![SSH Tunnels](/doc/screenshots/tunnels.jpg) ![System Info](/doc/screenshots/info.jpg)
+![Connect](/doc/img/connect.jpg) ![Shell](/doc/img/shell.jpg) ![Service Management](/doc/img/services.jpg) ![Explorer](/doc/img/explorer.jpg) ![File Editor](/doc/img/file.jpg)![SSH Tunnels](/doc/img/tunnels.jpg) ![System Info](/doc/img/info.jpg)
 
 ## 📰 License
 
