@@ -20,7 +20,7 @@ type Events = {
 
 /** definition of possible commands that can be invoked on the main by the renderer */
 type Commands = {
-  ping: (argument: string) => string;
+  getAppVersion: () => string; 
 
   // remotes
   listRemotes: () => RemoteDto[];

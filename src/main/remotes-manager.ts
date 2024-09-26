@@ -190,6 +190,8 @@ export class RemotesManager {
     } catch (err) {
       log.warn(`Failed to tell client about remote dispose`, err);
     }
+
+    log.info("Disposed connection");
   }
 
   public update(remoteInfo: RemoteInfo) {
@@ -256,9 +258,7 @@ export class RemotesManager {
     if (remote.info.shortcuts == null) {
       remote.info.shortcuts = [];
     }
-    console.log(id, shortcut, remote.info.shortcuts);
     remote.info.shortcuts = remote.info.shortcuts.filter((x) => !this.isShortcutEqual(x, shortcut));
-    console.log(id, shortcut, remote.info.shortcuts);
     this.updateConfig();
   }
 

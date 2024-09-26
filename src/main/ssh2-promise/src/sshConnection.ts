@@ -10,6 +10,7 @@ import { Server } from "net";
 import { SSHConfig } from "./sshConfig";
 import { SSHConstants } from "./sshConstants";
 import { TunnelConfig } from "./tunnelConfig";
+import { rejects } from "assert";
 
 const socks = require("@heroku/socksv5");
 
@@ -343,10 +344,12 @@ export class SSHConnection extends EventEmitter {
                   }
                   const clientSocket = accept(true);
                   if (clientSocket) {
+                    this.activeTunnels[tunnelConfig.name].sockets.push(clientSocket);
                     stream
                       .pipe(clientSocket)
                       .pipe(stream)
                       .on("close", () => {
+
                         stream.end();
                       });
                   } else if (stream) {
@@ -358,6 +361,7 @@ export class SSHConnection extends EventEmitter {
             .useAuth(socks.auth.None());
         } else {
           server = net.createServer().on("connection", (socket) => {
+            this.activeTunnels[tunnelConfig.name].sockets.push(socket);
             this.connect().then(() => {
               this.sshConnection.forwardOut("", 0, tunnelConfig.remoteAddr, tunnelConfig.remotePort, (err, stream) => {
                 if (err) {
@@ -405,16 +409,29 @@ export class SSHConnection extends EventEmitter {
    */
   closeTunnel(name?: string): Promise<void> {
     if (name && this.activeTunnels[name]) {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         var tunnel = this.activeTunnels[name];
         this.emit(SSHConstants.CHANNEL.TUNNEL, SSHConstants.STATUS.BEFOREDISCONNECT, { tunnelConfig: tunnel });
-        tunnel.server.close(() => {
+
+        // subscribe to close event
+        tunnel.server.close((err) => {
           this.emit(SSHConstants.CHANNEL.TUNNEL, SSHConstants.STATUS.DISCONNECT, {
             tunnelConfig: this.activeTunnels[name],
           });
           delete this.activeTunnels[name];
-          resolve();
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
         });
+
+        // close socket
+        if(tunnel.sockets) {
+          for(let socket of tunnel.sockets) {
+            socket.destroySoon();
+          }
+        }
       });
     } else if (!name) {
       var tunnels = Object.keys(this.activeTunnels).map((key) => this.closeTunnel(key));

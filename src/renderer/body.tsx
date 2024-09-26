@@ -1,11 +1,12 @@
 import { RemoteInfoList } from "./components/RemoteInfoList";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "./store/store";
 import { loadRemotes } from "./store/remotesSlice";
-import { Button, Divider, Spinner } from "@nextui-org/react";
-import { FaRightFromBracket } from "react-icons/fa6";
+import { Divider, Spinner } from "@nextui-org/react";
 import { RemoteWrapper } from "./features/remotes/RemoteWrapper";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
+import { ipc } from "./app";
+import { useAsyncEffect } from "./utils/useAsyncEffect";
 export default function Body() {
   console.log("RENDER Body");
 
@@ -20,6 +21,18 @@ export default function Body() {
       dispatch(loadRemotes());
     }
   }, [dispatch]);
+
+  // get app version
+  const [version, setVersion] = useState("Loading...");
+  useAsyncEffect(async () => {
+    try {
+      const appVersion = await ipc.invoke("getAppVersion");
+      setVersion(appVersion);
+    } catch (err) {
+      console.error("failed to get version", err);
+      setVersion("Unknown version");
+    }
+  }, []);
 
   // check status
   if (status == "new" || status == "pending") {
@@ -51,7 +64,9 @@ export default function Body() {
 
           {/* Information */}
           <Divider></Divider>
-          <p className="text-sm text-gray-400 text-center min-h-10">Version 1.0 Alpha</p>
+          <div className="flex flex-col gap-2 text-sm text-gray-400 min-h-10">
+            <p className=" text-left">v{version}</p>
+          </div>
         </div>
       </OverlayScrollbarsComponent>
 

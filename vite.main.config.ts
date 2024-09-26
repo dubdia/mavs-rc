@@ -9,7 +9,6 @@ export default defineConfig((env) => {
   const { forgeConfigSelf } = forgeEnv;
   const define = getBuildDefine(forgeEnv);
 
-  console.log("FORGE ENV", env);
   const config: UserConfig = {
     build: {
       sourcemap: env.mode == "development",

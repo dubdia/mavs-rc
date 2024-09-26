@@ -9,7 +9,8 @@ import { typedIpcMain } from "../shared/ipc/ipc-api";
 import { registerIpcHandlers } from "./ipc-handlers";
 
 // load configuration
-log.info("Starting app...");
+const appVersion = app.getVersion();
+log.info(`Starting app v${appVersion}...`);
 export let configManager = new ConfigManager();
 
 log.debug(`Configure logger with level: ${configManager.config.logLevel}`);

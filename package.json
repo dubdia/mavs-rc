@@ -1,9 +1,9 @@
 {
   "name": "mavs-rc",
   "productName": "mavs-rc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Remote control systems via ssh",
-  "keywords": ["Server Remote Control" ],
+  "keywords": ["Server Remote Control", "SSH", "SFTP", "Shell" ],
   "author": {
     "name": "Marvin Wehner"
   },
@@ -19,6 +19,8 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "makeVerbose": "set DEBUG=* && electron-forge make --verbose --enable-logging",
+    "makeAndInstall": "electron-forge make && node ./scripts/install.js",
+    "install": "node ./scripts/install.js",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx ."
   },

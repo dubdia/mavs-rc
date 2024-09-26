@@ -10,7 +10,7 @@
 
 Mav's RC is a **application to remote control linux systems via ssh/sftp**. It aims to make interaction with a remote host easier by combing several features into one program and without the need of installing anything on the remote system.
 
-I build this application for my personal use, but why not make it open-source so it may help others i thought so here we are. But please be aware that this application might contain bugs and use it at your own risk!
+I build this application for my personal use, but why not make it open-source so it may help others i thought so here we are. But please be aware that this application might contain bugs so use it at your own risk.
 
 The application should be multi-platform because it was build using electron, but i have only tested it on Windows 11.
 
@@ -134,10 +134,9 @@ Supported log levels: _'error', 'warn', 'info', 'verbose', 'debug', 'silly'_
 
 ## 🛡️ Security
 
-First of all, this is a electron react application, that in total has about 620 packages from other people and companies.
-So, a 100% security may not be possible.
+As this is an electron application, a lot of dependencies from other people and companies are involved. So, a 100% security may not be possible.
 
-But as this application handles very sensitive data like ssh credentials, i take security **very serious** and took some measurments harden the app:
+But as this application handles very sensitive data like ssh credentials, i take security **very serious** and made effort to harden the application:
 
 - All security features of electron are activated: _nodeIntegration: false, contextIsolation: true, webSecurity: true, allowRunningInsecureContent: false, sandbox: true_
 - The native fetch and XMLHttpRequest functionality is disabled in the renderer
@@ -154,13 +153,14 @@ Todos:
 
 ## 🐛 Troubleshooting
 
-If the application does not start or crash:
+If you encounter problems with the Service-Manager:
+- The application utilizes systemctl commands to manage the services. Those commands usually require sudo privileges. If you are not logged in as root, you may need to create a sudoers file and give your user the required permissions. 
 
+If the application does not start or crash:
 - Maybe the logs can give you a clue: _%APPDATA%/mavs-rc/rc.log_
 - Delete the application data directory which is located here _%APPDATA%/mavs-rc/_ (maybe backup your sshServers.json config before doing so)
 
 When you have problems with building the application from source:
-
 - Ensure you have a new version of Node installed
 - Call _"npm run makeVerbose"_ instead of "npm run make" to get more information
 - Delete _/node_modules_, _/package-lock.json_, _/.vite_, and _/out_ and then call _"npm i"_
@@ -195,6 +195,11 @@ They are from next-ui
 
 ![Connect](/doc/img/connect.jpg) ![Shell](/doc/img/shell.jpg) ![Service Management](/doc/img/services.jpg) ![Explorer](/doc/img/explorer.jpg) ![File Editor](/doc/img/file.jpg)![SSH Tunnels](/doc/img/tunnels.jpg) ![System Info](/doc/img/info.jpg)
 
+## 📰 Changelog
+
+Changes are tracked in the [Changelog](CHANGELOG.md)
+
 ## 📰 License
 
 [MIT](LICENSE)
+

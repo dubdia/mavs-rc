@@ -8,11 +8,7 @@ import { RemoteDto } from "../../shared/models/RemoteDto";
 export const RemoteInfoList = () => {
   console.log("RENDER RemoteInfoList");
   const dispatch = useAppDispatch();
-
-  const list = useAppSelector(
-    (state) => selectAll(state.data).map((x) => x.dto),
-    shallowEqual
-  ) as RemoteDto[];
+  const list = useAppSelector((state) => selectAll(state.data).map((x) => x.dto), shallowEqual) as RemoteDto[];
   const activeId = useAppSelector((state) => state.data.activeId);
 
   return (
@@ -27,27 +23,17 @@ export const RemoteInfoList = () => {
           color={remote.info?.id == activeId ? "primary" : "default"}
           className="justify-start"
         >
-          {remote.connected && (
-            <FaWifi className="text-green-400 shrink-0"></FaWifi>
-          )}
-          {!remote.connected && (
-            <FaWifi className="text-gray-300 shrink-0"></FaWifi>
-          )}
+          {remote.connected && <FaWifi className="text-green-400 shrink-0"></FaWifi>}
+          {!remote.connected && <FaWifi className="text-gray-300 shrink-0"></FaWifi>}
 
           <span className="truncate">{remote.info?.name}</span>
         </Button>
       ))}
 
       {/* Link to add new remote */}
-      <Button
-        key="add-remote"
-        variant="flat"
-        size="lg"
-        color="success"
-        onClick={() => dispatch(createNewRemote())}
-      >
+      <Button key="add-remote" variant="flat" size="lg" color="success" onClick={() => dispatch(createNewRemote())}>
         Add remote
       </Button>
     </div>
   );
-}
+};

@@ -1071,14 +1071,15 @@ export class SshManager {
         tunnel.socks == true ? "(socks)" : "(no socks)"
       }`
     );
-    const tunnelConnection = await connection.ssh.addTunnel({
+    const tunnelConnection = await connection.ssh.addTunnel(<TunnelConfig>{
       name: tunnel.id,
       localPort: tunnel.localPort,
       remoteAddr: tunnel.remoteAddress ?? "",
       remotePort: tunnel.remotePort,
       socks: tunnel.socks ?? false,
+      sockets: [],
     });
-    console.log("CONNECTED", tunnelConnection);
+
     if (tunnelConnection?.server == null) {
       // unable to connect?
       await this.disconnectTunnelInternalAsync(connection, tunnel.id);
@@ -1103,9 +1104,28 @@ export class SshManager {
       throw new Error("No tunnel given");
     }
 
-    // find remote and the tunnel
+    // close tunnel via ssh
     await connection.ssh.closeTunnel(tunnelId);
+
+    // find tunnel and dispose it
+    const tunnel = connection.tunnels.find((x) => x.tunnelId == tunnelId);
+    if (tunnel?.connection?.server) {
+      try {
+        await new Promise((resolve, reject) => {
+          tunnel.connection.server.close((err: Error | null) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(null);
+            }
+          });
+        });
+      } catch (err) {
+        log.error("Failed to close tunnel", err);
+      }
+    }
     connection.tunnels = connection.tunnels.filter((x) => x.tunnelId !== tunnelId);
+    log.info(`Closed Tunnel ${tunnelId}`);
   }
 
   public canStartTunnel(tunnel: RemoteTunnelInfo): boolean {

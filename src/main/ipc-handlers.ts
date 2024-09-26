@@ -1,8 +1,14 @@
+import { app } from "electron";
 import { typedIpcMain } from "../shared/ipc/ipc-api";
 import { remotesManager, sshManager } from "./main";
 
 /** registers the ipc handlers of main */
 export function registerIpcHandlers() {
+  // app
+  typedIpcMain.handle("getAppVersion", () => {
+    return app.getVersion();
+  });
+
   // remotes
   typedIpcMain.handle("listRemotes", () => {
     return remotesManager.remotes.map((x) => remotesManager.map(x));

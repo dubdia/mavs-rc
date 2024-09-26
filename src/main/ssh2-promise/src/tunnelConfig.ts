@@ -1,3 +1,5 @@
+import { Socket } from "net";
+
 export interface TunnelConfig {
     /** Remote Address to connect */
     remoteAddr?: string;
@@ -8,4 +10,6 @@ export interface TunnelConfig {
     socks?: boolean;
     /**  Unique name */
     name?: string;
+    /** the connected socket */
+    sockets?: Socket[];
 }

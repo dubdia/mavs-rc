@@ -134,7 +134,7 @@ export default class Xterm extends React.Component<IProps> {
   constructor(props: IProps) {
     super(props);
     this.terminalRef = React.createRef();
-    console.log('INIT Xterm');
+
     // Bind Methods
     this.onData = this.onData.bind(this);
     this.onCursorMove = this.onCursorMove.bind(this);
@@ -150,7 +150,6 @@ export default class Xterm extends React.Component<IProps> {
 
   componentDidMount() {
     this.setupTerminal();
-    console.log('Mount Xterm', this.terminal);
     if (this.terminal != null) {
       if (this.terminalRef.current && this.terminal.element == null) {
         // Creates the terminal within the container element.
@@ -160,7 +159,6 @@ export default class Xterm extends React.Component<IProps> {
   }
 
   componentWillUnmount() {
-    console.log('Unmount Xterm', this.terminal);
     // When the component unmounts dispose of the terminal and all of its listeners.
     if (this.terminal != null) {
       this.terminal.dispose();
@@ -244,7 +242,6 @@ export default class Xterm extends React.Component<IProps> {
   }
 
   render() {
-    console.log('Render Xterm');
     return <div className={this.props.className} ref={this.terminalRef} />;
   }
 }

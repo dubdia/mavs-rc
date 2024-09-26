@@ -6,7 +6,7 @@ import { Mutex } from "async-mutex";
 import { computeColor } from "../../utils/computeColor";
 import { ipc } from "../../app";
 
-let start: number;
+//let start: number;
 
 export const Shell = ({ id }: { id: string }) => {
   const xtermRef = useRef<XTerm>(null);
@@ -15,7 +15,7 @@ export const Shell = ({ id }: { id: string }) => {
   const dataIndex = useRef({ index: 0 });
   const mutex = useRef(new Mutex());
 
-  console.log("Render Shell", dataIndex);
+  console.log("RENDER Shell", dataIndex);
 
   const color = computeColor("hsl(var(--nextui-content1) / var(--nextui-content1-opacity, var(--tw-bg-opacity)));");
 
@@ -32,9 +32,9 @@ export const Shell = ({ id }: { id: string }) => {
         }
       }
 
-      const end = new Date().getTime();
-      const t = end - start;
-      console.log("ms", t);
+      //const end = new Date().getTime();
+      //const t = end - start;
+      //console.log("ms", t);
     });
   }, [data.length]);
 
