@@ -6,9 +6,10 @@ on:
     branches: [ "main" ]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [windows-latest]    # ubuntu-latest, macos-latest,
         node-version: [22.x]
     steps:
     - uses: actions/checkout@v4
@@ -22,5 +23,9 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: installer
-        path: out/make/**/*.exe
+        name: installer-${{ matrix.os }}
+        path: |
+          out/make/**/*.exe
+          out/make/**/*.dmg
+          out/make/**/*.deb
+          out/make/**/*.AppImage
