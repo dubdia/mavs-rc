@@ -164,6 +164,7 @@ When you have problems with building the application from source:
 - Ensure you have a new version of Node installed
 - Call _"npm run makeVerbose"_ instead of "npm run make" to get more information
 - Delete _/node_modules_, _/package-lock.json_, _/.vite_, and _/out_ and then call _"npm i"_
+- Sometimes restarting VS Code also helps if there is a lock helt on some file in the out directory
 
 If that does not help feel free to leave a ticket here on GitHub :)
 

@@ -5,19 +5,28 @@ import { ConfigManager } from "./config-manager";
 import { SshManager } from "./ssh-manager";
 import log from "electron-log/main";
 import { RemotesManager } from "./remotes-manager";
-import { typedIpcMain } from "../shared/ipc/ipc-api";
 import { registerIpcHandlers } from "./ipc-handlers";
 
-// load configuration
-const appVersion = app.getVersion();
-log.info(`Starting app v${appVersion}...`);
-export let configManager = new ConfigManager();
+// handle uncaught exceptions
+process.on("uncaughtException", function (error) {
+  try {
+    log.error("Uncaught exception", error);
+  } catch (err) {
+    console.error("failed to log uncaught exception becuase of this error", err);
+    console.error("Here the uncaught exception: ", error);
+  }
+});
 
-log.debug(`Configure logger with level: ${configManager.config.logLevel}`);
+// loading configuration and configure logger
+export let configManager = new ConfigManager();
 log.transports.console.level = configManager.config.logLevel;
 const userDataPath = app.getPath("userData");
 log.transports.file.resolvePathFn = () => path.join(userDataPath, "rc.log");
 log.transports.file.level = configManager.config.logLevel;
+
+// print startup message
+const appVersion = app.getVersion();
+log.info(`Starting app v${appVersion} with log level ${configManager.config.logLevel}`);
 
 // create managers
 log.debug(`Create managers...`);

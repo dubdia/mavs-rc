@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Background } from "./components/Background";
 import { AppProvider } from "./providers/appProvider";
 import Body from "./body";
 import { appendShellData, loadRemotes } from "./store/remotesSlice";
 import { store } from "./store/store";
-import { toast } from "react-toastify";
 
 // render react on root element
 const root = document.getElementById("root");
@@ -16,13 +14,6 @@ if (anyWindow.rootInstance == null) {
   anyWindow.rootInstance = createRoot(root);
 }
 anyWindow.rootInstance.render(<App />);
-
-// calling IPC exposed from preload script
-setTimeout(async () => {
-  /*window.api.on.showAlert((_event, text) => {
-    alert(text);
-  });*/
-}, 2000);
 
 // setup consts
 export const ipc = window.api.ipcRenderer;
@@ -38,7 +29,7 @@ ipc.on("shellReceive", (_, id, data) => {
   store.dispatch(appendShellData({ id: id, data: data }));
 });
 ipc.on("disposeRemote", (_, id) => {
-  console.log('A remote was disposed. Reload remotes now');
+  console.log("A remote was disposed. Reload remotes now");
   store.dispatch(loadRemotes());
 });
 

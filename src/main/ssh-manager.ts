@@ -138,6 +138,9 @@ export class SshManager {
         port: remote.info.port,
         username: remote.info.user,
         tryKeyboard: true,
+        timeout: 5000,
+        readyTimeout: 5000,
+        reconnect: false, //todo this is not working because if the initial connect fails it will retry and retry...
         //keepaliveInterval: 2000,
         //keepaliveCountMax: 10,    // 20 second after disconnect
         debug: (message) => log.debug("ssh: " + message),
@@ -191,8 +194,10 @@ export class SshManager {
       });
 
       // connect to ssh/sftp
+      log.debug(`Start connection...`);
       await connection.ssh.connect();
       connection.sftp = connection.ssh.sftp();
+      log.debug(`Connection established`);
 
       // detect architecture
       connection.osType = await this.detectPosixWindowsAsync(connection.ssh);

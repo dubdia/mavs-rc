@@ -46,7 +46,7 @@ export const Shell = ({ id }: { id: string }) => {
     }
 
     // send to socket
-    start = new Date().getTime();
+    //start = new Date().getTime();
     ipc.invoke("sendShell", id, data);
   };
 
