@@ -5,6 +5,13 @@
     </a>
   </p>
 </div>
+<div align="center">
+  <a href="https://github.com/dubdia/mavs-rc/actions/workflows/build_application.yml" target="_blank">
+    <img alt="Build application" src="https://github.com/dubdia/mavs-rc/actions/workflows/build_application.yml/badge.svg">
+  </a>
+  <img alt="GitHub package.json version" src="https://img.shields.io/github/package-json/v/dubdia/mavs-rc">
+  <img alt="GitHub License" src="https://img.shields.io/github/license/dubdia/mavs-rc">
+</div>
 
 ## 👋 Welcome
 
@@ -97,9 +104,13 @@ The application should be multi-platform because it was build using electron, bu
   </tbody>
 </table>
 
-## 🔥 Build, Run, Debug
+## 🔥 Get started
 
-#### Build from source
+### Download Setup
+
+You can **download the latest** release here: https://github.com/dubdia/mavs-rc/releases
+
+### Build from source
 
 To run the application locally on your computer, follow these steps:
 
@@ -109,7 +120,7 @@ To run the application locally on your computer, follow these steps:
 4. Call _"npm i"_ to install the packages
 5. Call _"npm run make"_ to build the application. The executables can then be found in the folder /mavs-rc/out
 
-#### Debug from source
+### Debug from source
 
 To debug the application, follow these steps:
 
