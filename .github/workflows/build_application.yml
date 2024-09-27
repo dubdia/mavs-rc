@@ -3,6 +3,9 @@ on:
   push:
     tags:
     - 'v*.*.*'
+permissions:
+  contents: write
+  actions: read
 jobs:
   build:
     runs-on: ${{ matrix.os }}
