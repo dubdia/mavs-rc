@@ -1,6 +1,6 @@
 <div align="center">
   <p>
-    <a align="center" href="" target="https://github.com/dubdia/mavs-rc">
+    <a align="center" href="https://github.com/dubdia/mavs-rc" target="_blank">
       <img alt="MAVs RC Header" src="./doc/img/header.png">
     </a>
   </p>
@@ -15,11 +15,11 @@
 
 ## 👋 Welcome
 
-Mav's RC is a **application to remote control linux systems via ssh/sftp**. It aims to make interaction with a remote host easier by combing several features into one program and without the need of installing anything on the remote system.
+**Mav's RC** is an application designed to remotely control Linux systems through SSH/SFTP. It integrates multiple features into one seamless program, promoting ease of use without requiring any installations on the remote host.
 
-I build this application for my personal use, but why not make it open-source so it may help others i thought so here we are. But please be aware that this application might contain bugs so use it at your own risk.
+Purpose and Open Source Spirit: Originally developed for personal use, I decided to open-source Mav's RC to contribute to the community—hoping it might assist others in managing their remote systems more efficiently. Since it's community-driven, feel free to contribute, but please note, the application may contain bugs, and its use is at your own risk.
 
-The application should be multi-platform because it was build using electron, but i have only tested it on Windows 11.
+Compatibility Information: Built using Electron, Mav's RC is inherently multi-platform. However, it has been primarily tested on Windows 11. Testing on other platforms is planned, and your feedback is very welcome.
 
 ### Features
 
@@ -29,9 +29,9 @@ The application should be multi-platform because it was build using electron, bu
       <td width=100><b>Connect</b></td>
       <td align="left">
         <ul>
-          <li>Connect to Linux</li>
-          <li>Authenticate via Password / Public-Key</li>
-         <li>Manage multiple remotes</li>
+          <li><b>Connect to Linux:</b> Securely access Linux servers.</li>
+          <li<b>Authentication Options:</b> Use password or public-key for authentication.</li>
+         <li><b>Remote Management:</b> Manage multiple remote connections effectively.</li>
         </ul>
       </td>
       <td width=200 align="right">
@@ -42,7 +42,7 @@ The application should be multi-platform because it was build using electron, bu
       <td width=100><b>Shell</td>
       <td align="left">
         <ul>
-          <li>Integrated Shell</b></li>
+          <li><b>Integrated Shell:</b> Execute commands and scripts directly within Mav's RC.</b></li>
         </ul>
       </td>
       <td width=200 align="right">
@@ -53,9 +53,9 @@ The application should be multi-platform because it was build using electron, bu
       <td width=100><b>Services</b></td>
       <td align="left">
         <ul>
-          <li>Manage services (start, stop, enable, disable...)</li>
-          <li>View logs</li>
-          <li>Edit service files</li>
+          <li><b>Manage Services:</b> Start, stop, enable, or disable services.</li>
+          <li><b>Logs and Monitoring:</b> View and monitor service logs.</li>
+          <li><b>Service File Editor:</b> Modify service files directly.</li>
         </ul>
       </td>
       <td width=200 align="right">
@@ -66,10 +66,9 @@ The application should be multi-platform because it was build using electron, bu
       <td width=100><b>Explorer</b></td>
       <td align="left">
         <ul>
-          <li>View all files and folders on the remote system</li>
-          <li>See and modify owner and permissions of files and folders</li>
-          <li>File upload and download</li>
-          <li>Folder download</li>
+          <li><b>File and Folder Exploration:</b> Access and navigate files and folders on the remote system.</li>
+          <li><b>Permissions Management:</b> Modify owner and permissions of the files and folders.</li>
+          <li><b>File Operations:</b> Support for file and folder upload and download.</li>
         </ul>
       </td>
       <td width=200 align="right">
@@ -80,8 +79,8 @@ The application should be multi-platform because it was build using electron, bu
       <td width=100><b>Editor</b></td>
       <td align="left">
         <ul>
-          <li>Edit files on the remote system</li>
-          <li>Extended options when editing service files</li>
+          <li><b>File Editing:</b> Edit files directly on the remote system.</li>
+          <li><b>Advanced Options:</b> Extended features for service file editing.</li>
         </ul>
       </td>
       <td width=200 align="right">
@@ -92,9 +91,9 @@ The application should be multi-platform because it was build using electron, bu
       <td width=100><b>Tunnels</b></td>
       <td align="left">
         <ul>
-          <li>Manage tunnels between localhost and remote</li>
-          <li>Socks5 support</li>
-          <li>Auto connect option</li>
+          <li><b>Tunnel Management:</b> Set up and manage tunnels between localhost and remote systems.</li>
+          <li><b>Socks5 Support:</b> Configure Socks5 proxies through tunnels.</li>
+          <li><b>Auto-connect:</b> Option to automatically connect.</li>
         </ul>
       </td>
       <td width=200 align="right">
@@ -105,79 +104,120 @@ The application should be multi-platform because it was build using electron, bu
 </table>
 
 ## 🔥 Get started
+This section guides you through downloading and setting up Mav's RC. Choose from downloading pre-built releases or building the application from source.
 
-### Download Setup
+### Download the Latest Release
 
-You can **download the latest** release here: https://github.com/dubdia/mavs-rc/releases
+You can download the latest version from our [GitHub Releases Page](https://github.com/dubdia/mavs-rc/releases). Please be aware that the executable is not code-signed, which may trigger a security warning on Windows.
 
-### Build from source
 
-To run the application locally on your computer, follow these steps:
+### Building from source
 
-1. Download the repository containing mavs-rc
-2. Ensure that [node](https://nodejs.org/en) is installed
-3. Open a Terminal and navigate to /mavs-rc
-4. Call _"npm i"_ to install the packages
-5. Call _"npm run make"_ to build the application. The executables can then be found in the folder /mavs-rc/out
+If you prefer to build the application yourself or wish to contribute to its development, follow these steps:
 
-### Debug from source
+#### Prerequisites
 
-To debug the application, follow these steps:
+Ensure that Node.js is installed on your system.
 
-1. Download the repository containing mavs-rc
-2. Ensure that [node](https://nodejs.org/en) is installed
-3. Open a Terminal and navigate to /mavs-rc
-4. Call _"npm i"_ to install the packages
-5. Call _"npm run start"_ to start the application. Or to debug the application in [VS-Code](https://code.visualstudio.com/) open the Workspace in VS-Code and click on "Run" -> "Start Debugging" (F5)
+#### Steps
+
+1. Clone the repository or download the source:\
+   `git clone https://github.com/dubdia/mavs-rc.git`\
+   `cd mavs-rc`
+2. Install dependencies:
+   `npm install`
+3. Build the application:
+   `npm run make`
+
+The built executable will be available in the /out directory.
+
+### Debugging from source
+
+To debug Mav's RC during development:
+
+1. Follow the steps in Building from Source to set up the project.
+2. Start the application with:
+  `npm run start`
+  or open the workspace in VS Code and navigate to “Run” -> “Start Debugging” or simply press F5 to start the debugging session.
 
 ## 🤓 Logging
 
-The application logs to the terminal and to the application data directory.
-On windows, this directory is located here: _%APPDATA%\mavs-rc\rc.log_
+Mav's RC does log to the terminal and file-system to assist in monitoring and debugging. Here’s how logging is handled and how you can customize it:
 
-Ssh credentials are never logged. Ssh traffic can be logged when log level is set to 'debug'.
+#### Log File Location
+- Logs are created both in the terminal and in a dedicated file on the filesystem. On Windows systems, you can find the log file at:
+_%APPDATA%\mavs-rc\rc.log_
 
-#### Change log level
 
-The default log level is "info". You can change the log level by adapting the config file which is located here: %APPDATA%\mavs-rc\config.json
+#### Data Privacy
+- SSH Credentials: To ensure security, SSH credentials are never logged.
+- SSH Traffic: For detailed debugging, SSH traffic can optionally be logged when the log level is set to _debug_.
 
-Supported log levels: _'error', 'warn', 'info', 'verbose', 'debug', 'silly'_
+#### Customizing Log Levels
+You’re able to adjust the verbosity of the logs through the application's configuration:
+- Default Level: The preset log level is info.
+- Configuration File: Modify the log level in the configuration file located at: _%APPDATA%\mavs-rc\config.json_
+- The supported log levels are: _error_, _warn_, _info_, _debug_
 
 ## 🛡️ Security
 
-As this is an electron application, a lot of dependencies from other people and companies are involved. So, a 100% security may not be possible.
+The security of Mav's RC is a core priority, especially considering the application’s interaction with sensitive data, such as SSH credentials. While achieving absolute security in an Electron-based application with multiple dependencies can be challenging, significant measures have been implemented to mitigate potential risks:
 
-But as this application handles very sensitive data like ssh credentials, i take security **very serious** and made effort to harden the application:
+#### Enabled Security Features:
+Electron Security Policies: Extensive use of Electron's security capabilities:
+- nodeIntegration set to false
+- contextIsolation enabled
+- webSecurity enforced
+- allowRunningInsecureContent set to false
+- Application sandboxing enabled
 
-- All security features of electron are activated: _nodeIntegration: false, contextIsolation: true, webSecurity: true, allowRunningInsecureContent: false, sandbox: true_
-- The native fetch and XMLHttpRequest functionality is disabled in the renderer
-- The index.html has a strict Content-Security-Policy: _(script-src 'self'; worker-src 'self' blob:;)_
-- Electron is configured to block any requests and redirects that are not required
-- Ssh credentials and traffic is not included in the applications log files by default
-- The application does not load any data from the internet after starting and all required data is bundled into the application
-- Lastly i checked for npm vulnerabilities via _'npm audit'_ and by the time of writing 0 are found.
+#### Content Security:
+- Content-Security-Policy (CSP): Implemented strict CSP in index.html to mitigate cross-site scripting (XSS) risks: _script-src 'self'; worker-src 'self' blob:;_
 
-Todos:
+#### Network Security:
+- Network Requests: Electron configurations are in place to block unnecessary requests and redirects.
+- Data Bundling: No external data requests post-launch; all necessary data is pre-bundled.
+- Data Handling:
+- SSH Credentials: SSH credentials and traffic details are excluded from application logs to preserve confidentiality.
+- Fetch and XMLHttpRequest: Disabled native fetch and XMLHttpRequest functionalities in the renderer to reduce external attack vectors.
 
-- Verifiy traffic using Wireguard
-- Encrypt passwords that are stored in config
+#### Maintenance and Auditing:
+- Dependency Audits: Regular audits with npm audit confirm no known vulnerabilities in used packages.
+
+#### Planned Enhancements:
+- Traffic Verification: Implementation of Wireguard for enhanced traffic verification.
+- Encryption: Encrypting stored passwords within the configuration files to boost data-at-rest security.
+
 
 ## 🐛 Troubleshooting
+Encountering issues can be frustrating; here are some common problems and their potential fixes:
 
-If you encounter problems with the Service-Manager:
-- The application utilizes systemctl commands to manage the services. Those commands usually require sudo privileges. If you are not logged in as root, you may need to create a sudoers file and give your user the required permissions. 
+#### Service Manager Issues
+Systemctl Dependencies
 
-If the application does not start or crash:
-- Maybe the logs can give you a clue: _%APPDATA%/mavs-rc/rc.log_
-- Delete the application data directory which is located here _%APPDATA%/mavs-rc/_ (maybe backup your sshServers.json config before doing so)
+- The application relies on systemctl commands which require sudo privileges. If you are not logged in as root and encounter permission errors:
+Consider modifying your sudoers file to provide necessary permissions to your user.
 
-When you have problems with building the application from source:
-- Ensure you have a new version of Node installed
-- Call _"npm run makeVerbose"_ instead of "npm run make" to get more information
-- Delete _/node_modules_, _/package-lock.json_, _/.vite_, and _/out_ and then call _"npm i"_
-- Sometimes restarting VS Code also helps if there is a lock helt on some file in the out directory
+#### Application Failures
+Crashes or Non-start Issues
 
-If that does not help feel free to leave a ticket here on GitHub :)
+- Check Logs: Review the log files for clues: _%APPDATA%/mavs-rc/rc.log_
+- Reset Application Data: If issues persist, try deleting the application data directory. Ensure you back up important configurations such as _sshServers.json_ beforehand: %APPDATA%/mavs-rc/
+
+
+#### Build Issues
+Failed or Erroneous Builds
+
+- Update Node.js: Ensure your Node.js installation is up to date.
+- Verbose Output: Use _npm run makeVerbose_ for more detailed build output.
+- Clean Project: If builds still fail:
+  - Delete node_modules, package-lock.json, .vite, and out directories.
+  - Reinstall dependencies with _npm i_.
+  - Restarting your development environment, such as Visual Studio Code, may resolve file lock issues.
+
+#### Further Assistance
+If these steps do not resolve your problems, do not hesitate to:
+- Open an issue on GitHub for community or developer support.
 
 ## 📚 Project structure
 
@@ -191,17 +231,28 @@ The project was initialy created using electron forge with the [typescript vite 
 
 ## ❤️ Credits
 
-I used those technologies and packages without this project would not be possible like this so many thanks to:
-[Electron](https://www.electronjs.org/), [Forge](https://www.electronforge.io/), [React](https://react.dev/), [Vite](https://vitejs.dev/), [SSH2](https://www.npmjs.com/package/ssh2), [ssh2-promise](https://www.npmjs.com/package/ssh2-promise), [NextUI](https://nextui.org/), [XTerm](https://xtermjs.org/), [Monaco Editor](https://www.npmjs.com/package/@monaco-editor/react), [TailwindCSS](https://tailwindcss.com/)
+Mav's RC was built using a variety of powerful open-source tools and libraries. Many thanks to the following projects and their contributors:
 
-#### About the ssh2-promise package
+- [Electron](https://www.electronjs.org/): For enabling cross-platform desktop app capabilities.
+- [Forge](https://www.electronforge.io/): Simplified the build process significantly.
+- [React](https://react.dev/): For efficient UI development.
+- [Vite](https://vitejs.dev/): Enhanced the development workflow with its super fast build tool.
+- [SSH2](https://www.npmjs.com/package/ssh2) and [ssh2-promise](https://www.npmjs.com/package/ssh2-promise): For SSH communication capabilities.
+- [NextUI](https://nextui.org/): Provided the elegant UI components.
+- [XTerm](https://xtermjs.org/): Enabled the integrated terminal functionality.
+- [Monaco Editor](https://www.npmjs.com/package/@monaco-editor/react): For the sophisticated text editing features.
+- [TailwindCSS](https://tailwindcss.com/): For utility-first CSS management.
 
-I downloaded the package and made some minor modifications: mostly strictly typing and changed from CommonJs to ES6.
+
+
+#### Custom Modifications
+
+- __ssh2-promise__: I downloaded the package and made some minor modifications: mostly strictly typing and changed from CommonJs to ES6.
 The modified code can be found under _/mavs-rc/src/main/ssh2-promise_
 
-#### About the background images / gradient
+#### Visual Assets
 
-They are from next-ui
+- __Background Images/Gradient__: those are from [NextUI](https://nextui.org/)
 
 ## ⬇️ Screenshots
 

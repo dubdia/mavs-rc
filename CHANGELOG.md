@@ -1,10 +1,23 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [1.0.2] - 
+## [1.0.3] - Not released yet
  
 ### Added
 
+
+### Changed
+
+- Increased ssh connection timeout
+
+### Fixed
+
+
+## [1.0.2] - 2024-09-27
+ 
+### Added
+
+- Added GitHub Action Workflow to automatically release a windows installer
 
 ### Changed
 

@@ -138,8 +138,8 @@ export class SshManager {
         port: remote.info.port,
         username: remote.info.user,
         tryKeyboard: true,
-        timeout: 5000,
-        readyTimeout: 5000,
+        timeout: 8000,
+        readyTimeout: 10000,
         reconnect: false, //todo this is not working because if the initial connect fails it will retry and retry...
         //keepaliveInterval: 2000,
         //keepaliveCountMax: 10,    // 20 second after disconnect
