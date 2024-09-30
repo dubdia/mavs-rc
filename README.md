@@ -17,7 +17,7 @@
 
 **Mav's RC** is an application designed to remotely control Linux systems through SSH/SFTP. It integrates multiple features into one seamless program, promoting ease of use without requiring any installations on the remote host.
 
-Purpose and Open Source Spirit: Originally developed for personal use, I decided to open-source Mav's RC to contribute to the community—hoping it might assist others in managing their remote systems more efficiently. Since it's community-driven, feel free to contribute, but please note, the application may contain bugs, and its use is at your own risk.
+Purpose and Open Source Spirit: Originally developed for personal use, I decided to open-source Mav's RC to contribute to the community—hoping it might assist others in managing their remote systems more efficiently. Feel free to contribute and please note, the application may contain bugs, and its use is at your own risk.
 
 Compatibility Information: Built using Electron, Mav's RC is inherently multi-platform. However, it has been primarily tested on Windows 11. Testing on other platforms is planned, and your feedback is very welcome.
 
@@ -185,8 +185,7 @@ Electron Security Policies: Extensive use of Electron's security capabilities:
 - Dependency Audits: Regular audits with npm audit confirm no known vulnerabilities in used packages.
 
 #### Planned Enhancements:
-- Traffic Verification: Implementation of Wireguard for enhanced traffic verification.
-- Encryption: Encrypting stored passwords within the configuration files to boost data-at-rest security.
+- Encryption: Encrypting stored passwords within the configuration file
 
 
 ## 🐛 Troubleshooting
@@ -202,11 +201,10 @@ Consider modifying your sudoers file to provide necessary permissions to your us
 Crashes or Non-start Issues
 
 - Check Logs: Review the log files for clues: _%APPDATA%/mavs-rc/rc.log_
-- Reset Application Data: If issues persist, try deleting the application data directory. Ensure you back up important configurations such as _sshServers.json_ beforehand: %APPDATA%/mavs-rc/
-
+- Reset Application Data: If issues persist, try deleting the application data directory. You may want to back up important configurations such as _sshServers.json_ beforehand: _%APPDATA%/mavs-rc/_
 
 #### Build Issues
-Failed or Erroneous Builds
+Failed Builds
 
 - Update Node.js: Ensure your Node.js installation is up to date.
 - Verbose Output: Use _npm run makeVerbose_ for more detailed build output.
@@ -217,7 +215,7 @@ Failed or Erroneous Builds
 
 #### Further Assistance
 If these steps do not resolve your problems, do not hesitate to:
-- Open an issue on GitHub for community or developer support.
+- Open an issue on GitHub for developer support.
 
 ## 📚 Project structure
 
@@ -231,7 +229,7 @@ The project was initialy created using electron forge with the [typescript vite 
 
 ## ❤️ Credits
 
-Mav's RC was built using a variety of powerful open-source tools and libraries. Many thanks to the following projects and their contributors:
+Mav's RC was built using a variety of cool open-source tools and libraries. Many thanks to the following projects and their contributors:
 
 - [Electron](https://www.electronjs.org/): For enabling cross-platform desktop app capabilities.
 - [Forge](https://www.electronforge.io/): Simplified the build process significantly.
