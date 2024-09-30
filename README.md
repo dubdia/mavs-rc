@@ -103,6 +103,8 @@ Compatibility Information: Built using Electron, Mav's RC is inherently multi-pl
   </tbody>
 </table>
 
+</br>
+
 # 🔥 Get started
 This section guides you through downloading and setting up Mav's RC. Choose from downloading pre-built releases or building the application from source.
 
@@ -139,7 +141,9 @@ To debug Mav's RC during development:
   `npm run start`
   or open the workspace in VS Code and navigate to “Run” -> “Start Debugging” or simply press F5 to start the debugging session.
 
-## 🤓 Logging
+</br>
+
+# 🤓 Logging
 
 Mav's RC does log to the terminal and file-system to assist in monitoring and debugging. Here’s how logging is handled and how you can customize it:
 
@@ -158,6 +162,8 @@ You’re able to adjust the verbosity of the logs through the application's conf
 - The supported log levels are: _error_, _warn_, _info_, _debug_
 
 - Default Level: The preset log level is _info_.
+
+</br>
 
 # 🛡️ Security
 
@@ -188,25 +194,20 @@ Electron Security Policies: Extensive use of Electron's security capabilities:
 ### Planned Enhancements:
 - Encryption: Encrypting stored passwords within the configuration file
 
+</br>
 
 # 🐛 Troubleshooting
 Encountering issues can be frustrating; here are some common problems and their potential fixes:
 
 ### Service Manager Issues
-Systemctl Dependencies
-
 - The application relies on systemctl commands which require sudo privileges. If you are not logged in as root and encounter permission errors:
 Consider modifying your sudoers file to provide necessary permissions to your user.
 
 ### Application Failures
-Crashes or Non-start Issues
-
 - Check Logs: Review the log files for clues: _%APPDATA%/mavs-rc/rc.log_
 - Reset Application Data: If issues persist, try deleting the application data directory. You may want to back up important configurations such as _sshServers.json_ beforehand: _%APPDATA%/mavs-rc/_
 
 ### Build Issues
-Failed Builds
-
 - Update Node.js: Ensure your Node.js installation is up to date.
 - Verbose Output: Use _npm run makeVerbose_ for more detailed build output.
 - Clean Project: If builds still fail:
@@ -215,8 +216,9 @@ Failed Builds
   - Restarting your development environment, such as Visual Studio Code, may resolve file lock issues.
 
 ### Further Assistance
-If these steps do not resolve your problems, do not hesitate to:
-- Open an issue on GitHub for developer support.
+- If these steps do not resolve your problems, please open an issue on GitHub for developer support.
+
+</br>
 
 # 📚 Project structure
 
@@ -227,6 +229,8 @@ The project was initialy created using electron forge with the [typescript vite 
   - __renderer/__ contains the js, css and html that runs in the browser/frontend. Has no permissions. Talks via IPC with the main part
   - __shared/__ contains code that is shared between main and renderer
 - __out/__ contains the executables and setup files after calling _'npm run build'_
+
+</br>
 
 # ❤️ Credits
 
@@ -253,13 +257,19 @@ The modified code can be found under _/mavs-rc/src/main/ssh2-promise_
 
 - __Background Images/Gradient__: those are from [NextUI](https://nextui.org/)
 
+</br>
+
 # ⬇️ Screenshots
 
 ![Connect](/doc/img/connect.jpg) ![Shell](/doc/img/shell.jpg) ![Service Management](/doc/img/services.jpg) ![Explorer](/doc/img/explorer.jpg) ![File Editor](/doc/img/file.jpg)![SSH Tunnels](/doc/img/tunnels.jpg) ![System Info](/doc/img/info.jpg)
 
+</br>
+
 # 📰 Changelog
 
 Changes are tracked in the [Changelog](CHANGELOG.md)
+
+</br>
 
 # 📰 License
 
