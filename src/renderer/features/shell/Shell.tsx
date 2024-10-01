@@ -51,7 +51,7 @@ export const Shell = ({ id }: { id: string }) => {
     fitAddon.current.fit();
   }, []);
 
-  // restore previous state / update state
+  /** restore previous state / update state */
   useEffect(() => {
     mutex.current.runExclusive(() => {
       const terminal = xtermRef.current?.terminal;
@@ -70,9 +70,9 @@ export const Shell = ({ id }: { id: string }) => {
     });
   }, [data.length]);
 
-  // when user writes data
+  /** when user writes data */
   const handleData = (data: string) => {
-    // check data & hub
+    // check data
     if (data == null || data == "") {
       return;
     }
@@ -82,7 +82,7 @@ export const Shell = ({ id }: { id: string }) => {
     ipc.invoke("sendShell", id, data);
   };
 
-  // handler to intercept right-clicks and paste clipboard contents
+  /** handler to intercept right-clicks and paste clipboard contents */
   const handleRightClickPaste = async (event: any) => {
     event?.preventDefault(); // Prevent the default context menu
     fitAddon.current.fit();
@@ -97,25 +97,25 @@ export const Shell = ({ id }: { id: string }) => {
     terminal.paste(text); // or terminal.write(text), depending on what's available
   };
 
-  // handler to intercept right-clicks and paste clipboard contents
+  /** tells xterm to fit to the new size (will trigger @see handleResize later) */
   const handleWindowResize = (event: any) => {
     debounceFit();
   };
+
+  /** tell the remote shell that this xterm has resized */
   const handleResize = (size: TerminalSize) => {
-    console.log("handleResize", size);
     ipc.invoke("shellResize", id, size);
   };
 
   const debounceFit = debounce(() => {
-    console.log("handleWindowResize", fitAddon.current.proposeDimensions());
     fitAddon?.current?.fit();
   }, 200);
 
   return (
     <div className="w-full h-full pb-4">
       {/* Remote Connection Info */}
-      <Card className="w-full h-full mb-4">
-        <CardBody className="w-full h-full ">
+      <Card className="w-full h-full mb-4 overflow-hidden">
+        <CardBody className="w-full h-full overflow-hidden">
           <div className="w-full h-full relative">
             <XTerm
               onResize={(e) => handleResize({cols: e.cols, rows: e.rows})}

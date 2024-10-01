@@ -21,6 +21,8 @@ import { useServices } from "./services.hook";
 import { ServicesDropdown } from "./ServicesDropdown";
 import { ShortcutsToggle } from "../shortcuts/ShortcutsToggle";
 import { ShortcutsDropdown } from "../shortcuts/ShortcutsDropdown";
+import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
+import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
 
 export const Services = ({ id }: { id: string }) => {
   console.log("RENDER Services");
@@ -55,73 +57,58 @@ export const Services = ({ id }: { id: string }) => {
 
   // html
   return (
-    <>
-      <div className="w-full">
-        {/* Header */}
-        <Card className="mb-4">
-          <CardBody>
-            <div className="flex flex-row gap-4 items-center">
-              {/* Search */}
-              <Input
-                isClearable
-                classNames={{
-                  inputWrapper: "border-1",
-                }}
-                placeholder="Search by name..."
-                startContent={<FaSearch className="text-default-300" />}
-                value={remote.session.services.searchText}
-                variant="bordered"
-                isDisabled={services.loading}
-                onClear={() => dispatch(processSessionServices({ id: id, params: { searchText: "" } }))}
-                onValueChange={(x) => dispatch(processSessionServices({ id: id, params: { searchText: x } }))}
-              />
-              {/* Filter for Inactive */}
-              <Checkbox
-                className="flex-shrink-0"
-                isDisabled={services.loading}
-                isSelected={remote.session.services.filters.find((x) => x.column == "active") == null}
-                onValueChange={(e) => handleSelectInactive(e)}
-              >
-                Inactive
-              </Checkbox>
+    <HeaderScrollBodyLayout
+      header={
+        <div className="flex flex-row gap-4 items-center">
+          {/* Search */}
+          <Input
+            isClearable
+            classNames={{
+              inputWrapper: "border-1",
+            }}
+            placeholder="Search by name..."
+            startContent={<FaSearch className="text-default-300" />}
+            value={remote.session.services.searchText}
+            variant="bordered"
+            isDisabled={services.loading}
+            onClear={() => dispatch(processSessionServices({ id: id, params: { searchText: "" } }))}
+            onValueChange={(x) => dispatch(processSessionServices({ id: id, params: { searchText: x } }))}
+          />
+          {/* Filter for Inactive */}
+          <Checkbox
+            className="flex-shrink-0"
+            isDisabled={services.loading}
+            isSelected={remote.session.services.filters.find((x) => x.column == "active") == null}
+            onValueChange={(e) => handleSelectInactive(e)}
+          >
+            Inactive
+          </Checkbox>
 
-              {/* Shortcuts */}
-              <ShortcutsDropdown id={id} type={'service'}></ShortcutsDropdown>
+          {/* Shortcuts */}
+          <ShortcutsDropdown id={id} type={"service"}></ShortcutsDropdown>
 
-              {/* Refresh Button */}
-              <Button
-                isIconOnly
-                variant="flat"
-                isDisabled={services.loading}
-                onClick={() => dispatch(sessionFetchServices(id))}
-              >
-                <FaArrowsRotate />
-              </Button>
+          {/* Refresh Button */}
+          <Button
+            isIconOnly
+            variant="flat"
+            isDisabled={services.loading}
+            onClick={() => dispatch(sessionFetchServices(id))}
+          >
+            <FaArrowsRotate />
+          </Button>
 
-              {/* Go to Services Button */}
-              <Button
-                isIconOnly
-                variant="flat"
-                isDisabled={services.loading}
-                onClick={() => services.goToServiceFolder()}
-              >
-                <FaFolderOpen />
-              </Button>
+          {/* Go to Services Button */}
+          <Button isIconOnly variant="flat" isDisabled={services.loading} onClick={() => services.goToServiceFolder()}>
+            <FaFolderOpen />
+          </Button>
 
-              {/* Action Button */}
-              <Button
-                isIconOnly
-                variant="flat"
-                isDisabled={services.loading}
-                onClick={() => services.createNewService()}
-              >
-                <FaPlus></FaPlus>
-              </Button>
-            </div>
-          </CardBody>
-        </Card>
-
-        {/* Services Table */}
+          {/* Action Button */}
+          <Button isIconOnly variant="flat" isDisabled={services.loading} onClick={() => services.createNewService()}>
+            <FaPlus></FaPlus>
+          </Button>
+        </div>
+      }
+      body={
         <Table
           aria-label="List of services"
           sortDescriptor={remote.session.services.sortDescriptor}
@@ -153,7 +140,7 @@ export const Services = ({ id }: { id: string }) => {
             {(item) => (
               <TableRow key={item.name}>
                 <TableCell>
-                  <ShortcutsToggle id={id} type={'service'} value={item.name}></ShortcutsToggle>
+                  <ShortcutsToggle id={id} type={"service"} value={item.name}></ShortcutsToggle>
                 </TableCell>
                 <TableCell className="font-bold cursor-pointer" onClick={() => services.editService(item.name)}>
                   {item.name}
@@ -171,7 +158,7 @@ export const Services = ({ id }: { id: string }) => {
             )}
           </TableBody>
         </Table>
-      </div>
-    </>
+      }
+    ></HeaderScrollBodyLayout>
   );
 };

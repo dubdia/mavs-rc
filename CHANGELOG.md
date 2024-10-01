@@ -5,13 +5,17 @@ All notable changes to this project will be documented in this file.
  
 ### Added
 
+- Shell now resizes correctly
+- Shell supports right click for pasting
 
 ### Changed
 
 - Increased ssh connection timeout
+- Layout for File Editor
 
 ### Fixed
 
+- Fixed function "Open in Terminal"
 
 ## [1.0.2] - 2024-09-27
  

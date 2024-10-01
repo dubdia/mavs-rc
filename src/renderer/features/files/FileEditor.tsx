@@ -11,6 +11,7 @@ import { useServices } from "../services/services.hook";
 import { FaDownload, FaInfo } from "react-icons/fa";
 import { ipc } from "../../app";
 import { TabName } from "../../models/TabName";
+import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
 
 export const FileEditor = ({ id, fileTab }: { id: string; fileTab: TabName }) => {
   console.log("RENDER FileEditor", id, fileTab);
@@ -90,7 +91,7 @@ export const FileEditor = ({ id, fileTab }: { id: string; fileTab: TabName }) =>
     try {
       // update/create file
       setLoading(true);
-      await ipc.invoke('writeText',id, file.filePath, file.contents ?? "");
+      await ipc.invoke("writeText", id, file.filePath, file.contents ?? "");
 
       // update state
       dispatch(
@@ -131,64 +132,75 @@ export const FileEditor = ({ id, fileTab }: { id: string; fileTab: TabName }) =>
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <Editor
-        className="rounded-lg overflow-hidden"
-        theme="vs-dark"
-        language={undefined}
-        height="500px"
-        value={file.contents}
-        onChange={handleChange}
-      />
-      <div className="flex flex-row gap-2 items-center">
-        {/* Close */}
-        <Button onClick={handleClose}>Close</Button>
+    <HeaderScrollBodyLayout
+      header={
+        <div className="flex flex-row gap-2 items-center">
+          {/* Close */}
+          <Button onClick={handleClose}>Close</Button>
 
-        {/* Info */}
-        <Button
-          isDisabled={file.isNew || file.loading || services.loading}
-          isIconOnly={true}
-          onClick={() => files.showInfo(file.filePath)}
-        >
-          <FaInfo />
-        </Button>
+          {/* Info */}
+          <Button
+            isDisabled={file.isNew || file.loading || services.loading}
+            isIconOnly={true}
+            onClick={() => files.showInfo(file.filePath)}
+          >
+            <FaInfo />
+          </Button>
 
-        {/* Download */}
-        <Button
-          isDisabled={file.isNew || file.loading || services.loading}
-          isIconOnly={true}
-          onClick={() => files.download(file.filePath)}
-        >
-          <FaDownload />
-        </Button>
+          {/* Download */}
+          <Button
+            isDisabled={file.isNew || file.loading || services.loading}
+            isIconOnly={true}
+            onClick={() => files.download(file.filePath)}
+          >
+            <FaDownload />
+          </Button>
 
-        {/* Size */}
-        <Chip>Size: {filesize(file.contents.length)}</Chip>
-        <div className="flex-1"></div>
+          {/* Size */}
+          <Chip>Size: {filesize(file.contents.length)}</Chip>
+          <div className="flex-1"></div>
 
-        {/* Generic actions */}
-        <Button
-          isDisabled={file.isNew || file.loading || services.loading}
-          onClick={() => files.removeFile(file.filePath)}
-          color="danger"
-        >
-          Delete
-        </Button>
-        <Button isDisabled={!hasChanges || file.loading || services.loading} onClick={revert}>
-          Revert
-        </Button>
-        <Button
-          isDisabled={!hasChangesOrIsNew || file.loading || services.loading}
-          isLoading={file.loading}
-          color="primary"
-          onClick={handleSave}
-        >
-          {file.isNew ? "Create " + file.type : "Save " + file.type}
-        </Button>
+          {/* Generic actions */}
+          <Button
+            isDisabled={file.isNew || file.loading || services.loading}
+            onClick={() => files.removeFile(file.filePath)}
+            color="danger"
+          >
+            Delete
+          </Button>
+          <Button isDisabled={!hasChanges || file.loading || services.loading} onClick={revert}>
+            Revert
+          </Button>
+          <Button
+            isDisabled={!hasChangesOrIsNew || file.loading || services.loading}
+            isLoading={file.loading}
+            color="primary"
+            onClick={handleSave}
+          >
+            {file.isNew ? "Create " + file.type : "Save " + file.type}
+          </Button>
 
-        {/* Service actions */}
-        {file.type == "Service" && <ServicesDropdown id={id} serviceName={file.name}></ServicesDropdown>}
-      </div>
-    </div>
+          {/* Service actions */}
+          {file.type == "Service" && <ServicesDropdown id={id} serviceName={file.name}></ServicesDropdown>}
+        </div>
+      }
+      bodyScrollable={false}
+      body={
+        <div className="w-full h-full max-h-full flex flex-col gap-4 pb-4">
+          <div className="flex-1 relative">
+            <div className="absolute top-0 left-0 right-0 bottom-0">
+              <Editor
+                className="rounded-lg overflow-hidden"
+                theme="vs-dark"
+                language={undefined}
+                height="100%"
+                value={file.contents}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+        </div>
+      }
+    ></HeaderScrollBodyLayout>
   );
 };

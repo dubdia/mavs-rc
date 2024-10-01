@@ -1,7 +1,13 @@
 import { toast } from "react-toastify";
 import { useConfirm } from "../../components/dialogs/ConfirmDialog";
 import { useInput } from "../../components/dialogs/InputDialog";
-import { addSessionFile, closeSessionFile, selectSessionFile, sessionList, setSelectedTab } from "../../store/remotesSlice";
+import {
+  addSessionFile,
+  closeSessionFile,
+  selectSessionFile,
+  sessionList,
+  setSelectedTab,
+} from "../../store/remotesSlice";
 import { useAppDispatch, useRemote } from "../../store/store";
 import { escapeUnixShellArg } from "../../../shared/utils/escapeUnixShellArg";
 import { useInfo } from "../../components/dialogs/InfoDialog";
@@ -47,7 +53,7 @@ export const useFiles = (id: string) => {
         });
 
         // open and select it
-        dispatch(addSessionFile({id: id, file: file, select: true}));
+        dispatch(addSessionFile({ id: id, file: file, select: true }));
       }
     } catch (err) {
       console.error("error while opening file", err, filePath);
@@ -387,12 +393,6 @@ export const useFiles = (id: string) => {
 
   const changeDirInTerminal = async (directory: string) => {
     try {
-      // check hub
-      /*   if (hub == null || hub.state !== HubConnectionState.Connected) {
-                toast.error("SignalR is not connected right now");
-                return;
-            }
-*/
       // build command (x15 clears terminal line, \r submitts the command)
       let path = directory;
       if (path == null || path == "") {
@@ -402,7 +402,7 @@ export const useFiles = (id: string) => {
 
       // go to terminal and cd into the path
       dispatch(setSelectedTab({ id: id, key: "shell" }));
-      //hub.invoke("ShellSend", id, command);
+      ipc.invoke("sendShell", id, command);
     } catch (err) {
       console.error("failed to cd into dir in terminal", err);
       toast.error("Failed to cd into path");
