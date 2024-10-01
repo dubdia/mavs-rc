@@ -22,6 +22,7 @@ import { FaFile, FaKey } from "react-icons/fa";
 import { Layout } from "../../components/Layout";
 import { ipc } from "../../app";
 import { RemoteInfo } from "../../../shared/models/RemoteInfo";
+import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 
 export const RemoteDisconnected = memo(({ id }: { id: string }) => {
   console.log("RENDER RemoteDisconnected", id);
@@ -119,7 +120,11 @@ export const RemoteDisconnected = memo(({ id }: { id: string }) => {
       name={form.name ?? ""}
       header={<></>}
       body={
-        <>
+        <OverlayScrollbarsComponent
+          defer
+          options={{ scrollbars: { theme: "os-theme-light", autoHide: "leave" } }}
+          className="py-4 pl-4 pr-4 w-full h-full"
+        >
           {/* Remote Connection Info */}
           <Card className="mb-4">
             <CardBody>
@@ -319,7 +324,7 @@ export const RemoteDisconnected = memo(({ id }: { id: string }) => {
               Save & Connect
             </Button>
           </div>
-        </>
+        </OverlayScrollbarsComponent>
       }
     />
   );

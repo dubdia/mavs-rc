@@ -3,7 +3,12 @@
   "productName": "mavs-rc",
   "version": "1.0.2",
   "description": "Remote control systems via ssh",
-  "keywords": ["Server Remote Control", "SSH", "SFTP", "Shell" ],
+  "keywords": [
+    "Server Remote Control",
+    "SSH",
+    "SFTP",
+    "Shell"
+  ],
   "author": {
     "name": "Marvin Wehner"
   },
@@ -19,8 +24,8 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "makeVerbose": "set DEBUG=* && electron-forge make --verbose --enable-logging",
-    "makeAndInstall": "electron-forge make && node ./scripts/install.js",
-    "install": "node ./scripts/install.js",
+    "makeAndInstall": "electron-forge make && node ./scripts/installScript.js",
+    "installScript": "node ./scripts/install.js",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx ."
   },
@@ -29,6 +34,8 @@
     "@monaco-editor/react": "^4.6.0",
     "@nextui-org/react": "^2.4.8",
     "@reduxjs/toolkit": "^2.2.7",
+    "@xterm/addon-clipboard": "^0.1.0",
+    "@xterm/addon-fit": "^0.10.0",
     "async-mutex": "^0.5.0",
     "autoprefixer": "^10.4.20",
     "electron-log": "^5.2.0",
@@ -49,7 +56,7 @@
     "ssh2": "^1.16.0",
     "tailwindcss": "^3.4.11",
     "uuid": "^10.0.0",
-    "xterm": "^4.19.0"
+    "xterm": "^5.3.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",

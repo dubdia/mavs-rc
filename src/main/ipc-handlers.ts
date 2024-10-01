@@ -53,6 +53,9 @@ export function registerIpcHandlers() {
   typedIpcMain.handle("sendShell", async (_, id, text) => {
     await sshManager.shellSendAsync(id, text);
   });
+  typedIpcMain.handle("shellResize", (_, id, size) => {
+    sshManager.shellResize(id, size);
+  });
 
   // sftp
   typedIpcMain.handle("listDirectory", async (_, id, path) => {

@@ -76,13 +76,7 @@ export default function Body() {
       </div>
 
       {/* Body in the center */}
-      <OverlayScrollbarsComponent
-        defer
-        options={{ scrollbars: { theme: "os-theme-light", autoHide: "leave" } }}
-        className="flex-1"
-      >
-        {remoteNodes}
-      </OverlayScrollbarsComponent>
+      <div className="flex-1 relative">{remoteNodes}</div>
     </main>
   );
 }

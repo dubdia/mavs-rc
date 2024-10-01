@@ -24,6 +24,7 @@ import { SSHConfig } from "./ssh2-promise/src/sshConfig";
 import { TunnelConfig } from "./ssh2-promise/src/tunnelConfig";
 import { v4 } from "uuid";
 import { SSH2Promise } from "./ssh2-promise/src";
+import { TerminalSize } from "src/shared/models/TerminalSize";
 
 /** used to do everyting related to ssh and sftp */
 export class SshManager {
@@ -265,7 +266,7 @@ export class SshManager {
 
         mainWindow.webContents.send("shellReceive", id, text);
       });
-
+     
       // try to activate the tunnels
       if (remote.info.tunnels) {
         const tunnelsToStart = remote.info.tunnels.filter(
@@ -503,6 +504,17 @@ export class SshManager {
         }
       });
     });
+  }
+
+  public shellResize(id: string, size: TerminalSize) {
+    const connection = this.remotesManager.findOrError(id, { mustBeConnected: true }).connection;
+    this.shellResizeInternal(connection, size);
+  }
+  public shellResizeInternal(connection: RemoteConnection, size: TerminalSize) {
+    log.info(`Update shell window size:`, size);
+    connection.shell.channel.setWindow(size.rows, size.cols, size.rows * 10, size.cols * 10);
+    connection.shell.config.rows = size.rows;
+    connection.shell.config.cols = size.cols;
   }
 
   public async writeTextAsync(id: string, filePath: string, contents: string): Promise<void> {

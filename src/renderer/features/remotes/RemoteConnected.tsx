@@ -12,6 +12,14 @@ import { FaInfo } from "react-icons/fa";
 import { Info } from "../info/Info";
 import { Tunnels } from "../tunnel/Tunnels";
 import { TabName } from "../../models/TabName";
+import { IconType } from "react-icons";
+
+export interface TabInfo {
+  name: TabName;
+  label?: string | undefined;
+  icon?: IconType | undefined;
+  render: () => React.ReactNode;
+}
 
 export const RemoteConnected = memo(({ id }: { id: string }) => {
   console.log("RENDER RemoteConnected");
@@ -20,53 +28,79 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
   const name = useRemoteSelector(id, (r) => r.dto.info?.name ?? "Unnamed");
   const selectedTab = useRemoteSelector(id, (r) => r.session.selectedTab);
   const files = useRemoteSelector(id, (r) => r.session.files);
+  const tabs: TabInfo[] = [
+    {
+      name: "info",
+      icon: FaInfo,
+      render: () => <Info key={"info" + id} id={id}></Info>,
+    },
+    {
+      name: "tunnels",
+      icon: FaCircleNodes,
+      render: () => <Tunnels key={"tunnels" + id} id={id}></Tunnels>,
+    },
+    {
+      name: "shell",
+      label: "Shell",
+      render: () => <Shell key={"shell" + id} id={id}></Shell>,
+    },
+    {
+      name: "services",
+      label: "Services",
+      render: () => <Services key={"services" + id} id={id}></Services>,
+    },
+    {
+      name: "files",
+      label: "Files",
+      render: () => <Files key={"files" + id} id={id}></Files>,
+    },
+  ];
+  for (let file of files) {
+    tabs.push({
+      name: file.tab,
+      label: file.name,
+      render: () => <FileEditor key={file.tab} id={id} fileTab={file.tab}></FileEditor>,
+    });
+  }
 
   return (
     <Layout
       name={name}
       header={
-        <Tooltip
-          color="foreground"
-          offset={25}
-          content="Closes the connection to the remote"
-        >
+        <Tooltip color="foreground" offset={25} content="Closes the connection to the remote">
           <Button isIconOnly={true} variant="light" onClick={() => dispatch(closeRemote(id))}>
             <FaXmark />
           </Button>
         </Tooltip>
       }
       body={
-        <Tabs
-          aria-label="Tabs"
-          variant="underlined"
-          size="lg"
-          selectedKey={selectedTab}
-          onSelectionChange={(key) => dispatch(setSelectedTab({ id: id, key: key as any }))}
-        >
-          <Tab key={"info" as TabName} title={<FaInfo className="select-none" />}>
-            <Info key={id} id={id}></Info>
-          </Tab>
-          <Tab key={"tunnels" as TabName} title={<FaCircleNodes className="select-none" />}>
-            <Tunnels key={id} id={id}></Tunnels>
-          </Tab>
-          <Tab key={"shell" as TabName} title={<span className="select-none">Shell</span>}>
-            <Shell key={id} id={id}></Shell>
-          </Tab>
-          {/*<Tab key="command" title="Command">
-    <RemoteSessionExecuteCommand key={id} id={id}></RemoteSessionExecuteCommand>
-</Tab>*/}
-          <Tab key={"services" as TabName} title={<span className="select-none">Services</span>}>
-            <Services key={id} id={id}></Services>
-          </Tab>
-          <Tab key={"files" as TabName} title={<span className="select-none">Explorer</span>}>
-            <Files key={id} id={id}></Files>
-          </Tab>
-          {files.map((file) => (
-            <Tab key={file.tab} title={<span className="select-none">{file.name}</span>}>
-              <FileEditor key={file.tab} id={id} fileTab={file.tab}></FileEditor>
-            </Tab>
-          ))}
-        </Tabs>
+        <div className="flex flex-col gap-2 h-full w-full ">
+          {/* Tabs in the top part */}
+          <Tabs
+            aria-label="Tabs"
+            variant="underlined"
+            size="lg"
+            selectedKey={selectedTab}
+            onSelectionChange={(key) => dispatch(setSelectedTab({ id: id, key: key as any }))}
+            items={tabs}
+          >
+            {(item) => (
+              <Tab
+                key={item.name}
+                title={
+                  <span className="select-none">{item.icon ? <item.icon className="select-none" /> : item.label}</span>
+                }
+              ></Tab>
+            )}
+          </Tabs>
+
+          {/* Selected tab fills the bottom */}
+          <div className="flex-1 relative">
+            <div className="absolute top-0 left-0 right-0 bottom-0">
+              {tabs.find((x) => x.name == selectedTab).render()}
+            </div>
+          </div>
+        </div>
       }
     />
   );

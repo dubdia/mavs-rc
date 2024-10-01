@@ -11,6 +11,7 @@ import { UserGroup } from "../models/UserGroup";
 import { RemoteInfo } from "../models/RemoteInfo";
 import { RemoteTunnelInfo } from "../models/RemoteTunnelInfo";
 import { RemoteShortcut } from "../models/RemoteShortcut";
+import { TerminalSize } from "../models/TerminalSize";
 
 /** definitions of possible events that can occur on the main and can be listened to from the renderer */
 type Events = {
@@ -41,6 +42,7 @@ type Commands = {
   getGroups: (id: string) => UserGroup[];
   getInfo: (id: string) => SystemInfo;
   sendShell: (id: string, text: string) => void;
+  shellResize: (id: string, size: TerminalSize) => void;
 
   // sftp
   listDirectory: (id: string, path: string) => RemoteFile[];

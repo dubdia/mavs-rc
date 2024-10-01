@@ -74,12 +74,13 @@ export class RemotesManager {
   }
   public map(remote: Remote): RemoteDto {
     const connected = this.isConnected(remote);
-    return <RemoteDto>{
+    const newRemote: RemoteDto = {
       info: remote.info,
       connected: connected,
       osType: remote.connection?.osType ?? OsType.Unknown,
       shellHistory: connected ? remote.connection?.shell?.history ?? [] : [],
     };
+    return newRemote;
   }
 
   public addNew(): Remote {

@@ -4,7 +4,7 @@ import "xterm/css/xterm.css";
 
 // We are using these as types.
 // eslint-disable-next-line no-unused-vars
-import { Terminal, ITerminalOptions, ITerminalAddon } from "xterm";
+import { Terminal, ITerminalOptions, ITerminalAddon, ITerminalInitOnlyOptions } from "xterm";
 
 interface IProps {
   /**
@@ -15,7 +15,7 @@ interface IProps {
   /**
    * Options to initialize the terminal with.
    */
-  options?: ITerminalOptions;
+  options?: ITerminalOptions & ITerminalInitOnlyOptions;
 
   /**
    * An array of XTerm addons to load along with the terminal.
