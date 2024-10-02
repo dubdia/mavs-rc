@@ -1,11 +1,12 @@
 import { app, BrowserWindow, globalShortcut, session } from "electron";
 import path from "path";
 import windowStateKeeper from "electron-window-state";
-import { ConfigManager } from "./config-manager";
 import { SshManager } from "./ssh-manager";
 import log from "electron-log/main";
 import { RemotesManager } from "./remotes-manager";
 import { registerIpcHandlers } from "./ipc-handlers";
+import { AppConfigManager } from "./config/app-config-manager";
+import { RemotesConfigManager } from "./config/remotes-config-manager";
 
 // handle uncaught exceptions
 process.on("uncaughtException", function (error) {
@@ -18,19 +19,20 @@ process.on("uncaughtException", function (error) {
 });
 
 // loading configuration and configure logger
-export let configManager = new ConfigManager();
-log.transports.console.level = configManager.config.logLevel;
+export let appConfigManager = new AppConfigManager();
+log.transports.console.level = appConfigManager.config.logLevel; // MAIN_WINDOW_VITE_DEV_SERVER_URL != null ? "debug" : appConfigManager.config.logLevel
 const userDataPath = app.getPath("userData");
 log.transports.file.resolvePathFn = () => path.join(userDataPath, "rc.log");
-log.transports.file.level = configManager.config.logLevel;
+log.transports.file.level = appConfigManager.config.logLevel;
 
 // print startup message
 const appVersion = app.getVersion();
-log.info(`Starting app v${appVersion} with log level ${configManager.config.logLevel}`);
+log.info(`Starting app v${appVersion} with log level ${appConfigManager.config.logLevel}`);
 
 // create managers
-log.debug(`Create managers...`);
-export let remotesManager = new RemotesManager(configManager);
+log.verbose(`Create managers...`);
+export let remotesConfigManager = new RemotesConfigManager();
+export let remotesManager = new RemotesManager(remotesConfigManager);
 export let sshManager = new SshManager(remotesManager);
 export let mainWindow!: BrowserWindow; // will be assigned later
 
@@ -58,11 +60,6 @@ export let mainWindow!: BrowserWindow; // will be assigned later
       // cleanup
       log.info("Quit application...");
       await remotesManager?.disposeAsync();
-
-      configManager = null;
-      remotesManager = null;
-      sshManager = null;
-      mainWindow = null;
 
       // quit again
       appIsShuttingDown = true;
@@ -126,11 +123,11 @@ app.on("ready", () => {
   }
 
   // register ipc handlers
-  log.debug("Register IPC handlers...");
+  log.verbose("Register IPC handlers...");
   registerIpcHandlers();
 
   // load the previous state with fallback to defaults
-  log.debug("Restore window state...");
+  log.verbose("Restore window state...");
   let mainWindowState = windowStateKeeper({
     defaultWidth: 1100,
     defaultHeight: 740,
@@ -140,6 +137,7 @@ app.on("ready", () => {
 
   // create window
   log.info("Creating window...");
+  const devTools = MAIN_WINDOW_VITE_DEV_SERVER_URL != null || appConfigManager.config.devTools; // only enable when debugging or when configured
   mainWindow = new BrowserWindow({
     // configure window
     title: "Mav's RC",
@@ -157,7 +155,7 @@ app.on("ready", () => {
       preload: path.join(__dirname, "preload.js"),
 
       // web features
-      devTools: MAIN_WINDOW_VITE_DEV_SERVER_URL != null, // only enable when debugging
+      devTools: devTools,
       enableWebSQL: false,
       spellcheck: false,
 
@@ -198,16 +196,20 @@ app.on("ready", () => {
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     log.info(`Development Mode. Load from ${MAIN_WINDOW_VITE_DEV_SERVER_URL}`);
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL + relativeIndexHtmlFilePath);
+  } else {
+    const indexHtmlFilePath = path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/${relativeIndexHtmlFilePath}`);
+    log.info(`Producation Mode. Load index.html from ${indexHtmlFilePath}`);
+    mainWindow.loadFile(indexHtmlFilePath);
+  }
+
+  // open dev tools
+  if (devTools) {
     setTimeout(() => {
       mainWindow.webContents.openDevTools({
         mode: "detach",
         activate: true,
       });
     }, 1000);
-  } else {
-    const indexHtmlFilePath = path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/${relativeIndexHtmlFilePath}`);
-    log.info(`Producation Mode. Load index.html from ${indexHtmlFilePath}`);
-    mainWindow.loadFile(indexHtmlFilePath);
   }
 
   // let us register listeners on the window, so we can update the state

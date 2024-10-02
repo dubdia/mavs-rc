@@ -7,11 +7,13 @@ All notable changes to this project will be documented in this file.
 
 - Shell now resizes correctly
 - Shell supports right click for pasting
+- Split 'sshConfig.json' into 'rc.config.json' and 'rc-remotes.config.json'
 
 ### Changed
 
 - Increased ssh connection timeout
-- Layout for File Editor
+- New layout for File Editor
+- Log level from debug to verbose
 
 ### Fixed
 

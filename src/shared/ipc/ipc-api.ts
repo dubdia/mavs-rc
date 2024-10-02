@@ -59,7 +59,7 @@ type Commands = {
   downloadFile: (id: string, filePath: string) => boolean;
   downloadFolderAsZip: (id: string, path: string) => boolean;
 
-  pickFilePath: (title: string, buttonLabel: string, fileMustExists: boolean) => string,
+  pickFilePath: (title: string, buttonLabel: string, fileMustExists: boolean) => string | null,
   uploadFile: (id: string, localFilePath: string, remoteFilePath: string, overwrite: boolean) => void;
 
   // shortcuts

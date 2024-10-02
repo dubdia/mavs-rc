@@ -1,7 +1,5 @@
-import { app } from "electron";
 import log from "electron-log/main";
 
-import { ConfigManager } from "./config-manager";
 import { v4 } from "uuid";
 import { RemoteDto } from "../shared/models/RemoteDto";
 import { OsType } from "../shared/models/OsType";
@@ -9,16 +7,13 @@ import { RemoteInfo } from "../shared/models/RemoteInfo";
 import { Remote } from "./models/Remote";
 import { mainWindow } from "./main";
 import { RemoteShortcut } from "../shared/models/RemoteShortcut";
+import { RemotesConfigManager } from "./config/remotes-config-manager";
 
 /** used to manage remotes  */
 export class RemotesManager {
   public remotes: Remote[];
 
-  constructor(private config: ConfigManager) {
-    this.init();
-  }
-
-  private init() {
+  constructor(private config: RemotesConfigManager) {
     // load remotes from config
     this.remotes = this.config.config.remoteInfos
       .filter((x) => x != null && x.id != null && x.id != "")
@@ -32,7 +27,7 @@ export class RemotesManager {
 
   private updateConfig() {
     // update and save config
-    log.debug("Update config");
+    log.verbose("Update config");
     this.config.config.remoteInfos = this.remotes
       .filter((x) => x?.info?.id != null)
       .map((x) => {
@@ -124,11 +119,18 @@ export class RemotesManager {
       return;
     }
     const connection = remote.connection;
-    if (remote.connection == null) {
+    if (connection == null) {
       return;
     }
     if (connection.disposed) {
-      log.debug("Tried to dispose connection but it is already dispoed");
+      log.verbose("Tried to dispose connection but it is already disposed. But tell client anyway");
+      try {
+        if (remote.info?.id) {
+          mainWindow.webContents.send("disposeRemote", remote.info.id);
+        }
+      } catch (err) {
+        log.warn(`Failed to tell client about remote dispose`, err);
+      } 
       return;
     }
     log.info("Dispose connection");

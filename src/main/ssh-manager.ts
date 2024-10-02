@@ -69,7 +69,7 @@ export class SshManager {
         filePath: filePath,
       });
     }
-    log.debug(`Found ${certs.length} ssh certificates in ${sshDir}`);
+    log.verbose(`Found ${certs.length} ssh certificates in ${sshDir}`);
     return certs;
   }
   public getSshCertContent(certName: string): string {
@@ -144,7 +144,7 @@ export class SshManager {
         reconnect: false, //todo this is not working because if the initial connect fails it will retry and retry...
         //keepaliveInterval: 2000,
         //keepaliveCountMax: 10,    // 20 second after disconnect
-        debug: (message) => log.debug("ssh: " + message),
+        debug: (message) => log.verbose("ssh: " + message),
       };
 
       // configure password auth
@@ -187,7 +187,7 @@ export class SshManager {
       connection.ssh = new SSH2Promise(connectionInfo);
       connection.ssh.on("ssh", (eventName: string) => {
         // possible values: "beforeconnect", "connect", "beforedisconnect", "disconnect"
-        log.debug(`Received ssh event ${eventName}`);
+        log.verbose(`Received ssh event ${eventName}`);
         if (eventName == "disconnect" && !connection.disposed) {
           log.info(`Connection exited, dispose remote now`);
           this.remotesManager.disposeRemoteAsync(remote).then();
@@ -195,10 +195,10 @@ export class SshManager {
       });
 
       // connect to ssh/sftp
-      log.debug(`Start connection...`);
+      log.verbose(`Start connection...`);
       await connection.ssh.connect();
       connection.sftp = connection.ssh.sftp();
-      log.debug(`Connection established`);
+      log.verbose(`Connection established`);
 
       // detect architecture
       connection.osType = await this.detectPosixWindowsAsync(connection.ssh);
@@ -232,7 +232,7 @@ export class SshManager {
       });
       connection.shell.channel.on("data", (data: Buffer) => {
         // check if remote is disposing or disposed
-        if (connection.disposed) {
+        if (connection.disposed || !connection.shell) {
           return;
         }
 
@@ -243,14 +243,14 @@ export class SshManager {
         }
 
         // store in shell history
-        log.debug("Shell STDOUT", text);
+        log.verbose("Shell STDOUT", text);
         connection.shell.history.push(text);
 
         mainWindow.webContents.send("shellReceive", id, text);
       });
       connection.shell.channel.stderr.on("data", (data: Buffer) => {
         // check if remote is disposing or disposed
-        if (connection.disposed) {
+        if (connection.disposed || !connection.shell) {
           return;
         }
 
@@ -261,12 +261,12 @@ export class SshManager {
         }
 
         // store in shell history
-        log.debug("Shell STDERR", text);
+        log.verbose("Shell STDERR", text);
         connection.shell.history.push(text);
 
         mainWindow.webContents.send("shellReceive", id, text);
       });
-     
+
       // try to activate the tunnels
       if (remote.info.tunnels) {
         const tunnelsToStart = remote.info.tunnels.filter(
@@ -294,7 +294,7 @@ export class SshManager {
         success: true,
         remote: this.remotesManager.map(this.remotesManager.findOrError(id)),
       };
-    } catch (err) {
+    } catch (err: any) {
       // failed to connect, cleanup
       log.info(`Failed to conntect to remote: ${remote.info.id}`, err);
 
@@ -352,17 +352,17 @@ export class SshManager {
   }
 
   public async executeCommand(id: string, command: string): Promise<CommandResult> {
-    log.debug(`Execute command: ${command}`);
+    log.verbose(`Execute command: ${command}`);
     const connection = this.remotesManager.findOrError(id, { mustBeConnected: true }).connection;
     try {
       const result = await connection.ssh.exec(command);
-      log.debug(` > ${result}`);
+      log.verbose(` > ${result}`);
       return {
         output: result,
         success: true,
       };
     } catch (err) {
-      log.debug(` > command failed: ${err}`);
+      log.verbose(` > command failed: ${err}`);
       if (err && typeof err === "string" && err != "") {
         // the command failed
         return {
@@ -376,7 +376,7 @@ export class SshManager {
   }
 
   public async listDirectoryAsync(id: string, path: string, recursive: boolean): Promise<RemoteFile[]> {
-    log.debug(`List directory ${path}...`);
+    log.verbose(`List directory ${path}...`);
     const remote = this.remotesManager.findOrError(id, { mustBeConnected: true });
     return await this.listDirectoryInternalAsync(remote, path, recursive);
   }
@@ -419,7 +419,7 @@ export class SshManager {
   }
 
   public async getFile(id: string, path: string): Promise<RemoteFile> {
-    log.debug(`Get file ${path}...`);
+    log.verbose(`Get file ${path}...`);
     const remote = this.remotesManager.findOrError(id, { mustBeConnected: true });
     const connection = remote.connection;
     const result = await connection.sftp.stat(path);
@@ -480,9 +480,9 @@ export class SshManager {
     filePath: string,
     encoding: BufferEncoding
   ): Promise<FileText> {
-    log.debug(`Read file ${filePath} using encoding ${encoding}...`);
+    log.verbose(`Read file ${filePath} using encoding ${encoding}...`);
     const text = await connection.sftp.readFile(filePath, encoding);
-    log.debug(` > got ${text.length} chars`);
+    log.verbose(` > got ${text.length} chars`);
     return {
       filePath: filePath,
       contents: text,
@@ -494,7 +494,7 @@ export class SshManager {
     return await this.shellSendInternalAsync(connection, text);
   }
   public async shellSendInternalAsync(connection: RemoteConnection, text: string) {
-    log.debug(`Send text to shell: ${text}`);
+    log.verbose(`Send text to shell: ${text}`);
     return await new Promise((resolve, reject) => {
       connection.shell.channel.write(text, undefined, (err: Error | null) => {
         if (err) {
@@ -522,7 +522,7 @@ export class SshManager {
     await this.writeTextInternalAsync(connection, filePath, contents);
   }
   public async writeTextInternalAsync(connection: RemoteConnection, filePath: string, contents: string): Promise<void> {
-    log.debug(`Write file ${contents?.length ?? 0} chars to ${filePath} `);
+    log.verbose(`Write file ${contents?.length ?? 0} chars to ${filePath} `);
     await connection.sftp.writeFile(filePath, contents ?? "", {});
   }
 
@@ -534,7 +534,7 @@ export class SshManager {
     if (path == null || path == "" || path == "/" || path == "\\" || path == "." || path == "..") {
       throw new Error("Safety-Check: Unable to delete this path");
     }
-    log.debug(`Delete ${path}...`);
+    log.verbose(`Delete ${path}...`);
     const dirArg = escapeUnixShellArg(path);
     await connection.ssh.exec("rm -rf " + dirArg);
 
@@ -544,11 +544,11 @@ export class SshManager {
       if (stats) {
         if (stats.isFile()) {
           // delete file
-          log.debug(` > delete the file`);
+          log.verbose(` > delete the file`);
           await connection.sftp.unlink(path);
         } else if (stats.isDirectory()) {
           // delete folder
-          log.debug(` > delete the directory`);
+          log.verbose(` > delete the directory`);
           await connection.sftp.rmdir(path);
         } else {
           throw new Error("It is only possible to delete files or folders");
@@ -574,7 +574,7 @@ export class SshManager {
     if (oldPath == null || oldPath == newPath) {
       return;
     }
-    log.debug(`Rename ${oldPath} to  ${newPath}...`);
+    log.verbose(`Rename ${oldPath} to  ${newPath}...`);
     await connection.sftp.rename(oldPath, newPath);
   }
 
@@ -600,7 +600,7 @@ export class SshManager {
   }
 
   public async changePermissionAsync(id: string, path: string, chmod: number, recursive: boolean) {
-    log.debug(`Change permission of ${path} to ${chmod} ${recursive ? "recursive" : ""}...`);
+    log.verbose(`Change permission of ${path} to ${chmod} ${recursive ? "recursive" : ""}...`);
     const remote = this.remotesManager.findOrError(id, { mustBeConnected: true });
     return await this.changePermissionInternalAsync(remote, path, chmod, recursive);
   }
@@ -826,11 +826,11 @@ export class SshManager {
     // create all directories
     const remoteDirs = remoteEntries.filter((x) => x.isDirectory);
     for (let remoteDir of remoteDirs) {
-      log.debug(" > check directory", remoteDir.fullName, remoteDir.relativePath, remoteDir.localPath);
+      log.verbose(" > check directory", remoteDir.fullName, remoteDir.relativePath, remoteDir.localPath);
 
       if (!fs.existsSync(remoteDir.localPath)) {
         // which does not exists locally so we create it
-        log.debug(" > create directory", remoteDir.localPath);
+        log.verbose(" > create directory", remoteDir.localPath);
         fs.mkdirSync(remoteDir.localPath, { recursive: true });
       } else {
         const localStats = fs.statSync(remoteDir.localPath);
@@ -845,7 +845,7 @@ export class SshManager {
     const remoteFiles = remoteEntries.filter((x) => x.isRegularFile);
     let allAction: "none" | "skip" | "overwrite" = "none";
     for (let remoteFile of remoteFiles) {
-      log.debug(" > check file", remoteFile.fullName, remoteFile.relativePath, remoteFile.localPath);
+      log.verbose(" > check file", remoteFile.fullName, remoteFile.relativePath, remoteFile.localPath);
 
       // check if already exists
       if (fs.existsSync(remoteFile.localPath)) {
@@ -873,21 +873,21 @@ export class SshManager {
         // check action
         if (action == "skip") {
           // we do nothing
-          log.debug(" > skip file", remoteFile.localPath);
+          log.verbose(" > skip file", remoteFile.localPath);
 
           continue;
         } else if (action == "overwrite") {
           // we remove it
-          log.debug(" > delete local file", remoteFile.localPath);
+          log.verbose(" > delete local file", remoteFile.localPath);
           fs.rmSync(remoteFile.localPath);
         } else {
-          log.debug(" > user cancelled", remoteFile.localPath);
+          log.verbose(" > user cancelled", remoteFile.localPath);
           throw new Error("User cancelled on file: " + remoteFile.localPath);
         }
       }
       if (!fs.existsSync(remoteFile.localPath)) {
         // which does not exists locally so we download it
-        log.debug(" > download file", remoteFile.localPath);
+        log.verbose(" > download file", remoteFile.localPath);
         await remote.connection.sftp.fastGet(remoteFile.fullName, remoteFile.localPath);
       } else {
         throw new Error("Cannot download file because it already exists: " + remoteFile.localPath);

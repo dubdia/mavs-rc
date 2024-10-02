@@ -154,12 +154,12 @@ _%APPDATA%\mavs-rc\rc.log_
 
 ### Data Privacy
 - SSH Credentials: To ensure security, SSH credentials are never logged.
-- SSH Traffic: For detailed debugging, SSH traffic can optionally be logged when the log level is set to _debug_.
+- SSH Traffic: For detailed information, SSH traffic can optionally be logged when the log level is set to _verbose_.
 
 ### Customizing Log Levels
 You’re able to adjust the verbosity of the logs through the application's configuration:
-- Configuration File: Modify the log level in the configuration file located at: _%APPDATA%\mavs-rc\config.json_
-- The supported log levels are: _error_, _warn_, _info_, _debug_
+- Configuration File: Modify the log level in the configuration file located at: _%APPDATA%\mavs-rc\rc.config.json_
+- The supported log levels are: _error_, _warn_, _info_, _verbose_
 
 - Default Level: The preset log level is _info_.
 
@@ -205,7 +205,7 @@ Consider modifying your sudoers file to provide necessary permissions to your us
 
 ### Application Failures
 - Check Logs: Review the log files for clues: _%APPDATA%/mavs-rc/rc.log_
-- Reset Application Data: If issues persist, try deleting the application data directory. You may want to back up important configurations such as _sshServers.json_ beforehand: _%APPDATA%/mavs-rc/_
+- Reset Application Data: If issues persist, try deleting the application data directory. You may want to back up important configurations such as rc-remotes.config.json_ beforehand: _%APPDATA%/mavs-rc/_
 
 ### Build Issues
 - Update Node.js: Ensure your Node.js installation is up to date.

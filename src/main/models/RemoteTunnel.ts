@@ -5,5 +5,5 @@ import { TunnelConfig } from "../ssh2-promise/src/tunnelConfig";
 
 export interface RemoteTunnel {
   tunnelId: string;
-  connection: TunnelConfig & { server: Server; };
+  connection: TunnelConfig & { server: Server; } | null;
 }

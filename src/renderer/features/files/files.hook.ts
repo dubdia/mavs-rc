@@ -370,7 +370,6 @@ export const useFiles = (id: string) => {
 
       // check if directory exists
       const choosenDirExists = await ipc.invoke("exists", id, choosenDir);
-      debugger;
       if (choosenDirExists !== true) {
         await ipc.invoke("executeSshCommand", id, "mkdir " + escapeUnixShellArg(choosenDir));
       }

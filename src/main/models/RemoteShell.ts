@@ -5,7 +5,7 @@ import { PseudoTtyOptions, ClientChannel } from "ssh2";
 
 export interface RemoteShell {
   config: PseudoTtyOptions;
-  channel: ClientChannel;
+  channel: ClientChannel | null;
   history: string[];
 }
 
