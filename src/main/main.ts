@@ -40,7 +40,7 @@ export let mainWindow!: BrowserWindow; // will be assigned later
 {
   // handle creating/removing shortcuts on windows when installing/uninstalling.
   if (require("electron-squirrel-startup")) {
-    log.info("Quit because squirrel");
+    log.info("Quit because of squirrel");
     app.quit();
   }
 

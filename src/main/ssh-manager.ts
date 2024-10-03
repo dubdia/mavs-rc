@@ -511,7 +511,7 @@ export class SshManager {
     this.shellResizeInternal(connection, size);
   }
   public shellResizeInternal(connection: RemoteConnection, size: TerminalSize) {
-    log.info(`Update shell window size:`, size);
+    log.verbose(`Update shell window size:`, size);
     connection.shell.channel.setWindow(size.rows, size.cols, size.rows * 10, size.cols * 10);
     connection.shell.config.rows = size.rows;
     connection.shell.config.cols = size.cols;
@@ -993,7 +993,6 @@ export class SshManager {
     return remote.info.tunnels.map((x) => {
       // get matching tunnel from connection
       const connectionTunnel = remote.connection.tunnels.find((c) => c.tunnelId == x.id);
-      console.log(connectionTunnel);
       return <RemoteTunnelDto>{
         info: x,
         connected: connectionTunnel?.connection?.server != null,

@@ -1,4 +1,4 @@
-import { Button, Chip } from "@nextui-org/react";
+import { Button, Chip, Divider } from "@nextui-org/react";
 import { Editor } from "@monaco-editor/react";
 import { useAppDispatch, useRemoteSelector } from "../../store/store";
 import { changeSessionFile, closeSessionFile } from "../../store/remotesSlice";
@@ -8,10 +8,11 @@ import { useConfirm } from "../../components/dialogs/ConfirmDialog";
 import { ServicesDropdown } from "../services/ServicesDropdown";
 import { useFiles } from "./files.hook";
 import { useServices } from "../services/services.hook";
-import { FaDownload, FaInfo } from "react-icons/fa";
+import { FaBars, FaDownload, FaInfo, FaLayerGroup, FaSave, FaTimes, FaTrash } from "react-icons/fa";
 import { ipc } from "../../app";
 import { TabName } from "../../models/TabName";
 import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
+import { FileDropdown } from "./FileDropdown";
 
 export const FileEditor = ({ id, fileTab }: { id: string; fileTab: TabName }) => {
   console.log("RENDER FileEditor", id, fileTab);
@@ -135,53 +136,49 @@ export const FileEditor = ({ id, fileTab }: { id: string; fileTab: TabName }) =>
     <HeaderScrollBodyLayout
       header={
         <div className="flex flex-row gap-2 items-center">
-          {/* Close */}
-          <Button onClick={handleClose}>Close</Button>
+          {/* Name */}
+          <span className="font-mono text-xl">{file.name}</span>
 
-          {/* Info */}
-          <Button
-            isDisabled={file.isNew || file.loading || services.loading}
-            isIconOnly={true}
-            onClick={() => files.showInfo(file.filePath)}
-          >
-            <FaInfo />
-          </Button>
+          {/* Space */}
+          <span className="flex-1"></span>
 
-          {/* Download */}
-          <Button
-            isDisabled={file.isNew || file.loading || services.loading}
-            isIconOnly={true}
-            onClick={() => files.download(file.filePath)}
-          >
-            <FaDownload />
-          </Button>
-
-          {/* Size */}
-          <Chip>Size: {filesize(file.contents.length)}</Chip>
-          <div className="flex-1"></div>
-
-          {/* Generic actions */}
-          <Button
-            isDisabled={file.isNew || file.loading || services.loading}
-            onClick={() => files.removeFile(file.filePath)}
-            color="danger"
-          >
-            Delete
-          </Button>
+          {/* Revert */}
           <Button isDisabled={!hasChanges || file.loading || services.loading} onClick={revert}>
             Revert
           </Button>
+
+          {/* Save or Create */}
           <Button
             isDisabled={!hasChangesOrIsNew || file.loading || services.loading}
             isLoading={file.loading}
-            color="primary"
+            color="success"
             onClick={handleSave}
           >
+            <FaSave></FaSave>
             {file.isNew ? "Create " + file.type : "Save " + file.type}
           </Button>
 
-          {/* Service actions */}
-          {file.type == "Service" && <ServicesDropdown id={id} serviceName={file.name}></ServicesDropdown>}
+          {/* Service Dropdown */}
+          {file.type == "Service" && (
+            <ServicesDropdown
+              id={id}
+              serviceName={file.name}
+              dropdownTrigger={
+                <Button isIconOnly variant="light">
+                  <FaLayerGroup></FaLayerGroup>
+                </Button>
+              }
+            ></ServicesDropdown>
+          )}
+
+          {/* Dropdown */}
+          {!file.isNew && <FileDropdown id={id} file={file}></FileDropdown>}
+
+          {/* Close */}
+          <Divider orientation="vertical"></Divider>
+          <Button variant="light" isDisabled={file.loading || services.loading} onClick={handleClose} isIconOnly={true}>
+            <FaTimes></FaTimes>
+          </Button>
         </div>
       }
       bodyScrollable={false}

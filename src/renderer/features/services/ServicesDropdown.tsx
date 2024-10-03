@@ -2,15 +2,25 @@ import { Dropdown, DropdownTrigger, Button, DropdownMenu, DropdownSection, Dropd
 import { FaBars } from "react-icons/fa";
 import { useServices } from "./services.hook";
 
-export const ServicesDropdown = ({ id, serviceName }: { id: string; serviceName: string }) => {
+export const ServicesDropdown = ({
+  id,
+  serviceName,
+  dropdownTrigger = null,
+}: {
+  id: string;
+  serviceName: string;
+  dropdownTrigger?: React.ReactNode;
+}) => {
   const services = useServices(id);
+  dropdownTrigger = dropdownTrigger ?? (
+    <Button isIconOnly variant="light">
+      <FaBars></FaBars>
+    </Button>
+  );
+
   return (
     <Dropdown backdrop="blur">
-      <DropdownTrigger>
-        <Button isIconOnly variant="light">
-          <FaBars></FaBars>
-        </Button>
-      </DropdownTrigger>
+      <DropdownTrigger>{dropdownTrigger}</DropdownTrigger>
       {/* generic actions */}
       <DropdownMenu aria-label="Static Actions">
         <DropdownSection title={serviceName}>

@@ -5,10 +5,10 @@ import { closeRemote, setSelectedTab } from "../../store/remotesSlice";
 import { Shell } from "../shell/Shell";
 import { Files } from "../files/Files";
 import { FileEditor } from "../files/FileEditor";
-import { FaCircleNodes, FaXmark } from "react-icons/fa6";
+import { FaCircleNodes, FaFolderTree, FaLayerGroup, FaServicestack, FaTerminal, FaXmark } from "react-icons/fa6";
 import { memo } from "react";
 import { Layout } from "../../components/Layout";
-import { FaInfo } from "react-icons/fa";
+import { FaInfo, FaTimes } from "react-icons/fa";
 import { Info } from "../info/Info";
 import { Tunnels } from "../tunnel/Tunnels";
 import { TabName } from "../../models/TabName";
@@ -17,6 +17,7 @@ import { IconType } from "react-icons";
 export interface TabInfo {
   name: TabName;
   label?: string | undefined;
+  closable?: boolean;
   icon?: IconType | undefined;
   render: () => React.ReactNode;
 }
@@ -32,25 +33,30 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
     {
       name: "info",
       icon: FaInfo,
+      label: "Info",
       render: () => <Info key={"info" + id} id={id}></Info>,
     },
     {
       name: "tunnels",
       icon: FaCircleNodes,
+      label: "Tunnels",
       render: () => <Tunnels key={"tunnels" + id} id={id}></Tunnels>,
     },
     {
       name: "shell",
+      icon: FaTerminal,
       label: "Shell",
       render: () => <Shell key={"shell" + id} id={id}></Shell>,
     },
     {
       name: "services",
+      icon: FaLayerGroup,
       label: "Services",
       render: () => <Services key={"services" + id} id={id}></Services>,
     },
     {
       name: "files",
+      icon: FaFolderTree,
       label: "Files",
       render: () => <Files key={"files" + id} id={id}></Files>,
     },
@@ -62,6 +68,30 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
       render: () => <FileEditor key={file.tab} id={id} fileTab={file.tab}></FileEditor>,
     });
   }
+
+  const renderSelectedTab = (): React.ReactNode => {
+    const body = tabs.find((x) => x.name == selectedTab)?.render();
+    if (body == null) {
+      return <p>Tab not found.</p>;
+    } else {
+      return body;
+    }
+  };
+
+  const renderTabHeader = (tabInfo: TabInfo): React.ReactNode => {
+    const parts: React.ReactNode[] = [];
+    if(tabInfo.icon) {
+      parts.push(<tabInfo.icon/>)
+    }
+    if(tabInfo.label) {
+      parts.push(<span>{tabInfo.label}</span>)
+    }
+    /*if(tabInfo.closable) {
+      parts.push(<Button color="default" size="sm" variant="light" isIconOnly={true}><FaTimes></FaTimes></Button>)
+    }*/
+
+    return <span className="select-none flex flex-row gap-2 items-center">{...parts}</span>
+  };
 
   return (
     <Layout
@@ -77,6 +107,7 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
         <div className="flex flex-col gap-2 h-full w-full ">
           {/* Tabs in the top part */}
           <Tabs
+            placement="top"
             aria-label="Tabs"
             variant="underlined"
             size="lg"
@@ -84,21 +115,12 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
             onSelectionChange={(key) => dispatch(setSelectedTab({ id: id, key: key as any }))}
             items={tabs}
           >
-            {(item) => (
-              <Tab
-                key={item.name}
-                title={
-                  <span className="select-none">{item.icon ? <item.icon className="select-none" /> : item.label}</span>
-                }
-              ></Tab>
-            )}
+            {(item) => <Tab key={item.name} title={renderTabHeader(item)}></Tab>}
           </Tabs>
 
           {/* Selected tab fills the bottom */}
           <div className="flex-1 relative">
-            <div className="absolute top-0 left-0 right-0 bottom-0">
-              {tabs.find((x) => x.name == selectedTab).render()}
-            </div>
+            <div className="absolute top-0 left-0 right-0 bottom-0">{renderSelectedTab()}</div>
           </div>
         </div>
       }
