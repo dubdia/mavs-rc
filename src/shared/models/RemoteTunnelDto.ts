@@ -5,3 +5,4 @@ export interface RemoteTunnelDto {
     info?: RemoteTunnelInfo;
     connected: boolean;
 }
+

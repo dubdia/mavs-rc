@@ -1,7 +1,7 @@
 import { Button, Tab, Tabs, Tooltip } from "@nextui-org/react";
 import { Services } from "../services/Services";
 import { useAppDispatch, useRemoteSelector } from "../../store/store";
-import { closeRemote, setSelectedTab } from "../../store/remotesSlice";
+import { closeRemote, sessionCreateShell, setSelectedTab } from "../../store/remotesSlice";
 import { Shell } from "../shell/Shell";
 import { Files } from "../files/Files";
 import { FileEditor } from "../files/FileEditor";
@@ -29,6 +29,7 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
   const name = useRemoteSelector(id, (r) => r.dto.info?.name ?? "Unnamed");
   const selectedTab = useRemoteSelector(id, (r) => r.session.selectedTab);
   const files = useRemoteSelector(id, (r) => r.session.files);
+  const shells = useRemoteSelector(id, (r) => r.session.shells);
   const tabs: TabInfo[] = [
     {
       name: "info",
@@ -41,12 +42,6 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
       icon: FaCircleNodes,
       label: "Tunnels",
       render: () => <Tunnels key={"tunnels" + id} id={id}></Tunnels>,
-    },
-    {
-      name: "shell",
-      icon: FaTerminal,
-      label: "Shell",
-      render: () => <Shell key={"shell" + id} id={id}></Shell>,
     },
     {
       name: "services",
@@ -68,6 +63,13 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
       render: () => <FileEditor key={file.tab} id={id} fileTab={file.tab}></FileEditor>,
     });
   }
+  for (let shell of shells) {
+    tabs.push({
+      name: shell.tab,
+      icon: FaTerminal,
+      render: () => <Shell key={shell.tab} id={id} shellTab={shell.tab}></Shell>,
+    });
+  }
 
   const renderSelectedTab = (): React.ReactNode => {
     const body = tabs.find((x) => x.name == selectedTab)?.render();
@@ -80,28 +82,38 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
 
   const renderTabHeader = (tabInfo: TabInfo): React.ReactNode => {
     const parts: React.ReactNode[] = [];
-    if(tabInfo.icon) {
-      parts.push(<tabInfo.icon/>)
+    if (tabInfo.icon) {
+      parts.push(<tabInfo.icon />);
     }
-    if(tabInfo.label) {
-      parts.push(<span>{tabInfo.label}</span>)
+    if (tabInfo.label) {
+      parts.push(<span>{tabInfo.label}</span>);
     }
     /*if(tabInfo.closable) {
       parts.push(<Button color="default" size="sm" variant="light" isIconOnly={true}><FaTimes></FaTimes></Button>)
     }*/
 
-    return <span className="select-none flex flex-row gap-2 items-center">{...parts}</span>
+    return <span className="select-none flex flex-row gap-2 items-center">{...parts}</span>;
   };
 
   return (
     <Layout
       name={name}
       header={
-        <Tooltip color="foreground" offset={25} content="Closes the connection to the remote">
-          <Button isIconOnly={true} variant="light" onClick={() => dispatch(closeRemote(id))}>
-            <FaXmark />
-          </Button>
-        </Tooltip>
+        <div className="flex flex-row gap-2">
+          {/* Option to create new shells */}
+          <Tooltip color="foreground" offset={25} content="Spawns a new shell">
+            <Button isIconOnly={true} variant="light" onClick={() => dispatch(sessionCreateShell({ id: id }))}>
+              <FaTerminal />
+            </Button>
+          </Tooltip>
+
+          {/* Option to close the connection */}
+          <Tooltip color="foreground" offset={25} content="Closes the connection to the remote">
+            <Button isIconOnly={true} variant="light" onClick={() => dispatch(closeRemote(id))}>
+              <FaXmark />
+            </Button>
+          </Tooltip>
+        </div>
       }
       body={
         <div className="flex flex-col gap-2 h-full w-full ">

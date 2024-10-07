@@ -8,20 +8,25 @@ import { computeColor } from "../../utils/computeColor";
 import { ipc } from "../../app";
 import { FitAddon, ITerminalDimensions } from "@xterm/addon-fit";
 import { TerminalSize } from "src/shared/models/TerminalSize";
+import { TabName } from "../../models/TabName";
 
 //let start: number;
-
-export const Shell = ({ id }: { id: string }) => {
+const color = computeColor("hsl(var(--nextui-content1) / var(--nextui-content1-opacity, var(--tw-bg-opacity)));");
+export const Shell = ({ id, shellTab }: { id: string; shellTab: TabName }) => {
+  // use hooks
   const xtermRef = useRef<XTerm>(null);
-  const remoteShell = useRemoteSelector(id, (r) => r.session.shell);
-  const data = remoteShell.data ?? [];
+
   const dataIndex = useRef({ index: 0 });
   const mutex = useRef(new Mutex());
   const fitAddon = useRef(new FitAddon());
 
+  // get shell from remote
+  const remoteShell = useRemoteSelector(id, (r) => r.session.shells.find((x) => x.tab == shellTab));
+  if (remoteShell == null || remoteShell.tab == null) {
+    return <p>Shell not found: {shellTab}</p>;
+  }
+  const data = remoteShell.data ?? [];
   console.log("RENDER Shell", remoteShell);
-
-  const color = computeColor("hsl(var(--nextui-content1) / var(--nextui-content1-opacity, var(--tw-bg-opacity)));");
 
   // register events on terminal
   useEffect(() => {
@@ -79,7 +84,7 @@ export const Shell = ({ id }: { id: string }) => {
 
     // send to socket
     //start = new Date().getTime();
-    ipc.invoke("sendShell", id, data);
+    ipc.invoke("sendShell", id, remoteShell.shellId, data);
   };
 
   /** handler to intercept right-clicks and paste clipboard contents */
@@ -104,7 +109,7 @@ export const Shell = ({ id }: { id: string }) => {
 
   /** tell the remote shell that this xterm has resized */
   const handleResize = (size: TerminalSize) => {
-    ipc.invoke("shellResize", id, size);
+    ipc.invoke("shellResize", id, remoteShell.shellId, size);
   };
 
   const debounceFit = debounce(() => {
@@ -118,7 +123,7 @@ export const Shell = ({ id }: { id: string }) => {
         <CardBody className="w-full h-full overflow-hidden">
           <div className="w-full h-full relative">
             <XTerm
-              onResize={(e) => handleResize({cols: e.cols, rows: e.rows})}
+              onResize={(e) => handleResize({ cols: e.cols, rows: e.rows })}
               className="absolute top-0 left-0 right-0 bottom-0"
               key="xterm"
               ref={xtermRef}

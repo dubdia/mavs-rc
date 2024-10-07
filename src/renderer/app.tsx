@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import { Background } from "./components/Background";
 import { AppProvider } from "./providers/appProvider";
 import Body from "./body";
-import { appendShellData, loadRemotes } from "./store/remotesSlice";
+import { appendShellData, loadRemotes, sessionDestroyShell } from "./store/remotesSlice";
 import { store } from "./store/store";
 
 // render react on root element
@@ -22,15 +22,19 @@ if (ipc == null) {
 }
 
 // register to events
-ipc.on("shellReceive", (_, id, data) => {
+ipc.on("shellReceive", (_, id, shellId, data) => {
   if (data == null || data.length == 0) {
     return;
   }
-  store.dispatch(appendShellData({ id: id, data: data }));
+  store.dispatch(appendShellData({ id: id, shellId: shellId, data: data }));
 });
 ipc.on("disposeRemote", (_, id) => {
   console.log("A remote was disposed. Reload remotes now");
   store.dispatch(loadRemotes());
+});
+ipc.on("disposeShell", (_, id, shellId) => {
+  console.log("A shell was disposed. Remove it now");
+  store.dispatch(sessionDestroyShell({ id: id, shellId: shellId, onlyRemoveFromRenderer: true }));
 });
 
 // the app

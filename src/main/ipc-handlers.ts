@@ -1,6 +1,6 @@
 import { app } from "electron";
 import { typedIpcMain } from "../shared/ipc/ipc-api";
-import { remotesManager, sshManager } from "./main";
+import { remotesManager, sshCertManager, sshManager } from "./main";
 
 /** registers the ipc handlers of main */
 export function registerIpcHandlers() {
@@ -25,7 +25,7 @@ export function registerIpcHandlers() {
 
   // ssh certs
   typedIpcMain.handle("getSshCertNames", () => {
-    return sshManager.listSshCerts().map((x) => x.name);
+    return sshCertManager.listSshCerts().map((x) => x.name);
   });
 
   // connection
@@ -50,11 +50,26 @@ export function registerIpcHandlers() {
   typedIpcMain.handle("getInfo", async (_, id) => {
     return await sshManager.getInfoAsync(id);
   });
-  typedIpcMain.handle("sendShell", async (_, id, text) => {
-    await sshManager.shellSendAsync(id, text);
+
+  // shell
+  typedIpcMain.handle("listShells", (_, id) => {
+    return sshManager.listShells(id);
   });
-  typedIpcMain.handle("shellResize", (_, id, size) => {
-    sshManager.shellResize(id, size);
+  typedIpcMain.handle("createShell", async (_, id) => {
+    const shell = await sshManager.createShellAsync(id);
+    return {
+      shellId: shell.shellId,
+      size: { rows: shell.config.rows, cols: shell.config.cols },
+    };
+  });
+  typedIpcMain.handle("destroyShell", async (_, id, shellId) => {
+    await sshManager.destroyShellAsync(id, shellId);
+  });
+  typedIpcMain.handle("sendShell", async (_, id, shellId, text) => {
+    await sshManager.shellSendAsync(id, shellId, text);
+  });
+  typedIpcMain.handle("shellResize", (_, id, shellId, size) => {
+    sshManager.shellResize(id, shellId, size);
   });
 
   // sftp

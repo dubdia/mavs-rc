@@ -17,7 +17,7 @@ export type Session = {
   loading: boolean;
 
   /** information about the shell */
-  shell: SessionShell;
+  shells: SessionShell[];
 
   /** information about the services */
   services: SessionServices;
@@ -40,11 +40,7 @@ export const createRemoteSession = (dto: RemoteDto) =>
   <Session>{
     selectedTab: "info",
     loading: false,
-
-    shell: {
-      data: dto.shellHistory ?? [],
-    },
-
+    shells: [],
     command: "",
     commandResult: null,
     commandLoading: false,

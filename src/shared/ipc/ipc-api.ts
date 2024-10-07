@@ -12,11 +12,14 @@ import { RemoteInfo } from "../models/RemoteInfo";
 import { RemoteTunnelInfo } from "../models/RemoteTunnelInfo";
 import { RemoteShortcut } from "../models/RemoteShortcut";
 import { TerminalSize } from "../models/TerminalSize";
+import { RemoteShellDto } from "../models/RemoteShellDto";
 
 /** definitions of possible events that can occur on the main and can be listened to from the renderer */
 type Events = {
-  shellReceive: (id: string, data: string) => void;
+  shellReceive: (id: string, shellId: string, data: string) => void;
   disposeRemote: (id: string) => void;
+  disposeShell: (id: string, shellId: string) => void;
+  
 };
 
 /** definition of possible commands that can be invoked on the main by the renderer */
@@ -41,8 +44,13 @@ type Commands = {
   getUsers: (id: string) => UserGroup[];
   getGroups: (id: string) => UserGroup[];
   getInfo: (id: string) => SystemInfo;
-  sendShell: (id: string, text: string) => void;
-  shellResize: (id: string, size: TerminalSize) => void;
+
+  // shell
+  listShells: (id: string) => RemoteShellDto[];
+  createShell: (id: string) => RemoteShellDto;
+  destroyShell: (id: string, shellId: string) => void;
+  sendShell: (id: string, shellId: string, text: string) => void;
+  shellResize: (id: string, shellId: string, size: TerminalSize) => void;
 
   // sftp
   listDirectory: (id: string, path: string) => RemoteFile[];

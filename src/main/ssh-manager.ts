@@ -1,13 +1,14 @@
 import { RemotesManager } from "./remotes-manager";
 import { RemoteFile } from "../shared/models/RemoteFile";
 import { RemoteTunnelDto } from "../shared/models/RemoteTunnelDto";
+import { RemoteShellDto } from "src/shared/models/RemoteShellDto";
 import { FileText } from "../shared/models/FileText";
 import { SystemInfo } from "../shared/models/SystemInfo";
 import { CommandResult } from "../shared/models/CommandResult";
 import { ConnectResult } from "../shared/models/ConnectResult";
 import { UserGroup } from "../shared/models/UserGroup";
 import { OsType } from "../shared/models/OsType";
-import { FileEntryWithStats, Server, Stats } from "ssh2";
+import { DebugFunction, FileEntryWithStats, Server, Stats } from "ssh2";
 import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
@@ -25,162 +26,94 @@ import { TunnelConfig } from "./ssh2-promise/src/tunnelConfig";
 import { v4 } from "uuid";
 import { SSH2Promise } from "./ssh2-promise/src";
 import { TerminalSize } from "src/shared/models/TerminalSize";
+import { SshCert } from "./models/SshCert";
+import { SshCertManager } from "./ssh-cert-manager";
+import { RemoteShell } from "./models/RemoteShell";
 
 /** used to do everyting related to ssh and sftp */
 export class SshManager {
-  constructor(private remotesManager: RemotesManager) {}
+  constructor(private remotesManager: RemotesManager, private sshCertManager: SshCertManager) {}
 
-  public listSshCerts(): SshCert[] {
-    // for now the ssh path is fixed //Todo
-    const sshDir = path.join(app.getPath("home"), ".ssh");
-    const sshDirExists = fs.existsSync(sshDir);
-    if (!sshDirExists) {
-      log.warn(`Could not find Users .ssh directory: ${sshDir}`);
-      return [];
-    }
-
-    // read directory
-    const fileNames = fs.readdirSync(sshDir);
-    const certs: SshCert[] = [];
-    for (let fileName of fileNames) {
-      // check file name
-      if (fileName == null || fileName == "" || fileName.startsWith(".")) {
-        continue; // must have valid name
-      }
-      if (fileName.endsWith(".ppk")) {
-        continue; // must not be public key
-      }
-
-      // build path
-      const filePath = path.join(sshDir, fileName);
-
-      // check stats
-      const fileStats = fs.statSync(filePath);
-      if (fileStats.isDirectory() || !fileStats.isFile()) {
-        continue; // must be a file
-      }
-      if (fileStats.size <= 0 || fileStats.size > 1024 * 32) {
-        continue; // certs are not that big
-      }
-
-      // add
-      certs.push({
-        name: fileName,
-        filePath: filePath,
-      });
-    }
-    log.verbose(`Found ${certs.length} ssh certificates in ${sshDir}`);
-    return certs;
-  }
-  public getSshCertContent(certName: string): string {
-    // check name
-    if (certName == null || certName == "") {
-      throw new Error("No cert name was given");
-    }
-
-    // find file path
-    const certs = this.listSshCerts();
-    const cert = certs.find((x) => x.name == certName);
-    if (cert == null) {
-      throw new Error("Could not find cert by name: " + certName);
-    }
-
-    // read it
-    if (!fs.existsSync(cert.filePath)) {
-      throw new Error("Could not find cert file for: " + cert.filePath);
-    }
-    const buffer = fs.readFileSync(cert.filePath);
-    const contents = buffer.toString();
-
-    log.info(`Read Ssh certificate file: ${cert.filePath} (${buffer.length} bytes)`);
-    return contents;
-  }
-  public getSshCertFilePath(certName: string): string {
-    // check name
-    if (certName == null || certName == "") {
-      throw new Error("No cert name was given");
-    }
-
-    // find file path
-    const certs = this.listSshCerts();
-    const cert = certs.find((x) => x.name == certName);
-    if (cert == null) {
-      throw new Error("Could not find cert by name: " + certName);
-    }
-
-    // check it
-    if (!fs.existsSync(cert.filePath)) {
-      throw new Error("Could not find cert file for: " + cert.filePath);
-    }
-
-    return cert.filePath;
-  }
+  // CONNECTION -----------------------------
 
   public async connectAsync(id: string): Promise<ConnectResult> {
     // disconnet/cleanup remote
     await this.disconnectAsync(id);
     const remote = this.remotesManager.findOrError(id);
 
-    // prepare
+    // create empty connection object
     let connection: RemoteConnection = {
       ssh: null,
       sftp: null,
       osType: OsType.Unknown,
       groups: [],
       users: [],
-      shell: null,
+      shells: [],
       tunnels: [],
       disposed: false,
     };
+
+    // try to connect now...
     try {
+      // set logging method when log level is verbose or lower
+      let loggingMethod: DebugFunction | null = null;
+      if (
+        log.transports.console.level == "verbose" ||
+        log.transports.console.level == "debug" ||
+        log.transports.console.level == "silly"
+      ) {
+        loggingMethod = (message) => log.verbose("ssh: " + message);
+      }
+
       // build connection info
       const connectionInfo: SSHConfig = {
         host: remote.info.host,
         port: remote.info.port,
         username: remote.info.user,
         tryKeyboard: true,
-        timeout: 8000,
-        readyTimeout: 10000,
+        //timeout: 10000,
+        //readyTimeout: 12000,
         reconnect: false, //todo this is not working because if the initial connect fails it will retry and retry...
         //keepaliveInterval: 2000,
         //keepaliveCountMax: 10,    // 20 second after disconnect
-        debug: (message) => log.verbose("ssh: " + message),
+        debug: loggingMethod,
       };
-
-      // configure password auth
-      if (remote.info.usePasswordAuth && remote.info.password) {
-        connectionInfo.password = remote.info.password ?? "";
-      }
-
-      // configure publickey auth
-      if (remote.info.usePrivateKeyAuth) {
-        if (remote.info.privateKeySource == "text" && remote.info.privateKey) {
-          connectionInfo.privateKey = remote.info.privateKey;
-        } else if (remote.info.privateKeySource == "file" && remote.info.privateKeyFileName) {
-          const sshCertContents = this.getSshCertContent(remote.info.privateKeyFileName);
-          connectionInfo.privateKey = sshCertContents;
+      {
+        // configure password auth
+        if (remote.info.usePasswordAuth && remote.info.password) {
+          connectionInfo.password = remote.info.password ?? "";
         }
-        if (remote.info.passphrase) {
-          connectionInfo.passphrase = remote.info.passphrase;
+
+        // configure publickey auth
+        if (remote.info.usePrivateKeyAuth) {
+          if (remote.info.privateKeySource == "text" && remote.info.privateKey) {
+            connectionInfo.privateKey = remote.info.privateKey;
+          } else if (remote.info.privateKeySource == "file" && remote.info.privateKeyFileName) {
+            const sshCertContents = this.sshCertManager.getSshCertContent(remote.info.privateKeyFileName);
+            connectionInfo.privateKey = sshCertContents;
+          }
+          if (remote.info.passphrase) {
+            connectionInfo.passphrase = remote.info.passphrase;
+          }
         }
-      }
 
-      // configure special case (password auth + publickey auth) //see: https://github.com/mscdex/ssh2/issues/1187
-      if (remote.info.usePasswordAuth && remote.info.usePrivateKeyAuth) {
-        let sentPublicKey = false;
-        let sentPassword = false;
-        connectionInfo.authHandler = (curAuthsLeft, curPartial, doNextAuth) => {
-          if (!sentPublicKey) {
-            sentPublicKey = true;
-            return "publickey";
-          }
+        // configure special case (password auth + publickey auth) //see: https://github.com/mscdex/ssh2/issues/1187
+        if (remote.info.usePasswordAuth && remote.info.usePrivateKeyAuth) {
+          let sentPublicKey = false;
+          let sentPassword = false;
+          connectionInfo.authHandler = (curAuthsLeft, curPartial, doNextAuth) => {
+            if (!sentPublicKey) {
+              sentPublicKey = true;
+              return "publickey";
+            }
 
-          if (!sentPassword) {
-            sentPassword = true;
-            return "password";
-          }
-          return false;
-        };
+            if (!sentPassword) {
+              sentPassword = true;
+              return "password";
+            }
+            return false;
+          };
+        }
       }
 
       // create ssh and register on events
@@ -195,10 +128,11 @@ export class SshManager {
       });
 
       // connect to ssh/sftp
-      log.verbose(`Start connection...`);
+      log.verbose(`Start ssh connection...`);
       await connection.ssh.connect();
+
+      log.verbose(`Start sftp connection...`);
       connection.sftp = connection.ssh.sftp();
-      log.verbose(`Connection established`);
 
       // detect architecture
       connection.osType = await this.detectPosixWindowsAsync(connection.ssh);
@@ -206,66 +140,6 @@ export class SshManager {
       // get users and groups
       connection.users = await this.getUsersOrGroupsInternalAsync(connection, "users");
       connection.groups = await this.getUsersOrGroupsInternalAsync(connection, "groups");
-
-      // setup shell
-      connection.shell = {
-        config: {
-          term: "xterm",
-          cols: 80,
-          rows: 24,
-          width: 80 * 10,
-          height: 24 * 10,
-        },
-        history: [],
-        channel: null,
-      };
-      connection.shell.channel = await connection.ssh.shell(connection.shell.config);
-      connection.shell.channel.on("exit", (code: number | null, signal?: string, dump?: string, desc?: string) => {
-        // check if remote is disposing or disposed
-        if (connection.disposed) {
-          return;
-        }
-
-        // if the shell closes, we close the whole connection
-        log.info(`Shell exited with code ${code}, dispose remote now`);
-        this.remotesManager.disposeRemoteAsync(remote).then();
-      });
-      connection.shell.channel.on("data", (data: Buffer) => {
-        // check if remote is disposing or disposed
-        if (connection.disposed || !connection.shell) {
-          return;
-        }
-
-        // get text
-        const text = data?.toString();
-        if (text == null || text == "") {
-          return;
-        }
-
-        // store in shell history
-        log.verbose("Shell STDOUT", text);
-        connection.shell.history.push(text);
-
-        mainWindow.webContents.send("shellReceive", id, text);
-      });
-      connection.shell.channel.stderr.on("data", (data: Buffer) => {
-        // check if remote is disposing or disposed
-        if (connection.disposed || !connection.shell) {
-          return;
-        }
-
-        // get text
-        const text = data?.toString();
-        if (text == null || text == "") {
-          return;
-        }
-
-        // store in shell history
-        log.verbose("Shell STDERR", text);
-        connection.shell.history.push(text);
-
-        mainWindow.webContents.send("shellReceive", id, text);
-      });
 
       // try to activate the tunnels
       if (remote.info.tunnels) {
@@ -330,26 +204,7 @@ export class SshManager {
     await this.remotesManager.disposeRemoteAsync(remote);
   }
 
-  public async detectPosixWindowsAsync(ssh: SSH2Promise): Promise<OsType> {
-    // check for posix
-    try {
-      const result: string = await ssh.exec("uname -a");
-      if (result != null && result.toLowerCase().indexOf("linux") >= 0) {
-        return OsType.Posix;
-      }
-    } catch {}
-
-    // check for windows
-    try {
-      const result: string = await ssh.exec("ver");
-      if (result != null && result.toLowerCase().indexOf("windows") >= 0) {
-        return OsType.Windows;
-      }
-    } catch {}
-
-    // unknown
-    return OsType.Unknown;
-  }
+  // SSH + HELPER -----------------------------
 
   public async executeCommand(id: string, command: string): Promise<CommandResult> {
     log.verbose(`Execute command: ${command}`);
@@ -374,6 +229,184 @@ export class SshManager {
       }
     }
   }
+
+  public async detectPosixWindowsAsync(ssh: SSH2Promise): Promise<OsType> {
+    // check for posix
+    log.verbose(`Check if Posix...`);
+    try {
+      const result: string = await ssh.exec("uname -a");
+      if (result != null && result.toLowerCase().indexOf("linux") >= 0) {
+        return OsType.Posix;
+      }
+    } catch {}
+
+    // check for windows
+    log.verbose(`Check if Windows...`);
+    try {
+      const result: string = await ssh.exec("ver");
+      if (result != null && result.toLowerCase().indexOf("windows") >= 0) {
+        return OsType.Windows;
+      }
+    } catch {}
+
+    // unknown
+    return OsType.Unknown;
+  }
+
+  // SHELL -----------------------------
+
+  public async createShellAsync(id: string): Promise<RemoteShell> {
+    const remote = this.remotesManager.findOrError(id, { mustBeConnected: true });
+    return await this.createShellInternalAsync(remote);
+  }
+  private async createShellInternalAsync(remote: Remote): Promise<RemoteShell> {
+    // create new shell object
+    const shell: RemoteShell = {
+      shellId: v4(),
+      config: {
+        term: "xterm",
+        cols: 80,
+        rows: 24,
+        width: 80 * 10,
+        height: 24 * 10,
+      },
+      history: [],
+      channel: null,
+    };
+
+    try {
+      // spawn a new shell with our configuration
+      shell.channel = await remote.connection.ssh.shell(shell.config);
+
+      // subscribe to events
+      shell.channel.on("exit", (code: number | null, signal?: string, dump?: string, desc?: string) => {
+        // check if remote is disposing or disposed
+        if (!remote.connection || remote.connection.disposed) {
+          return;
+        }
+
+        // if the shell closes, we close the whole connection
+        log.info(`Shell exited with code ${code}, dispose shell now`);
+        this.remotesManager.disposeShellAsync(shell, remote).then();
+      });
+      shell.channel.on("data", (data: Buffer) => {
+        // check if remote is disposing or disposed
+        if (!remote.connection || remote.connection.disposed || !shell.channel) {
+          return;
+        }
+
+        // get text
+        const text = data?.toString();
+        if (text == null || text == "") {
+          return;
+        }
+
+        // store in shell history
+        log.verbose("Shell STDOUT", text);
+        shell.history.push(text);
+        mainWindow.webContents.send("shellReceive", remote.info.id, shell.shellId, text);
+      });
+      shell.channel.stderr.on("data", (data: Buffer) => {
+        // check if remote is disposing or disposed
+        if (!remote.connection || remote.connection.disposed || !shell.channel) {
+          return;
+        }
+
+        // get text
+        const text = data?.toString();
+        if (text == null || text == "") {
+          return;
+        }
+
+        // store in shell history
+        log.verbose("Shell STDERR", text);
+        shell.history.push(text);
+        mainWindow.webContents.send("shellReceive", remote.info.id, shell.shellId, text);
+      });
+
+      // add shell to remote
+      remote.connection.shells.push(shell);
+    } catch (err) {
+      log.error("failed to create shell, dispose now", err);
+      await this.remotesManager.disposeShellAsync(shell, remote);
+    }
+
+    return shell;
+  }
+
+  public async destroyShellAsync(id: string, shellId: string) {
+    const remote = this.remotesManager.findOrError(id, { mustBeConnected: true });
+    return await this.destroyShellInternalAsync(remote, shellId);
+  }
+  public async destroyShellInternalAsync(remote: Remote, shellId: string) {
+    if (shellId == null) {
+      throw new Error("No shellId given");
+    }
+    const shell = remote.connection.shells.find((x) => x.shellId == shellId);
+    if (shell == null) {
+      throw new Error("Cannot find shell by id");
+    }
+    await this.remotesManager.disposeShellAsync(shell, remote);
+    log.info(`Closed shell ${shellId}`);
+  }
+
+  public async shellSendAsync(id: string, shellId: string, text: string) {
+    const connection = this.remotesManager.findOrError(id, { mustBeConnected: true }).connection;
+    return await this.shellSendInternalAsync(connection, shellId, text);
+  }
+  public async shellSendInternalAsync(connection: RemoteConnection, shellId: string, text: string) {
+    log.verbose(`Send text to shell: ${text}`);
+    const shell = connection.shells.find((x) => x.shellId == shellId);
+    if (!shell?.channel) {
+      throw new Error("Shell with id not found");
+    }
+    return await new Promise((resolve, reject) => {
+      shell.channel.write(text, undefined, (err: Error | null) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(null);
+        }
+      });
+    });
+  }
+
+  public shellResize(id: string, shellId: string, size: TerminalSize) {
+    const connection = this.remotesManager.findOrError(id, { mustBeConnected: true }).connection;
+    this.shellResizeInternal(connection, shellId, size);
+  }
+  public shellResizeInternal(connection: RemoteConnection, shellId: string, size: TerminalSize) {
+    if (shellId == null) {
+      throw new Error("No shellId given");
+    }
+    const shell = connection.shells.find((x) => x.shellId == shellId);
+    if (shell?.channel == null) {
+      throw new Error("Cannot find shell by given id");
+    }
+
+    log.verbose(`Update shell window size:`, size);
+    shell.channel.setWindow(size.rows, size.cols, size.rows * 10, size.cols * 10);
+    shell.config.rows = size.rows;
+    shell.config.cols = size.cols;
+  }
+
+  public listShells(id: string): RemoteShellDto[] {
+    const connection = this.remotesManager.findOrError(id, { mustBeConnected: true }).connection;
+    return connection.shells.map((x) => {
+      return <RemoteShellDto>{
+        shellId: x.shellId,
+        size: { cols: x.config.cols, rows: x.config.rows },
+      };
+    });
+  }
+
+  public getShellHistory(id: string, shellId: string): string[] {
+    const connection = this.remotesManager.findOrError(id, { mustBeConnected: true }).connection;
+    const history = connection.shells.find((x) => x.shellId == shellId).history ?? [];
+    return history;
+  }
+
+  // SFTP -----------------------------
 
   public async listDirectoryAsync(id: string, path: string, recursive: boolean): Promise<RemoteFile[]> {
     log.verbose(`List directory ${path}...`);
@@ -487,34 +520,6 @@ export class SshManager {
       filePath: filePath,
       contents: text,
     };
-  }
-
-  public async shellSendAsync(id: string, text: string) {
-    const connection = this.remotesManager.findOrError(id, { mustBeConnected: true }).connection;
-    return await this.shellSendInternalAsync(connection, text);
-  }
-  public async shellSendInternalAsync(connection: RemoteConnection, text: string) {
-    log.verbose(`Send text to shell: ${text}`);
-    return await new Promise((resolve, reject) => {
-      connection.shell.channel.write(text, undefined, (err: Error | null) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(null);
-        }
-      });
-    });
-  }
-
-  public shellResize(id: string, size: TerminalSize) {
-    const connection = this.remotesManager.findOrError(id, { mustBeConnected: true }).connection;
-    this.shellResizeInternal(connection, size);
-  }
-  public shellResizeInternal(connection: RemoteConnection, size: TerminalSize) {
-    log.verbose(`Update shell window size:`, size);
-    connection.shell.channel.setWindow(size.rows, size.cols, size.rows * 10, size.cols * 10);
-    connection.shell.config.rows = size.rows;
-    connection.shell.config.cols = size.cols;
   }
 
   public async writeTextAsync(id: string, filePath: string, contents: string): Promise<void> {
@@ -676,6 +681,8 @@ export class SshManager {
     };
   }
 
+  // USERS / GROUPS -----------------------------
+
   public async getUsersOrGroupsAsync(id: string, fetch: "users" | "groups"): Promise<UserGroup[]> {
     const remote = this.remotesManager.findOrError(id, { mustBeConnected: true });
     return await this.getUsersOrGroupsInternalAsync(remote.connection, fetch);
@@ -705,6 +712,8 @@ export class SshManager {
     }
     return usersOrGroups;
   }
+
+  // SFTP UPLOAD / DOWNLOAD -----------------------------
 
   public async downloadFileAsync(id: string, filePath: string): Promise<boolean> {
     const remote = this.remotesManager.findOrError(id, { mustBeConnected: true });
@@ -987,6 +996,8 @@ export class SshManager {
     await remote.connection.sftp.fastPut(localFilePath, remoteFilePath); //todo track progress via step
   }
 
+  // TUNNELS -----------------------------
+
   public listTunnels(id: string): RemoteTunnelDto[] {
     const remote = this.remotesManager.findOrError(id, { mustBeConnected: true });
 
@@ -1119,28 +1130,13 @@ export class SshManager {
     if (tunnelId == null) {
       throw new Error("No tunnel given");
     }
-
-    // close tunnel via ssh
-    await connection.ssh.closeTunnel(tunnelId);
-
-    // find tunnel and dispose it
     const tunnel = connection.tunnels.find((x) => x.tunnelId == tunnelId);
-    if (tunnel?.connection?.server) {
-      try {
-        await new Promise((resolve, reject) => {
-          tunnel.connection.server.close((err: Error | null) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(null);
-            }
-          });
-        });
-      } catch (err) {
-        log.error("Failed to close tunnel", err);
-      }
+    if (tunnel == null) {
+      // cannot find it but try to close anyway
+      await await connection.ssh.closeTunnel(tunnelId);
+      return;
     }
-    connection.tunnels = connection.tunnels.filter((x) => x.tunnelId !== tunnelId);
+    await this.remotesManager.disposeTunnelAsync(tunnel, connection);
     log.info(`Closed Tunnel ${tunnelId}`);
   }
 
@@ -1156,9 +1152,4 @@ export class SshManager {
     }
     return true;
   }
-}
-
-export interface SshCert {
-  name: string;
-  filePath: string;
 }

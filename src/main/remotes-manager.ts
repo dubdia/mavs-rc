@@ -8,6 +8,10 @@ import { Remote } from "./models/Remote";
 import { mainWindow } from "./main";
 import { RemoteShortcut } from "../shared/models/RemoteShortcut";
 import { RemotesConfigManager } from "./config/remotes-config-manager";
+import { RemoteTunnel } from "./models/RemoteTunnel";
+import { SSHConnection } from "./ssh2-promise/src/sshConnection";
+import { RemoteConnection } from "./models/RemoteConnection";
+import { RemoteShell } from "./models/RemoteShell";
 
 /** used to manage remotes  */
 export class RemotesManager {
@@ -73,7 +77,6 @@ export class RemotesManager {
       info: remote.info,
       connected: connected,
       osType: remote.connection?.osType ?? OsType.Unknown,
-      shellHistory: connected ? remote.connection?.shell?.history ?? [] : [],
     };
     return newRemote;
   }
@@ -130,7 +133,7 @@ export class RemotesManager {
         }
       } catch (err) {
         log.warn(`Failed to tell client about remote dispose`, err);
-      } 
+      }
       return;
     }
     log.info("Dispose connection");
@@ -139,16 +142,10 @@ export class RemotesManager {
     // dispose tunnels
     try {
       if (connection.tunnels) {
-        for (let tunnel of connection.tunnels) {
+        const tunnels = [...connection.tunnels];
+        for (let tunnel of tunnels) {
           try {
-            if (tunnel?.tunnelId && connection.ssh) {
-              await connection.ssh.closeTunnel(tunnel?.tunnelId);
-            }
-            if (tunnel?.connection?.server) {
-              tunnel.connection.server.removeAllListeners();
-              tunnel.connection.server.close();
-              tunnel.connection = null;
-            }
+            await this.disposeTunnelAsync(tunnel, connection);
           } catch (err) {
             log.warn(`Failed to dispose tunnel`, err);
           }
@@ -160,12 +157,18 @@ export class RemotesManager {
 
     // dispose shell
     try {
-      connection.shell?.channel?.removeAllListeners();
-      connection.shell?.channel?.close();
-      connection.shell?.channel?.destroy();
-      connection.shell = null;
+      if (connection.shells) {
+        const shells = [...connection.shells];
+        for (let shell of shells) {
+          try {
+            await this.disposeShellAsync(shell, remote);
+          } catch (err) {
+            log.warn(`Failed to dispose shell`, err);
+          }
+        }
+      }
     } catch (err) {
-      log.warn(`Failed to dispose shell`, err);
+      log.warn(`Failed to dispose shells`, err);
     }
 
     // dispose sftp
@@ -195,6 +198,65 @@ export class RemotesManager {
     }
 
     log.info("Disposed connection");
+  }
+
+  public async disposeTunnelAsync(tunnel: RemoteTunnel, connection: RemoteConnection) {
+    if (tunnel == null) {
+      return;
+    }
+
+    // close via SSH2Promise
+    if (tunnel.tunnelId && connection?.ssh) {
+      await connection.ssh.closeTunnel(tunnel?.tunnelId);
+    }
+
+    // if still open, we
+    if (tunnel?.connection?.server) {
+      try {
+        // remove all listeners
+        tunnel.connection.server.removeAllListeners();
+
+        // close and wait for it
+        await new Promise((resolve, reject) => {
+          tunnel.connection.server.close((err: Error | null) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(null);
+            }
+          });
+        });
+      } catch (err) {
+        log.error("Failed to close tunnel", err);
+      }
+      tunnel.connection = null;
+    }
+
+    // remove from our connections
+    connection.tunnels = connection.tunnels.filter((x) => x.tunnelId !== tunnel.tunnelId);
+  }
+  public async disposeShellAsync(shell: RemoteShell, remote: Remote) {
+    if (shell == null) {
+      return;
+    }
+
+    // dispose
+    if (shell.channel) {
+      shell.channel.removeAllListeners();
+      shell.channel.close();
+      shell.channel.destroy();
+      shell.channel = null;
+    }
+
+    // remove from our connections
+    remote.connection.shells = remote.connection.shells.filter((x) => x.shellId !== shell.shellId);
+
+    // tell client
+    try {
+      mainWindow.webContents.send("disposeShell", remote.info.id, shell.shellId);
+    } catch (err) {
+      log.warn(`Failed to tell client about shell dispose`, err);
+    }
   }
 
   public update(remoteInfo: RemoteInfo) {

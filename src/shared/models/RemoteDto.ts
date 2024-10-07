@@ -6,5 +6,4 @@ export interface RemoteDto {
     info: RemoteInfo;
     connected: boolean;
     osType: OsType;
-    shellHistory: string[] | undefined;
 }

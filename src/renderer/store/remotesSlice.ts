@@ -394,6 +394,44 @@ export const sessionDestroyTunnel = createAsync(
   }
 );
 
+export const sessionCreateShell = createAsync(
+  "sessionCreateShell",
+  async (params: { id: string }) => {
+    return await ipc.invoke("createShell", params.id);
+  },
+  {
+    onRejected: (_state: State, _error, _arg) => {
+      toast.error("An error occured while creates a new shell");
+    },
+    onFulfilled: (state: State, data, arg) => {
+      const session = state.data.entities[arg?.id!].session;
+      session.shells.push({
+        data: [],
+        shellId: data.shellId,
+        tab: `shell-${data.shellId}`,
+      });
+    },
+  }
+);
+export const sessionDestroyShell = createAsync(
+  "sessionDestroyShell",
+  async (params: { id: string; shellId: string; onlyRemoveFromRenderer: boolean }) => {
+    if (!params.onlyRemoveFromRenderer) {
+      const result = await ipc.invoke("destroyShell", params.id, params.shellId);
+      return result;
+    }
+  },
+  {
+    onRejected: (_state: State, _error, _arg) => {
+      toast.error("An error occured while destroying the shell");
+    },
+    onFulfilled: (state: State, data, arg) => {
+      const session = state.data.entities[arg?.id!].session;
+      session.shells = session.shells.filter((x) => x.shellId != arg.shellId);
+    },
+  }
+);
+
 // create adapter for managing the remotes array
 const remotesAdapter = createEntityAdapter<Remote, string>({
   selectId: (remote) => remote!.id!,
@@ -510,9 +548,10 @@ export const appSlice = createSlice({
       }
     },
 
-    appendShellData: (state, action: PayloadAction<{ id: string; data: string }>) => {
+    appendShellData: (state, action: PayloadAction<{ id: string; shellId: string; data: string }>) => {
       const session = state.data.entities[action.payload.id].session;
-      session.shell.data.push(action.payload.data ?? "");
+      const shell = session.shells.find((x) => x.shellId == action.payload.shellId);
+      shell.data.push(action.payload.data ?? "");
     },
   },
   extraReducers: (builder) => {
@@ -537,6 +576,9 @@ export const appSlice = createSlice({
     sessionFetchTunnels.register(builder);
     sessionConnectTunnel.register(builder);
     sessionDestroyTunnel.register(builder);
+
+    sessionCreateShell.register(builder);
+    sessionDestroyShell.register(builder);
 
     // this is for us developers
     builder.addDefaultCase((_state, action) => {

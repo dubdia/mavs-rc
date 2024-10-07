@@ -7,6 +7,7 @@ import { RemotesManager } from "./remotes-manager";
 import { registerIpcHandlers } from "./ipc-handlers";
 import { AppConfigManager } from "./config/app-config-manager";
 import { RemotesConfigManager } from "./config/remotes-config-manager";
+import { SshCertManager } from "./ssh-cert-manager";
 
 // handle uncaught exceptions
 process.on("uncaughtException", function (error) {
@@ -25,16 +26,20 @@ const userDataPath = app.getPath("userData");
 log.transports.file.resolvePathFn = () => path.join(userDataPath, "rc.log");
 log.transports.file.level = appConfigManager.config.logLevel;
 
+
 // print startup message
 const appVersion = app.getVersion();
-log.info(`Starting app v${appVersion} with log level ${appConfigManager.config.logLevel}`);
+const devTools = MAIN_WINDOW_VITE_DEV_SERVER_URL != null || appConfigManager.config.devTools; // only enable when debugging or when configured
+log.info(`Starting app v${appVersion} with log level ${appConfigManager.config.logLevel}${devTools ? ' and Dev-Tools' : ''}`);
 
 // create managers
 log.verbose(`Create managers...`);
 export let remotesConfigManager = new RemotesConfigManager();
 export let remotesManager = new RemotesManager(remotesConfigManager);
-export let sshManager = new SshManager(remotesManager);
+export let sshCertManager = new SshCertManager();
+export let sshManager = new SshManager(remotesManager, sshCertManager);
 export let mainWindow!: BrowserWindow; // will be assigned later
+
 
 // configure close/dispose
 {
@@ -83,14 +88,13 @@ app.on("ready", () => {
     let allowedUrls: string[];
     if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
       // in development, only allow our vite dev-server and the dev-tools as source
-      allowedUrls = [
-        MAIN_WINDOW_VITE_DEV_SERVER_URL,
-        MAIN_WINDOW_VITE_DEV_SERVER_URL.replace("http://", "ws://"),
-        "devtools://",
-      ];
+      allowedUrls = [MAIN_WINDOW_VITE_DEV_SERVER_URL, MAIN_WINDOW_VITE_DEV_SERVER_URL.replace("http://", "ws://")];
     } else {
       // in production, only allow file calls to the current directory
       allowedUrls = ["file:///" + app.getAppPath().replaceAll("\\", "/")];
+    }
+    if (devTools) {
+      allowedUrls.push("devtools://");
     }
 
     // block outgoing requests for more security
@@ -137,7 +141,6 @@ app.on("ready", () => {
 
   // create window
   log.info("Creating window...");
-  const devTools = MAIN_WINDOW_VITE_DEV_SERVER_URL != null || appConfigManager.config.devTools; // only enable when debugging or when configured
   mainWindow = new BrowserWindow({
     // configure window
     title: "Mav's RC",

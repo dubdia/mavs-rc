@@ -399,9 +399,11 @@ export const useFiles = (id: string) => {
       }
       const command = "\x15" + "cd " + escapeUnixShellArg(path) + "\r";
 
+      // get open shells
+
       // go to terminal and cd into the path
-      dispatch(setSelectedTab({ id: id, key: "shell" }));
-      ipc.invoke("sendShell", id, command);
+      //dispatch(setSelectedTab({ id: id, key: "shell" }));
+      //ipc.invoke("sendShell", id, command); //TODO
     } catch (err) {
       console.error("failed to cd into dir in terminal", err);
       toast.error("Failed to cd into path");

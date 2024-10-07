@@ -26,11 +26,11 @@ export const FileEditor = ({ id, fileTab }: { id: string; fileTab: TabName }) =>
   // get file from remote
   const file = useRemoteSelector(id, (r) => r.session.files.find((x) => x.tab == fileTab));
   if (file == null || file.tab == null) {
-    return <p>File not found: {fileTab}</p>;
+    return <p>File not found: {fileTab}</p>
   } else if (file.filePath == null || file.filePath == "") {
-    return <p>File has no path specified: {fileTab}</p>;
+    return <p>File has no path specified: {fileTab}</p>
   } else if (file.type == null) {
-    return <p>File has no type specified: {fileTab}</p>;
+    return <p>File has no type specified: {fileTab}</p>
   }
 
   const hasChanges = file.contents !== file.originalContents;

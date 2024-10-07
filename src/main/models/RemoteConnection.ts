@@ -10,7 +10,7 @@ import { RemoteShell } from "./RemoteShell";
 export interface RemoteConnection {
   ssh: SSH2Promise;
   sftp: SFTP;
-  shell: RemoteShell;
+  shells: RemoteShell[];
   tunnels: RemoteTunnel[];
   osType: OsType;
   users: UserGroup[];

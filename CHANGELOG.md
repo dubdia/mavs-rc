@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
  
 ### Added
 
+- User can have multiple shells now
 - Shell now resizes correctly
 - Shell supports right click for pasting
 - Split 'sshConfig.json' into 'rc.config.json' and 'rc-remotes.config.json'
