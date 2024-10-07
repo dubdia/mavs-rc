@@ -1,3 +1,3 @@
 /** possible tabs in the ui */
 
-export type TabName = ('info' | 'tunnels' | 'services' | `shell-${string}` | 'files' | `file-${string}`);
+export type TabName = ('info' | 'tunnels' | 'services' | `shell-${string}` | 'files' | `file-${string}` | 'script');

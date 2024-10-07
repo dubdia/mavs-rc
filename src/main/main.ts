@@ -9,6 +9,7 @@ import { AppConfigManager } from "./config/app-config-manager";
 import { RemotesConfigManager } from "./config/remotes-config-manager";
 import { SshCertManager } from "./ssh-cert-manager";
 
+
 // handle uncaught exceptions
 process.on("uncaughtException", function (error) {
   try {

@@ -5,7 +5,7 @@ import { closeRemote, sessionCreateShell, setSelectedTab } from "../../store/rem
 import { Shell } from "../shell/Shell";
 import { Files } from "../files/Files";
 import { FileEditor } from "../files/FileEditor";
-import { FaCircleNodes, FaFolderTree, FaLayerGroup, FaServicestack, FaTerminal, FaXmark } from "react-icons/fa6";
+import { FaCircleNodes, FaCode, FaFolderTree, FaLayerGroup, FaServicestack, FaTerminal, FaXmark } from "react-icons/fa6";
 import { memo } from "react";
 import { Layout } from "../../components/Layout";
 import { FaInfo, FaTimes } from "react-icons/fa";
@@ -13,6 +13,7 @@ import { Info } from "../info/Info";
 import { Tunnels } from "../tunnel/Tunnels";
 import { TabName } from "../../models/TabName";
 import { IconType } from "react-icons";
+import { Script } from "../script/Script";
 
 export interface TabInfo {
   name: TabName;
@@ -54,6 +55,12 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
       icon: FaFolderTree,
       label: "Files",
       render: () => <Files key={"files" + id} id={id}></Files>,
+    },
+    {
+      name: "script",
+      icon: FaCode,
+      label: "Script",
+      render: () => <Script key={"script"} id={id}></Script>,
     },
   ];
   for (let file of files) {
