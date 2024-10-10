@@ -16,6 +16,7 @@ import { RemoteTunnelInfo } from "../../shared/models/RemoteTunnelInfo";
 import { processList, ProcessableListParams } from "../models/ProcessableList";
 import { createRemoteSession } from "../models/Session";
 import { State } from "../models/State";
+import { Script, ScriptInfo } from "../../main/models/Script";
 
 export const loadRemotes = createAsync("loadRemotes", async () => await ipc.invoke("listRemotes"), {
   onPending: (state: State) => {
@@ -432,6 +433,103 @@ export const sessionDestroyShell = createAsync(
   }
 );
 
+export const sessionFetchScripts = createAsync("sessionFetchScripts", async (id: string) => ipc.invoke("listScripts"), {
+  onPending: (state: State, arg) => {
+    const s = state.data.entities[arg!].session.scripts;
+    s.loading = true;
+  },
+  onRejected: (state: State, _error, arg) => {
+    const s = state.data.entities[arg!].session.scripts;
+    s.loading = false;
+    processList(s, { original: [] });
+    toast.error("An error occured while loading the scripts");
+  },
+  onFulfilled: (state: State, data, arg) => {
+    const s = state.data.entities[arg!].session.scripts;
+    s.loading = false;
+    processList(s, { original: data });
+  },
+});
+export const sessionCreateScript = createAsync(
+  "sessionCreateScript",
+  async (params: { id: string; scriptName: string }) => {
+    const result = await ipc.invoke("createScript", params.scriptName);
+    return result;
+  },
+  {
+    onRejected: (_state: State, _error, _arg) => {
+      toast.error("An error occured while creating the script");
+    },
+    onFulfilled: (state: State, data, arg) => {
+      const session = state.data.entities[arg?.id!].session;
+      processList(session.scripts, { original: data });
+    },
+  }
+);
+export const sessionUpdateScript = createAsync(
+  "sessionUpdateScript",
+  async (params: { id: string; script: ScriptInfo }) => {
+    const result = await ipc.invoke("updateScript", params.script);
+    return result;
+  },
+  {
+    onRejected: (_state: State, _error, _arg) => {
+      toast.error("An error occured while updating the script");
+    },
+    onFulfilled: (state: State, data, arg) => {
+      const session = state.data.entities[arg?.id!].session;
+      processList(session.scripts, { original: data });
+      session.scripts.editScriptId = null;
+    },
+  }
+);
+export const sessionDeleteScript = createAsync(
+  "sessionDeleteScript",
+  async (params: { id: string; scriptId: string }) => {
+    const result = await ipc.invoke("deleteScript", params.scriptId);
+    return result;
+  },
+  {
+    onRejected: (_state: State, _error, _arg) => {
+      toast.error("An error occured while removing the script");
+    },
+    onFulfilled: (state: State, data, arg) => {
+      const session = state.data.entities[arg?.id!].session;
+      processList(session.scripts, { original: data });
+    },
+  }
+);
+export const sessionExecuteScript = createAsync(
+  "sessionExecuteScript",
+  async (params: { id: string; scriptId: string }) => {
+    const result = await ipc.invoke("executeScript", params.id, params.scriptId);
+    return result;
+  },
+  {
+    onPending: (state: State, arg) => {
+      const s = state.data.entities[arg.id!].session;
+      const script = s.scripts.original.find((x) => x.info.scriptId == arg.scriptId);
+      script.running = true;
+    },
+    onRejected: (state: State, _error, arg) => {
+      const s = state.data.entities[arg.id!].session;
+      const script = s.scripts.original.find((x) => x.info.scriptId == arg.scriptId);
+      script.running = false;
+      toast.error("An error occured while executing the script");
+    },
+    onFulfilled: (state: State, data, arg) => {
+      const s = state.data.entities[arg.id!].session;
+      const script = s.scripts.original.find((x) => x.info.scriptId == arg.scriptId);
+      script.running = false;
+      if (data.success) {
+        toast.success("Successfully ran script!");
+      } else {
+        toast.error(data.error);
+      }
+    },
+  }
+);
+
 // create adapter for managing the remotes array
 const remotesAdapter = createEntityAdapter<Remote, string>({
   selectId: (remote) => remote!.id!,
@@ -532,6 +630,11 @@ export const appSlice = createSlice({
       const session = state.data.entities[action.payload.id].session;
       processList(session.tunnels, action.payload.params);
     },
+    processSessionScripts: (state, action: PayloadAction<{ id: string; params: ProcessableListParams<Script> }>) => {
+      const session = state.data.entities[action.payload.id].session;
+      processList(session.scripts, action.payload.params);
+    },
+
     editSessionTunnel: (state, action: PayloadAction<{ id: string; editTunnelId: string | null }>) => {
       const session = state.data.entities[action.payload.id].session;
       session.tunnels.editTunnelId = action.payload.editTunnelId;
@@ -552,6 +655,17 @@ export const appSlice = createSlice({
       const session = state.data.entities[action.payload.id].session;
       const shell = session.shells.find((x) => x.shellId == action.payload.shellId);
       shell.data.push(action.payload.data ?? "");
+    },
+
+    selectScript: (state, action: PayloadAction<{ id: string; scriptId: string }>) => {
+      const s = state.data.entities[action.payload.id].session;
+      s.scripts.editScriptId = action.payload.scriptId;
+      console.log(s.scripts.editScriptId);
+    },
+    setScriptContent: (state, action: PayloadAction<{ id: string; scriptId: string; content: string }>) => {
+      const s = state.data.entities[action.payload.id].session;
+      const script = s.scripts.original.find((x) => x.info.scriptId == action.payload.scriptId);
+      script.info.content = action.payload.content;
     },
   },
   extraReducers: (builder) => {
@@ -580,6 +694,12 @@ export const appSlice = createSlice({
     sessionCreateShell.register(builder);
     sessionDestroyShell.register(builder);
 
+    sessionCreateScript.register(builder);
+    sessionUpdateScript.register(builder);
+    sessionDeleteScript.register(builder);
+    sessionFetchScripts.register(builder);
+    sessionExecuteScript.register(builder);
+
     // this is for us developers
     builder.addDefaultCase((_state, action) => {
       if (action.type == null || !action.type.startsWith("@@redux")) {
@@ -604,5 +724,8 @@ export const {
   appendShellData,
   editSessionTunnel,
   changeSessionTunnel,
+  processSessionScripts,
+  selectScript,
+  setScriptContent,
 } = appSlice.actions;
 export default appSlice.reducer;

@@ -14,6 +14,7 @@ import { Tunnels } from "../tunnel/Tunnels";
 import { TabName } from "../../models/TabName";
 import { IconType } from "react-icons";
 import { Script } from "../script/Script";
+import { Scripts } from "../script/Scripts";
 
 export interface TabInfo {
   name: TabName;
@@ -57,10 +58,10 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
       render: () => <Files key={"files" + id} id={id}></Files>,
     },
     {
-      name: "script",
+      name: "scripts",
       icon: FaCode,
-      label: "Script",
-      render: () => <Script key={"script"} id={id}></Script>,
+      label: "Scripts",
+      render: () => <Scripts key={"scripts"} id={id}></Scripts>,
     },
   ];
   for (let file of files) {

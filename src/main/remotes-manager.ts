@@ -16,8 +16,9 @@ import { RemoteShell } from "./models/RemoteShell";
 /** used to manage remotes  */
 export class RemotesManager {
   public remotes: Remote[];
+  private config = new RemotesConfigManager();
 
-  constructor(private config: RemotesConfigManager) {
+  constructor() {
     // load remotes from config
     this.remotes = this.config.config.remoteInfos
       .filter((x) => x != null && x.id != null && x.id != "")

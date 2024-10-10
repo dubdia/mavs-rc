@@ -1,6 +1,6 @@
 import { app } from "electron";
 import { typedIpcMain } from "../shared/ipc/ipc-api";
-import { remotesManager, sshCertManager, sshManager } from "./main";
+import { remotesManager, scriptManager, sshCertManager, sshManager } from "./main";
 
 /** registers the ipc handlers of main */
 export function registerIpcHandlers() {
@@ -146,5 +146,25 @@ export function registerIpcHandlers() {
   typedIpcMain.handle("disconnectTunnel", async (_, id, tunnelId) => {
     await sshManager.disconnectTunnelAsync(id, tunnelId);
     return sshManager.listTunnels(id);
+  });
+
+  // scripts
+  typedIpcMain.handle("listScripts", (_) => {
+    return scriptManager.listScripts();
+  });
+  typedIpcMain.handle("createScript", (_, name) => {
+    scriptManager.addNew(name);
+    return scriptManager.listScripts();
+  });
+  typedIpcMain.handle("deleteScript", async (_, scriptId) => {
+    await scriptManager.deleteByIdAsync(scriptId);
+    return scriptManager.listScripts();
+  });
+  typedIpcMain.handle("updateScript", (_, script) => {
+    scriptManager.update(script);
+    return scriptManager.listScripts();
+  });
+  typedIpcMain.handle("executeScript", async (_, id, scriptId) => {
+    return await scriptManager.executeAsync(id, scriptId);
   });
 }

@@ -13,6 +13,8 @@ import { RemoteTunnelInfo } from "../models/RemoteTunnelInfo";
 import { RemoteShortcut } from "../models/RemoteShortcut";
 import { TerminalSize } from "../models/TerminalSize";
 import { RemoteShellDto } from "../models/RemoteShellDto";
+import { Script, ScriptInfo } from "../../main/models/Script";
+import { ScriptExecutionResult } from "../../main/script-manager";
 
 /** definitions of possible events that can occur on the main and can be listened to from the renderer */
 type Events = {
@@ -81,6 +83,14 @@ type Commands = {
   updateTunnel: (id: string, tunnel: RemoteTunnelInfo) => RemoteTunnelDto[];
   connectTunnel: (id: string, tunnelId: string) => RemoteTunnelDto[];
   disconnectTunnel: (id: string, tunnelId: string) => RemoteTunnelDto[];
+
+  // shells
+  listScripts: () => Script[];
+  createScript: (name: string) => Script[];
+  deleteScript: (tunnelId: string) => Script[];
+  updateScript: (script: ScriptInfo) => Script[];
+  executeScript: (id: string, scriptId: string) => ScriptExecutionResult;
+
 };
 
 export const typedIpcMain = ipcMain as TypedIpcMain<Events, Commands>;

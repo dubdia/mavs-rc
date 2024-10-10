@@ -137,7 +137,7 @@ export const FileEditor = ({ id, fileTab }: { id: string; fileTab: TabName }) =>
       header={
         <div className="flex flex-row gap-2 items-center">
           {/* Name */}
-          <span className="font-mono text-xl">{file.name}</span>
+          <span className="font-mono text-medium">{file.name}</span>
 
           {/* Space */}
           <span className="flex-1"></span>

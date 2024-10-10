@@ -6,6 +6,7 @@ import { SessionShortcuts } from "./SessionShortcuts";
 import { SessionTunnel } from "./SessionTunnel";
 import { TabName } from "./TabName";
 import { RemoteDto } from "../../shared/models/RemoteDto";
+import { ScriptList } from "./ScriptList";
 
 /** state information about a connected remote */
 
@@ -30,6 +31,9 @@ export type Session = {
 
   /** tunnels */
   tunnels: SessionTunnel;
+
+  /** scripts */
+  scripts: ScriptList;
 
   /** the currently opened files */
   files: SessionFile[];
@@ -85,6 +89,19 @@ export const createRemoteSession = (dto: RemoteDto) =>
       filters: [],
       loading: false,
       editTunnelId: null,
+    },
+    scripts: {
+      searchColumn: "name",
+      searchText: "",
+      filtered: [],
+      original: [],
+      sortDescriptor: {
+        column: "name",
+        direction: "ascending",
+      },
+      filters: [],
+      loading: false,
+      editScriptId: null,
     },
 
     shortcuts: {

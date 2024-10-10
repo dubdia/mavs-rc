@@ -8,6 +8,7 @@ import { registerIpcHandlers } from "./ipc-handlers";
 import { AppConfigManager } from "./config/app-config-manager";
 import { RemotesConfigManager } from "./config/remotes-config-manager";
 import { SshCertManager } from "./ssh-cert-manager";
+import { ScriptManager } from "./script-manager";
 
 
 // handle uncaught exceptions
@@ -35,10 +36,10 @@ log.info(`Starting app v${appVersion} with log level ${appConfigManager.config.l
 
 // create managers
 log.verbose(`Create managers...`);
-export let remotesConfigManager = new RemotesConfigManager();
-export let remotesManager = new RemotesManager(remotesConfigManager);
+export let remotesManager = new RemotesManager();
 export let sshCertManager = new SshCertManager();
 export let sshManager = new SshManager(remotesManager, sshCertManager);
+export let scriptManager = new ScriptManager(remotesManager, sshManager);
 export let mainWindow!: BrowserWindow; // will be assigned later
 
 

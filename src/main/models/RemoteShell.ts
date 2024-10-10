@@ -14,3 +14,4 @@ export interface RemoteShell {
    * can be used to reconstruct the session in the xterm react component */
   history: string[];
 }
+
