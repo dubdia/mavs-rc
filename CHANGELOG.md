@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Shell now resizes correctly
 - Shell supports right click for pasting
 - Split 'sshConfig.json' into 'rc.config.json' and 'rc-remotes.config.json'
+- Added 'Script' section where user can write and execute typescript code
 
 ### Changed
 
