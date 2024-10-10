@@ -1,4 +1,5 @@
 import vm from "vm";
+import archiver from "archiver/index";
 import fs, { mkdir } from "fs";
 import ts, { ExitStatus } from "typescript";
 import { BrowserWindow, dialog } from "electron";
@@ -14,6 +15,8 @@ import { SshManager } from "./ssh-manager";
 import { exec as childProcessExec } from "child_process";
 import { FileEntryWithStats } from "ssh2";
 import { joinPath } from "../shared/utils/io/joinPath";
+import path from "path";
+import { getFileName } from "../shared/utils/io/getFileName";
 
 /** used to transcompile and run scripts */
 export class ScriptManager {
@@ -152,7 +155,7 @@ export class ScriptManager {
           log.verbose("Resolve vm promise");
           resolve(err);
         };
-        context.__reject = (arg:any) => {
+        context.__reject = (arg: any) => {
           log.verbose("Reject vm promise");
           reject(arg);
         };
@@ -171,8 +174,12 @@ export class ScriptManager {
   private transpile(tsCode: string): ts.TranspileOutput {
     // wrap user code in our code so it can handle promises
     const start = "";
-    const end = "\n;run().then(() =>  __resolve('OK').catch((err) => __reject(err))";
+    const end = "\n;run().then(() =>  __resolve('OK')).catch((err) => __reject(err))";
     const combined = start + tsCode + end;
+
+    //const start = "(async () => {\n";
+    //const end = "\n;})().then(() =>  __resolve('OK')).catch((err) => __reject(err))";
+    //const combined = start + tsCode + end;
 
     const result = ts.transpileModule(combined, {
       compilerOptions: {
@@ -189,22 +196,22 @@ export class ScriptManager {
   private createContext(remote: Remote): vm.Context {
     const exec = <T>(name: string, ignoreErrors: boolean, func: () => T): T => {
       try {
-        console.log(`execute ${name}`, arguments);
+        console.log(`execute ${name}`);
         return func();
       } catch (err) {
         console.error(`failed to execute ${name}`, err);
-        if (!ignoreErrors) {
+        if (ignoreErrors !== true) {
           throw err.toString();
         }
       }
     };
     const execAsync = async <T>(name: string, ignoreErrors: boolean, func: () => Promise<T>): Promise<T> => {
       try {
-        console.log(`execute ${name}`, arguments);
+        console.log(`execute ${name}`);
         return await func();
       } catch (err) {
         console.error(`failed to execute async ${name}`, err);
-        if (!ignoreErrors) {
+        if (ignoreErrors !== true) {
           throw err;
         }
       }
@@ -215,7 +222,7 @@ export class ScriptManager {
       func: (resolve: (arg?: T) => void, reject: (error: any) => void) => void
     ): Promise<T> => {
       try {
-        console.log(`execute ${name}`, arguments);
+        console.log(`execute ${name}`);
         return await new Promise((resolve, reject) => {
           try {
             func(resolve, reject);
@@ -225,12 +232,11 @@ export class ScriptManager {
         });
       } catch (err) {
         console.error(`failed to execute async ${name}`, err);
-        if (!ignoreErrors) {
+        if (ignoreErrors !== true) {
           throw err;
         }
       }
     };
-    const ssh = this.sshManager;
 
     const context: typeof ScriptContractV1 = {
       // constants
@@ -244,7 +250,7 @@ export class ScriptManager {
             type: "info",
             buttons: ["OK"],
             title: "Alert",
-            message: message,
+            message: message?.toString() ?? "",
           });
         }),
       confirm: (message) =>
@@ -253,7 +259,7 @@ export class ScriptManager {
             type: "question",
             buttons: ["Yes", "No"],
             title: "Confirm",
-            message: message,
+            message: message?.toString() ?? "",
           });
           return response === 0; // 0 is the index of the 'Yes' button
         }),
@@ -261,12 +267,18 @@ export class ScriptManager {
         exec("log", true, () => {
           console.log(message, optionalParams);
         }),
+      delay: (timeInMs) =>
+        execAsync("delay", false, async () => {
+          await new Promise((res) => {
+            setTimeout(res, timeInMs);
+          });
+        }),
 
       // local operations
       local: {
         // folder
-        mkDir: (path, { ignoreErrors }) =>
-          execCallback("local mkDir", ignoreErrors, (resolve, reject) => {
+        mkDir: (path, options) =>
+          execCallback("local mkDir", options?.ignoreErrors, (resolve, reject) => {
             fs.mkdir(path, { recursive: true }, (err, path) => {
               if (err != null) {
                 reject(err);
@@ -275,8 +287,8 @@ export class ScriptManager {
               }
             });
           }),
-        rmDir: (path, { ignoreErrors }) =>
-          execCallback("local mkDir", ignoreErrors, (resolve, reject) => {
+        rmDir: (path, options) =>
+          execCallback("local mkDir", options?.ignoreErrors, (resolve, reject) => {
             fs.rmdir(path, {}, (err) => {
               if (err) {
                 reject(err);
@@ -285,9 +297,9 @@ export class ScriptManager {
               }
             });
           }),
-        listDir: (path, { recursive }) =>
-          execCallback("local listDir", false, (resolve, reject) => {
-            fs.readdir(path, { recursive: recursive }, (err, files) => {
+        listDir: (path, options) =>
+          execCallback("local listDir", options?.ignoreErrors, (resolve, reject) => {
+            fs.readdir(path, { recursive: options?.recursive === true }, (err, files) => {
               if (err) {
                 reject(err);
               } else {
@@ -295,8 +307,8 @@ export class ScriptManager {
               }
             });
           }),
-        dirExists: (filePath, { ignoreErrors }) =>
-          execCallback("local dirExists", false, (resolve, reject) => {
+        dirExists: (filePath, options) =>
+          execCallback("local dirExists", options?.ignoreErrors, (resolve, reject) => {
             const exists = fs.existsSync(filePath);
             if (!exists) {
               return false;
@@ -312,8 +324,8 @@ export class ScriptManager {
           }),
 
         // file
-        deleteFile: (filePath, { ignoreErrors }) =>
-          execCallback("local deleteFile", ignoreErrors, (resolve, reject) => {
+        deleteFile: (filePath, options) =>
+          execCallback("local deleteFile", options?.ignoreErrors, (resolve, reject) => {
             const exists = fs.existsSync(filePath);
             if (!exists) {
               return false;
@@ -332,8 +344,8 @@ export class ScriptManager {
               }
             });
           }),
-        fileExists: (filePath) =>
-          execCallback("local fileExists", false, (resolve, reject) => {
+        fileExists: (filePath, options) =>
+          execCallback("local fileExists", options?.ignoreErrors, (resolve, reject) => {
             const stat = fs.stat(filePath, (err, stats) => {
               if (err) {
                 reject(err);
@@ -342,8 +354,8 @@ export class ScriptManager {
               }
             });
           }),
-        readFileText: (filePath, { ignoreErrors }) =>
-          execCallback("local readFileText", ignoreErrors, (resolve, reject) => {
+        readFileText: (filePath, options) =>
+          execCallback("local readFileText", options?.ignoreErrors, (resolve, reject) => {
             fs.readFile(filePath, { encoding: "utf-8" }, (err, data) => {
               if (err) {
                 reject(err);
@@ -352,8 +364,8 @@ export class ScriptManager {
               }
             });
           }),
-        readFileBuffer: (filePath, { ignoreErrors }) =>
-          execCallback("local readFileBuffer", ignoreErrors, (resolve, reject) => {
+        readFileBuffer: (filePath, options) =>
+          execCallback("local readFileBuffer", options?.ignoreErrors, (resolve, reject) => {
             fs.readFile(filePath, (err, data) => {
               if (err) {
                 reject(err);
@@ -362,9 +374,66 @@ export class ScriptManager {
               }
             });
           }),
-        writeFileText: (filePath, contents, { ignoreErrors }) =>
-          execCallback("local readFileText", ignoreErrors, (resolve, reject) => {
+        writeFileText: (filePath, contents, options) =>
+          execCallback("local readFileText", options?.ignoreErrors, (resolve, reject) => {
             fs.writeFile(filePath, contents, (err) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          }),
+        chmod: (path, mode, options) =>
+          execCallback("local chmod", options?.ignoreErrors, (resolve, reject) => {
+            fs.chmod(path, mode, (err) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          }),
+        chown: (path, uid, gid, options) =>
+          execCallback("local chmod", options?.ignoreErrors, (resolve, reject) => {
+            fs.chown(path, uid, gid, (err) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          }),
+
+        copyFile: (sourceFilePath, targetFilePath, options) =>
+          execCallback("local copyFile", options?.ignoreErrors, (resolve, reject) => {
+            if (!fs.existsSync(sourceFilePath)) {
+              throw new Error("Source file does not exists");
+            }
+            if (options.overwrite !== true) {
+              if (fs.existsSync(targetFilePath)) {
+                throw new Error("Target file already exists");
+              }
+            }
+            fs.copyFile(sourceFilePath, targetFilePath, (err) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          }),
+        copyDir: (sourcePath, targetPath, options) =>
+          execCallback("local copyDir", options?.ignoreErrors, (resolve, reject) => {
+            if (!fs.existsSync(sourcePath)) {
+              throw new Error("Source dir does not exists");
+            }
+            if (options.overwrite !== true) {
+              if (fs.existsSync(targetPath)) {
+                throw new Error("Target dir already exists");
+              }
+            }
+            fs.cp(sourcePath, targetPath, (err) => {
               if (err) {
                 reject(err);
               } else {
@@ -374,8 +443,18 @@ export class ScriptManager {
           }),
 
         // other
-        exec: (command, { ignoreErrors }) =>
-          execCallback("local exec", ignoreErrors, (resolve, reject) => {
+        move: (oldPath, newPath, options) =>
+          execCallback("local move", options?.ignoreErrors, (resolve, reject) => {
+            fs.rename(oldPath, newPath, (err) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve();
+              }
+            });
+          }),
+        exec: (command, options) =>
+          execCallback("local exec", options?.ignoreErrors, (resolve, reject) => {
             childProcessExec(command, { encoding: "utf-8" }, (err, stdOut, stdErr) => {
               if (err) {
                 reject(err);
@@ -384,27 +463,89 @@ export class ScriptManager {
               }
             });
           }),
+
+        // zip
+        zipDirectory: (sourcePath, targetZipPath, options) =>
+          execAsync("local zip directory", options?.ignoreErrors, async () => {
+            // check
+            if (!fs.existsSync(sourcePath)) {
+              throw new Error("Directory to zip does not exists");
+            }
+            if (options.overwrite !== true) {
+              if (fs.existsSync(targetZipPath)) {
+                throw new Error("Target zip file already exists");
+              }
+            }
+
+            // zip
+            const archive = archiver("zip", { zlib: { level: 9 } });
+            const stream = fs.createWriteStream(targetZipPath);
+            try {
+              await new Promise((resolve, reject) => {
+                archive
+                  .directory(sourcePath, false)
+                  .on("error", (err: archiver.ArchiverError) => reject(err))
+                  .pipe(stream);
+
+                stream.on("close", () => resolve(true));
+                archive.finalize();
+              });
+            } finally {
+              stream.close();
+              stream.destroy();
+            }
+          }),
+        zipFile: (sourceFilePath, targetZipPath, options) =>
+          execAsync("local zip file", options?.ignoreErrors, async () => {
+            // check
+            if (!fs.existsSync(sourceFilePath)) {
+              throw new Error("File to zip does not exists");
+            }
+            if (options.overwrite !== true) {
+              if (fs.existsSync(targetZipPath)) {
+                throw new Error("Target zip file already exists");
+              }
+            }
+
+            // zip
+            const archive = archiver("zip", { zlib: { level: 9 } });
+            const stream = fs.createWriteStream(targetZipPath);
+            try {
+              await new Promise((resolve, reject) => {
+                archive
+                  .file(sourceFilePath, { name: getFileName(sourceFilePath) })
+                  .on("error", (err: archiver.ArchiverError) => reject(err))
+                  .pipe(stream);
+
+                stream.on("close", () => resolve(true));
+                archive.finalize();
+              });
+            } finally {
+              stream.close();
+              stream.destroy();
+            }
+          }),
       },
 
       // remote operations
       remote: {
         // folder
-        mkDir: (path, { ignoreErrors }) =>
-          execAsync("remote mkDir", ignoreErrors, async () => {
+        mkDir: (path, options) =>
+          execAsync("remote mkDir", options?.ignoreErrors, async () => {
             await remote.connection.sftp.mkdir(path);
           }),
-        rmDir: (path, { ignoreErrors }) =>
-          execAsync("remote mkDir", ignoreErrors, async () => {
+        rmDir: (path, options) =>
+          execAsync("remote mkDir", options?.ignoreErrors, async () => {
             await remote.connection.sftp.rmdir(path);
           }),
-        listDir: (path, { recursive }) =>
-          execAsync("remote listDir", false, async () => {
+        listDir: (path, options) =>
+          execAsync("remote listDir", options.ignoreErrors, async () => {
             const listDir = async (dir: string): Promise<string[]> => {
               const result = await remote.connection.sftp.readdir(dir);
               const entries: string[] = [];
 
               // recursive?
-              if (recursive) {
+              if (options?.recursive === true) {
                 for (let fileOrFolder of result) {
                   // check if normal directory
                   if (fileOrFolder == null || !fileOrFolder.attrs.isDirectory()) {
@@ -434,15 +575,15 @@ export class ScriptManager {
             const entries = await listDir(path);
             return entries;
           }),
-        dirExists: (filePath, { ignoreErrors }) =>
-          execAsync("remote dirExists", false, async () => {
+        dirExists: (filePath, options) =>
+          execAsync("remote dirExists", options?.ignoreErrors, async () => {
             const stats = await remote.connection.sftp.stat(filePath);
             return stats != null && stats.isDirectory();
           }),
 
         // file
-        deleteFile: (filePath, { ignoreErrors }) =>
-          execAsync("remote deleteFile", ignoreErrors, async () => {
+        deleteFile: (filePath, options) =>
+          execAsync("remote deleteFile", options?.ignoreErrors, async () => {
             const stats = await remote.connection.sftp.stat(filePath);
             if (stats == null) {
               return;
@@ -451,27 +592,70 @@ export class ScriptManager {
             }
             await remote.connection.sftp.unlink(filePath);
           }),
-        fileExists: (filePath) =>
-          execAsync("remote fileExists", false, async () => {
+        fileExists: (filePath, options) =>
+          execAsync("remote fileExists", options?.ignoreErrors, async () => {
             const stats = await remote.connection.sftp.stat(filePath);
             return stats && stats.isFile();
           }),
-        readFileText: (filePath, { ignoreErrors }) =>
-          execAsync("remote readFileText", ignoreErrors, async () => {
+        readFileText: (filePath, options) =>
+          execAsync("remote readFileText", options?.ignoreErrors, async () => {
             return await remote.connection.sftp.readFile(filePath, "utf8");
           }),
-        readFileBuffer: (filePath, { ignoreErrors }) =>
-          execAsync("remote readFileBuffer", ignoreErrors, async () => {
+        readFileBuffer: (filePath, options) =>
+          execAsync("remote readFileBuffer", options?.ignoreErrors, async () => {
             throw new Error("not implemented");
           }),
-        writeFileText: (filePath, contents, { ignoreErrors }) =>
-          execAsync("remote readFileText", ignoreErrors, async () => {
+        writeFileText: (filePath, contents, options) =>
+          execAsync("remote readFileText", options?.ignoreErrors, async () => {
             await remote.connection.sftp.writeFile(filePath, contents, null);
+          }),
+        downloadFile: (remoteFilePath, localFilePath, options) =>
+          execAsync("remote download file", options?.ignoreErrors, async () => {
+            // check
+            const stats = await remote.connection.sftp.stat(remoteFilePath);
+            if (stats == null || !stats.isFile()) {
+              throw new Error("File on remote does not exists or is not a file");
+            }
+            if (options.overwrite !== true) {
+              if (fs.existsSync(localFilePath)) {
+                throw new Error("Target local file already exists");
+              }
+            }
+            // download
+            await remote.connection.sftp.fastGet(remoteFilePath, localFilePath);
+          }),
+        uploadFile: (localFilePath, remoteFilePath, options) =>
+          execAsync("remote download file", options?.ignoreErrors, async () => {
+            // check
+            if (!fs.existsSync(localFilePath)) {
+              throw new Error("Source local file does not exists");
+            }
+            if (options.overwrite !== true) {
+              const stats = await remote.connection.sftp.stat(remoteFilePath);
+              if (stats != null && (stats.isFile() || stats.isDirectory())) {
+                throw new Error("Target remote file already exists");
+              }
+            }
+
+            // upload
+            await remote.connection.sftp.fastPut(localFilePath, remoteFilePath);
+          }),
+        chmod: (path, mode, options) =>
+          execAsync("remote chmod", options?.ignoreErrors, async () => {
+            await remote.connection.sftp.chmod(path, mode);
+          }),
+        chown: (path, uid, gid, options) =>
+          execAsync("remote chown", options?.ignoreErrors, async () => {
+            await remote.connection.sftp.chown(path, uid, gid);
           }),
 
         // other
-        exec: (command, { ignoreErrors }) =>
-          execAsync("remote exec", ignoreErrors, async () => {
+        move: (oldPath, newPath, options) =>
+          execAsync("remote move", options?.ignoreErrors, async () => {
+            await remote.connection.sftp.rename(oldPath, newPath);
+          }),
+        exec: (command, options) =>
+          execAsync("remote exec", options?.ignoreErrors, async () => {
             try {
               const result = await remote.connection.ssh.exec(command, [], null);
               return { stdout: result, stderr: null };
