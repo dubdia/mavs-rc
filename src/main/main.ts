@@ -10,7 +10,6 @@ import { RemotesConfigManager } from "./config/remotes-config-manager";
 import { SshCertManager } from "./ssh-cert-manager";
 import { ScriptManager } from "./script-manager";
 
-
 // handle uncaught exceptions
 process.on("uncaughtException", function (error) {
   try {
@@ -28,11 +27,12 @@ const userDataPath = app.getPath("userData");
 log.transports.file.resolvePathFn = () => path.join(userDataPath, "rc.log");
 log.transports.file.level = appConfigManager.config.logLevel;
 
-
 // print startup message
 const appVersion = app.getVersion();
 const devTools = MAIN_WINDOW_VITE_DEV_SERVER_URL != null || appConfigManager.config.devTools; // only enable when debugging or when configured
-log.info(`Starting app v${appVersion} with log level ${appConfigManager.config.logLevel}${devTools ? ' and Dev-Tools' : ''}`);
+log.info(
+  `Starting app v${appVersion} with log level ${appConfigManager.config.logLevel}${devTools ? " and Dev-Tools" : ""}`
+);
 
 // create managers
 log.verbose(`Create managers...`);
@@ -41,7 +41,6 @@ export let sshCertManager = new SshCertManager();
 export let sshManager = new SshManager(remotesManager, sshCertManager);
 export let scriptManager = new ScriptManager(remotesManager, sshManager);
 export let mainWindow!: BrowserWindow; // will be assigned later
-
 
 // configure close/dispose
 {
@@ -87,19 +86,23 @@ app.on("ready", () => {
   // configure security restrictions
   {
     // define what requests are allowed
-    let allowedUrls: string[];
+    const allowedUrls: string[] = [];
+
+    // allow calls to the current directory:
+    allowedUrls.push("file:///" + app.getAppPath().replaceAll("\\", "/"));
+
+    // in development, allow our vite dev-server and the dev-tools as source
     if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-      // in development, only allow our vite dev-server and the dev-tools as source
-      allowedUrls = [MAIN_WINDOW_VITE_DEV_SERVER_URL, MAIN_WINDOW_VITE_DEV_SERVER_URL.replace("http://", "ws://")];
-    } else {
-      // in production, only allow file calls to the current directory
-      allowedUrls = ["file:///" + app.getAppPath().replaceAll("\\", "/")];
+      allowedUrls.push(MAIN_WINDOW_VITE_DEV_SERVER_URL, MAIN_WINDOW_VITE_DEV_SERVER_URL.replace("http://", "ws://"));
     }
+
+    // allow devtools if enabled
     if (devTools) {
       allowedUrls.push("devtools://");
     }
 
     // block outgoing requests for more security
+    log.verbose("Block all web requests except:", allowedUrls);
     session.defaultSession.webRequest.onBeforeRequest((details, callback) => {
       const requestUrl = details.url.replaceAll("\\", "/");
       const existsInAllowed = allowedUrls.find((allowedUrl) => requestUrl.startsWith(allowedUrl));

@@ -1,3 +1,22 @@
+declare type ScriptContractV1_Stats = {
+  path: string;
+
+  mode: number;
+  uid: number;
+  gid: number;
+  size: number;
+  atime: number;
+  mtime: number;
+
+  isDirectory: boolean;
+  isFile: boolean;
+  isBlockDevice: boolean;
+  isCharacterDevice: boolean;
+  isSymbolicLink: boolean;
+  isFIFO: boolean;
+  isSocket: boolean;
+}
+
 declare type ScriptContractV1_Shared = {
   mkDir(path: string, options?: { ignoreErrors?: boolean }): Promise<void>;
   rmDir(path: string, options?: { ignoreErrors?: boolean }): Promise<void>;
@@ -5,15 +24,22 @@ declare type ScriptContractV1_Shared = {
   dirExists(filePath: string, options?: { ignoreErrors?: boolean }): Promise<boolean>;
 
   writeFileText(filePath: string, contents: string,  options?: { ignoreErrors?: boolean }): Promise<void>;
-  readFileText(filePath: string,  options?: { ignoreErrors?: boolean }): Promise<string>;
-  readFileBuffer(filePath: string,  options?: { ignoreErrors?: boolean }): Promise<Buffer>;
-  deleteFile(filePath: string,  options?: { ignoreErrors?: boolean }): Promise<void>;
-  fileExists(filePath: string,  options?: { ignoreErrors?: boolean }): Promise<boolean>;
+  readFileText(filePath: string, options?: { ignoreErrors?: boolean }): Promise<string>;
+  readFileBuffer(filePath: string, options?: { ignoreErrors?: boolean }): Promise<Buffer>;
+  deleteFile(filePath: string, options?: { ignoreErrors?: boolean }): Promise<void>;
+  fileExists(filePath: string, options?: { ignoreErrors?: boolean }): Promise<boolean>;
 
+  stats(path: string, options?: { ignoreErrors?: boolean }): Promise<ScriptContractV1_Stats | null>;
   move(oldPath: string, newPath: string, options?: { ignoreErrors?: boolean }): Promise<void>;
   chown(path: string, uid: number, gid: number, options?: { ignoreErrors?: boolean }): Promise<void>;
   chmod(path: string, mode: number | string, options?: { ignoreErrors?: boolean }): Promise<void>;
   exec(command: string, options?: { ignoreErrors?: boolean }): Promise<{ stdout: string; stderr: string }>;
+
+  isAbsolutePath(path: string): boolean;
+  joinPath(...paths: string[]): string;
+  getDirName(path: string): string;
+  getFileName(path: string): string;
+  getExtension(path: string): string;
 };
 declare type ScriptContractV1_Remote = ScriptContractV1_Shared & {
     downloadFile(remoteFilePath: string, localFilePath: string, options?: {ignoreErrors?: boolean, overwrite?: boolean}): Promise<void>
@@ -25,18 +51,26 @@ declare type ScriptContractV1_Local = ScriptContractV1_Shared & {
 
     copyDir(sourcePath: string, targetPath: string, options?: { ignoreErrors?: boolean, overwrite?: boolean }): Promise<void>;
     copyFile(sourceFilePath: string, targetFilePath: string, options?: { ignoreErrors?: boolean, overwrite?: boolean }): Promise<void>;
+  
+    resolvePath(...paths: string[]): string;
+    normalizePath(path: string): string;
 };
 
 declare namespace ScriptContractV1 { //global
   // constants
   const remoteId: string;
   const remoteName: string;
+  const remotePosixType: ('posix' | 'windows');
 
   // generic functions
   function alert(message: string | number | boolean | Date): void;
   function confirm(message: string | number | boolean | Date): boolean;
+  function prompt(message: string | number | boolean | Date, options?: { defaultText?: string, label?: string }): Promise<string | null>;
   function log(message: any, ...optionalParams: any[]): void;
   function delay(timeInMs: number): Promise<void>;
+  function exit(message?: string | number | boolean | Date): never;
+
+  function joinPath(parts: string[], type: ('posix' | 'windows')): string;
 
   // local & remote functions
   const local: ScriptContractV1_Local;

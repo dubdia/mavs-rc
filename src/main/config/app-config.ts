@@ -5,6 +5,9 @@ export class AppConfig {
   /** log level for the application */
   logLevel: LogLevel = "info";
 
+  /** whether to log ssh traffic as verbose (set logLevel to verbose to see it)  */
+  logSsh: boolean = false;
+
   /** whether to open dev tools at start */
   devTools: boolean = false;
 }

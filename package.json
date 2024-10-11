@@ -39,6 +39,7 @@
     "archiver": "^7.0.1",
     "async-mutex": "^0.5.0",
     "autoprefixer": "^10.4.20",
+    "custom-electron-prompt": "^1.5.8",
     "electron-log": "^5.2.0",
     "electron-squirrel-startup": "^1.0.1",
     "electron-typescript-ipc": "^3.0.0",

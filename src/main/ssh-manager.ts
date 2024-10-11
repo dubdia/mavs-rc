@@ -19,7 +19,7 @@ import { RemoteConnection } from "./models/RemoteConnection";
 import { joinPath } from "../shared/utils/io/joinPath";
 import { escapeUnixShellArg } from "../shared/utils/escapeUnixShellArg";
 import { dialog } from "electron";
-import { mainWindow } from "./main";
+import { appConfigManager, mainWindow } from "./main";
 import { RemoteTunnelInfo } from "../shared/models/RemoteTunnelInfo";
 import { SSHConfig } from "./ssh2-promise/src/sshConfig";
 import { TunnelConfig } from "./ssh2-promise/src/tunnelConfig";
@@ -58,9 +58,10 @@ export class SshManager {
       // set logging method when log level is verbose or lower
       let loggingMethod: DebugFunction | null = null;
       if (
-        log.transports.console.level == "verbose" ||
-        log.transports.console.level == "debug" ||
-        log.transports.console.level == "silly"
+        appConfigManager.config.logSsh === true &&
+        (log.transports.console.level == "verbose" ||
+          log.transports.console.level == "debug" ||
+          log.transports.console.level == "silly")
       ) {
         loggingMethod = (message) => log.verbose("ssh: " + message);
       }
@@ -120,7 +121,9 @@ export class SshManager {
       connection.ssh = new SSH2Promise(connectionInfo);
       connection.ssh.on("ssh", (eventName: string) => {
         // possible values: "beforeconnect", "connect", "beforedisconnect", "disconnect"
-        log.verbose(`Received ssh event ${eventName}`);
+        if (appConfigManager.config.logSsh) {
+          log.verbose(`Received ssh event ${eventName}`);
+        }
         if (eventName == "disconnect" && !connection.disposed) {
           log.info(`Connection exited, dispose remote now`);
           this.remotesManager.disposeRemoteAsync(remote).then();

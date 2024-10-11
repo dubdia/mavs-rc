@@ -1,22 +1,23 @@
 import vm from "vm";
 import archiver from "archiver/index";
-import fs, { mkdir } from "fs";
-import ts, { ExitStatus } from "typescript";
+import prompt from "custom-electron-prompt";
+import fs from "fs";
+import ts from "typescript";
 import { BrowserWindow, dialog } from "electron";
 import { ScriptConfigManager } from "./config/script-config-manager";
 import { Script, ScriptInfo } from "./models/Script";
 import log from "electron-log/main";
 import { v4 } from "uuid";
 import { RemotesManager } from "./remotes-manager";
-import { array, string } from "prop-types";
 import { Remote } from "./models/Remote";
-import { ChildProcess, execSync, spawn } from "child_process";
 import { SshManager } from "./ssh-manager";
 import { exec as childProcessExec } from "child_process";
-import { FileEntryWithStats } from "ssh2";
 import { joinPath } from "../shared/utils/io/joinPath";
-import path from "path";
+import { default as pathLib } from "path";
 import { getFileName } from "../shared/utils/io/getFileName";
+import { getDirectoryName } from "../shared/utils/io/getDirectoryName";
+import { getFileExtension } from "../shared/utils/io/getFileExtension";
+import { OsType } from "../shared/models/OsType";
 
 /** used to transcompile and run scripts */
 export class ScriptManager {
@@ -165,8 +166,18 @@ export class ScriptManager {
       log.verbose("Script executed successfully", result);
       return { success: true, error: null };
     } catch (err) {
-      log.verbose("A runtime error occured while executing the script", err);
-      return { success: false, error: "Runtime error: " + err?.toString() };
+      if (err && err instanceof ScriptExit) {
+        // the script exited purposly via an error
+        log.verbose("The script exited by throwing the ExitScript-Error", err);
+        return {
+          success: false,
+          error: `Script exited ${err.message && err.message.length > 0 ? ": " + err.message : ""}`,
+        };
+      } else {
+        // the script failed due a runtime error
+        log.verbose("A runtime error occured while executing the script", err);
+        return { success: false, error: "Runtime error: " + err?.toString() };
+      }
     }
   }
 
@@ -201,7 +212,7 @@ export class ScriptManager {
       } catch (err) {
         console.error(`failed to execute ${name}`, err);
         if (ignoreErrors !== true) {
-          throw err.toString();
+          throw err;
         }
       }
     };
@@ -238,10 +249,13 @@ export class ScriptManager {
       }
     };
 
+    fs.stat;
+
     const context: typeof ScriptContractV1 = {
       // constants
       remoteId: remote.info.id,
       remoteName: remote.info.name,
+      remotePosixType: remote.connection?.osType == OsType.Windows ? "windows" : "posix",
 
       // generic functions
       alert: (message) =>
@@ -263,6 +277,20 @@ export class ScriptManager {
           });
           return response === 0; // 0 is the index of the 'Yes' button
         }),
+      prompt: (message, options) =>
+        execAsync<string | null>("prompt", false, async () => {
+          const response = await prompt({
+            title: message?.toString() ?? "",
+            type: "input",
+            value: options.defaultText,
+            label: options.label ?? "Input:",
+          });
+          if (response == null) {
+            return null;
+          } else {
+            return response.toString();
+          }
+        }),
       log: (message, optionalParams) =>
         exec("log", true, () => {
           console.log(message, optionalParams);
@@ -272,6 +300,15 @@ export class ScriptManager {
           await new Promise((res) => {
             setTimeout(res, timeInMs);
           });
+        }),
+      exit: (message) =>
+        exec("exit", false, () => {
+          throw new ScriptExit(message?.toString() ?? "");
+        }),
+
+      joinPath: (parts, type) =>
+        exec("joinPath", false, () => {
+          return joinPath(parts, type == "windows" ? OsType.Windows : OsType.Posix);
         }),
 
       // local operations
@@ -443,6 +480,31 @@ export class ScriptManager {
           }),
 
         // other
+        stats: (path, options) =>
+          execCallback("local stats", options?.ignoreErrors, (resolve, reject) => {
+            fs.stat(path, (err, stats) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve({
+                  path: path,
+                  isBlockDevice: stats.isBlockDevice(),
+                  isCharacterDevice: stats.isCharacterDevice(),
+                  isDirectory: stats.isDirectory(),
+                  isFIFO: stats.isFIFO(),
+                  isFile: stats.isFile(),
+                  isSocket: stats.isSocket(),
+                  isSymbolicLink: stats.isSymbolicLink(),
+                  atime: stats.atimeMs,
+                  mtime: stats.mtimeMs,
+                  gid: stats.gid,
+                  uid: stats.uid,
+                  mode: stats.mode,
+                  size: stats.size,
+                });
+              }
+            });
+          }),
         move: (oldPath, newPath, options) =>
           execCallback("local move", options?.ignoreErrors, (resolve, reject) => {
             fs.rename(oldPath, newPath, (err) => {
@@ -524,6 +586,39 @@ export class ScriptManager {
               stream.close();
               stream.destroy();
             }
+          }),
+
+        // path
+        isAbsolutePath: (path: string) =>
+          exec("local isAbsolutePath", false, () => {
+            return pathLib.isAbsolute(path);
+          }),
+
+        joinPath: (...paths: string[]) =>
+          exec("local joinPath", false, () => {
+            return pathLib.join(...paths);
+          }),
+
+        getDirName: (path) =>
+          exec("local getDirName", false, () => {
+            return pathLib.dirname(path);
+          }),
+        getFileName: (path) =>
+          exec("local getFileName", false, () => {
+            return pathLib.basename(path);
+          }),
+        getExtension: (path) =>
+          exec("local getExtension", false, () => {
+            return pathLib.extname(path);
+          }),
+
+        resolvePath: (...paths: string[]) =>
+          exec("local resolvePath", false, () => {
+            return pathLib.resolve(...paths);
+          }),
+        normalizePath: (path: string) =>
+          exec("local normalizePath", false, () => {
+            return pathLib.normalize(path);
           }),
       },
 
@@ -650,6 +745,26 @@ export class ScriptManager {
           }),
 
         // other
+        stats: (path, options) =>
+          execAsync("remote stats", options?.ignoreErrors, async () => {
+            const stats = await remote.connection.sftp.stat(path);
+            return {
+              path: path,
+              isBlockDevice: stats.isBlockDevice(),
+              isCharacterDevice: stats.isCharacterDevice(),
+              isDirectory: stats.isDirectory(),
+              isFIFO: stats.isFIFO(),
+              isFile: stats.isFile(),
+              isSocket: stats.isSocket(),
+              isSymbolicLink: stats.isSymbolicLink(),
+              atime: stats.atime,
+              mtime: stats.mtime,
+              gid: stats.gid,
+              uid: stats.uid,
+              mode: stats.mode,
+              size: stats.size,
+            };
+          }),
         move: (oldPath, newPath, options) =>
           execAsync("remote move", options?.ignoreErrors, async () => {
             await remote.connection.sftp.rename(oldPath, newPath);
@@ -657,10 +772,53 @@ export class ScriptManager {
         exec: (command, options) =>
           execAsync("remote exec", options?.ignoreErrors, async () => {
             try {
-              const result = await remote.connection.ssh.exec(command, [], null);
+              const result = await remote.connection.ssh.exec(command);
               return { stdout: result, stderr: null };
             } catch (err) {
               return { stdout: null, stderr: err };
+            }
+          }),
+
+        // path
+        isAbsolutePath: (path: string) =>
+          exec("remote isAbsolutePath", false, () => {
+            if (remote.connection.osType == OsType.Windows) {
+              return pathLib.win32.isAbsolute(path);
+            } else {
+              return pathLib.posix.isAbsolute(path);
+            }
+          }),
+        joinPath: (...paths: string[]) =>
+          exec("remote joinPath", false, () => {
+            if (remote.connection.osType == OsType.Windows) {
+              return pathLib.win32.join(...paths);
+            } else {
+              return pathLib.posix.join(...paths);
+            }
+          }),
+
+        getDirName: (path) =>
+          exec("remote getDirName", false, () => {
+            if (remote.connection.osType == OsType.Windows) {
+              return pathLib.win32.dirname(path);
+            } else {
+              return pathLib.posix.dirname(path);
+            }
+          }),
+        getFileName: (path) =>
+          exec("remote getFileName", false, () => {
+            if (remote.connection.osType == OsType.Windows) {
+              return pathLib.win32.basename(path);
+            } else {
+              return pathLib.posix.basename(path);
+            }
+          }),
+        getExtension: (path) =>
+          exec("remote getExtension", false, () => {
+            if (remote.connection.osType == OsType.Windows) {
+              return pathLib.win32.extname(path);
+            } else {
+              return pathLib.posix.extname(path);
             }
           }),
       },
@@ -678,4 +836,12 @@ export interface ContextItem {
 export interface ScriptExecutionResult {
   success: boolean;
   error: string;
+}
+
+/** throw this error inside a script at runtime to exit it */
+export class ScriptExit extends Error {
+  constructor(msg: string) {
+    super(msg);
+    Object.setPrototypeOf(this, ScriptExit.prototype);
+  }
 }
