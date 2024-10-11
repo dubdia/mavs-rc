@@ -150,19 +150,16 @@ export function registerIpcHandlers() {
 
   // scripts
   typedIpcMain.handle("listScripts", (_) => {
-    return scriptManager.listScripts().map(x => x.info);
+    return scriptManager.listScripts().map((x) => x.info);
   });
   typedIpcMain.handle("createScript", (_, name) => {
-    scriptManager.addNew(name);
-    return scriptManager.listScripts().map(x => x.info);
+    return scriptManager.addNew(name).info;
   });
   typedIpcMain.handle("deleteScript", async (_, scriptId) => {
     await scriptManager.deleteByIdAsync(scriptId);
-    return scriptManager.listScripts().map(x => x.info);
   });
   typedIpcMain.handle("updateScript", (_, script) => {
-    scriptManager.update(script);
-    return scriptManager.listScripts().map(x => x.info);
+    return scriptManager.update(script);
   });
   typedIpcMain.handle("executeScript", async (_, id, scriptId) => {
     return await scriptManager.executeAsync(id, scriptId);

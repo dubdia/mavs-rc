@@ -14,9 +14,11 @@ import { RemoteFile } from "../../shared/models/RemoteFile";
 import { RemoteTunnelDto } from "../../shared/models/RemoteTunnelDto";
 import { RemoteTunnelInfo } from "../../shared/models/RemoteTunnelInfo";
 import { processList, ProcessableListParams } from "../models/ProcessableList";
-import { createRemoteSession } from "../models/Session";
+import { createRemoteSession, Session } from "../models/Session";
 import { State } from "../models/State";
 import { Script, ScriptInfo } from "../../main/models/Script";
+import { createScriptEntry, ScriptEntry } from "../models/ScriptList";
+import { FaLeaf } from "react-icons/fa";
 
 export const loadRemotes = createAsync("loadRemotes", async () => await ipc.invoke("listRemotes"), {
   onPending: (state: State) => {
@@ -441,13 +443,14 @@ export const sessionFetchScripts = createAsync("sessionFetchScripts", async (id:
   onRejected: (state: State, _error, arg) => {
     const s = state.data.entities[arg!].session.scripts;
     s.loading = false;
-    processList(s, { original: [] });
+    scriptsAdapter.removeAll(s.data);
     toast.error("An error occured while loading the scripts");
   },
   onFulfilled: (state: State, data, arg) => {
     const s = state.data.entities[arg!].session.scripts;
     s.loading = false;
-    processList(s, { original: data });
+    const scriptEntries = data.map((x) => createScriptEntry(x));
+    scriptsAdapter.setAll(s.data, scriptEntries);
   },
 });
 export const sessionCreateScript = createAsync(
@@ -462,7 +465,8 @@ export const sessionCreateScript = createAsync(
     },
     onFulfilled: (state: State, data, arg) => {
       const session = state.data.entities[arg?.id!].session;
-      processList(session.scripts, { original: data });
+      scriptsAdapter.addOne(session.scripts.data, createScriptEntry(data));
+      session.scripts.editScriptId = data.scriptId;
     },
   }
 );
@@ -478,8 +482,7 @@ export const sessionUpdateScript = createAsync(
     },
     onFulfilled: (state: State, data, arg) => {
       const session = state.data.entities[arg?.id!].session;
-      processList(session.scripts, { original: data });
-      session.scripts.editScriptId = null;
+      scriptsAdapter.setOne(session.scripts.data, createScriptEntry(data));
     },
   }
 );
@@ -495,7 +498,7 @@ export const sessionDeleteScript = createAsync(
     },
     onFulfilled: (state: State, data, arg) => {
       const session = state.data.entities[arg?.id!].session;
-      processList(session.scripts, { original: data });
+      scriptsAdapter.removeOne(session.scripts.data, arg.scriptId);
     },
   }
 );
@@ -508,19 +511,31 @@ export const sessionExecuteScript = createAsync(
   {
     onPending: (state: State, arg) => {
       const s = state.data.entities[arg.id!].session;
-      const script = s.scripts.original.find((x) => x.scriptId == arg.scriptId);
-      script.running = true;
+      scriptsAdapter.updateOne(s.scripts.data, {
+        id: arg.id,
+        changes: {
+          running: true,
+        },
+      });
     },
     onRejected: (state: State, _error, arg) => {
       const s = state.data.entities[arg.id!].session;
-      const script = s.scripts.original.find((x) => x.scriptId == arg.scriptId);
-      script.running = false;
+      scriptsAdapter.updateOne(s.scripts.data, {
+        id: arg.id,
+        changes: {
+          running: false,
+        },
+      });
       toast.error("An error occured while executing the script");
     },
     onFulfilled: (state: State, data, arg) => {
       const s = state.data.entities[arg.id!].session;
-      const script = s.scripts.original.find((x) => x.scriptId == arg.scriptId);
-      script.running = false;
+      scriptsAdapter.updateOne(s.scripts.data, {
+        id: arg.id,
+        changes: {
+          running: false,
+        },
+      });
       if (data.success) {
         toast.success("Successfully ran script!");
       } else {
@@ -531,12 +546,19 @@ export const sessionExecuteScript = createAsync(
 );
 
 // create adapter for managing the remotes array
-const remotesAdapter = createEntityAdapter<Remote, string>({
-  selectId: (remote) => remote!.id!,
+export const remotesAdapter = createEntityAdapter<Remote, string>({
+  selectId: (x) => x!.id!,
   sortComparer: (a, b) => (a?.dto?.info?.name ?? "").localeCompare(b.dto?.info?.name ?? ""),
 });
-export const { selectIds, selectEntities, selectAll, selectTotal } = remotesAdapter.getSelectors<State>(
-  (state) => state.data
+export const { selectAll, selectById, selectTotal } = remotesAdapter.getSelectors<State>((state) => state.data);
+
+// create adapter for managing the scripts array
+export const scriptsAdapter = createEntityAdapter<ScriptEntry, string>({
+  selectId: (x) => x!.scriptId!,
+  sortComparer: (a, b) => (a?.name ?? "").localeCompare(b.name ?? ""),
+});
+export const { selectAll: selectAllScripts, selectById: selectScriptById } = scriptsAdapter.getSelectors<Session>(
+  (state) => state.scripts.data
 );
 
 // create initial state
@@ -630,13 +652,6 @@ export const appSlice = createSlice({
       const session = state.data.entities[action.payload.id].session;
       processList(session.tunnels, action.payload.params);
     },
-    processSessionScripts: (
-      state,
-      action: PayloadAction<{ id: string; params: ProcessableListParams<ScriptInfo> }>
-    ) => {
-      const session = state.data.entities[action.payload.id].session;
-      processList(session.scripts, action.payload.params);
-    },
 
     editSessionTunnel: (state, action: PayloadAction<{ id: string; editTunnelId: string | null }>) => {
       const session = state.data.entities[action.payload.id].session;
@@ -663,20 +678,25 @@ export const appSlice = createSlice({
     selectScript: (state, action: PayloadAction<{ id: string; scriptId: string }>) => {
       const s = state.data.entities[action.payload.id].session;
       s.scripts.editScriptId = action.payload.scriptId;
-      console.log(s.scripts.editScriptId);
     },
     setScriptContent: (state, action: PayloadAction<{ id: string; scriptId: string; content: string }>) => {
       const s = state.data.entities[action.payload.id].session;
-      const script = s.scripts.original.find((x) => x.scriptId == action.payload.scriptId);
-      script.content = action.payload.content;
+      scriptsAdapter.updateOne(s.scripts.data, {
+        id: action.payload.scriptId,
+        changes: {
+          content: action.payload.content,
+        },
+      });
     },
     appendScriptLog: (state, action: PayloadAction<{ id: string; scriptId: string; message: string }>) => {
-      const session = state.data.entities[action.payload.id].session;
-      const script = session.scripts.original.find((x) => x.scriptId == action.payload.scriptId);
-      if (script.log == null) {
-        script.log = [];
-      }
-      script.log.push(action.payload.message ?? "");
+      const s = state.data.entities[action.payload.id].session;
+      const script = selectScriptById(s, action.payload.scriptId);
+      scriptsAdapter.updateOne(s.scripts.data, {
+        id: action.payload.scriptId,
+        changes: {
+          log: [...(script.log ?? []), action.payload.message ?? ""], //append to existing
+        },
+      });
     },
   },
   extraReducers: (builder) => {
@@ -724,7 +744,6 @@ export const {
   clear,
   setActiveId,
   setSelectedTab,
-  //setSessionCommand,
   closeSessionFile,
   addSessionFile,
   changeSessionFile,
@@ -735,7 +754,6 @@ export const {
   appendShellData,
   editSessionTunnel,
   changeSessionTunnel,
-  processSessionScripts,
   selectScript,
   setScriptContent,
   appendScriptLog,

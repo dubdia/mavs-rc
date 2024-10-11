@@ -26,7 +26,7 @@ type Events = {
 
 /** definition of possible commands that can be invoked on the main by the renderer */
 type Commands = {
-  getAppVersion: () => string; 
+  getAppVersion: () => string;
 
   // remotes
   listRemotes: () => RemoteDto[];
@@ -69,7 +69,7 @@ type Commands = {
   downloadFile: (id: string, filePath: string) => boolean;
   downloadFolderAsZip: (id: string, path: string) => boolean;
 
-  pickFilePath: (title: string, buttonLabel: string, fileMustExists: boolean) => string | null,
+  pickFilePath: (title: string, buttonLabel: string, fileMustExists: boolean) => string | null;
   uploadFile: (id: string, localFilePath: string, remoteFilePath: string, overwrite: boolean) => void;
 
   // shortcuts
@@ -86,11 +86,10 @@ type Commands = {
 
   // shells
   listScripts: () => ScriptInfo[];
-  createScript: (name: string) => ScriptInfo[];
-  deleteScript: (scriptId: string) => ScriptInfo[];
-  updateScript: (script: ScriptInfo) => ScriptInfo[];
+  createScript: (name: string) => ScriptInfo;
+  deleteScript: (scriptId: string) => void;
+  updateScript: (script: ScriptInfo) => ScriptInfo;
   executeScript: (id: string, scriptId: string) => ScriptExecutionResult;
-
 };
 
 export const typedIpcMain = ipcMain as TypedIpcMain<Events, Commands>;

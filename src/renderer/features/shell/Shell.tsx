@@ -52,7 +52,7 @@ export const Shell = ({ id, shellTab }: { id: string; shellTab: TabName }) => {
     const terminalElement = xtermRef.current?.terminalRef?.current;
     if (terminalElement) {
     }
-    console.log("useEffect", fitAddon.current.proposeDimensions());
+    //console.log("useEffect", fitAddon.current.proposeDimensions());
     fitAddon.current.fit();
   }, []);
 

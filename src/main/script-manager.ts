@@ -85,7 +85,7 @@ export class ScriptManager {
     this.scripts = this.scripts.filter((x) => x.info.scriptId !== id);
     this.updateConfig();
   }
-  public update(scriptInfo: ScriptInfo) {
+  public update(scriptInfo: ScriptInfo): ScriptInfo {
     log.info("Update script");
     // check
     if (scriptInfo == null || scriptInfo.scriptId == null) {
@@ -98,6 +98,7 @@ export class ScriptManager {
 
     // save config
     this.updateConfig();
+    return scriptInfo;
   }
 
   /** transpiles and executes and contents of given script for given remote */

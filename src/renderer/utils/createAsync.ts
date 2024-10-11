@@ -31,10 +31,10 @@ export const createAsync = <S, Returned, ThunkArg = null>(
     // create thunk
    /* const wrapperFunc: AsyncThunkPayloadCreator<Returned, ThunkArg, AsyncThunkConfig> = (arg, { rejectWithValue, fulfillWithValue } ) => {
         return func(arg).then(data => {
-            console.log('THEN', name);
+            //console.log('THEN', name);
             return fulfillWithValue(data);
         }).catch((err) => {
-            console.log('ERROR', name, err);
+            //console.log('ERROR', name, err);
             return rejectWithValue('ERROR');
         });
     }*/

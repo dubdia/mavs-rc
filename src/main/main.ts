@@ -119,7 +119,7 @@ app.on("ready", () => {
   {
     // register shortcut to reload
     if (
-      !globalShortcut.register("CommandOrControl+R", () => {
+      !globalShortcut.register("CommandOrControl+Shift+R", () => {
         const focusedWindow = BrowserWindow.getFocusedWindow();
         if (focusedWindow) {
           log.info("Reload window");

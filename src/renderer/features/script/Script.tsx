@@ -1,51 +1,49 @@
-import { Editor, Monaco, useMonaco } from "@monaco-editor/react";
-import { languages, editor, MarkerSeverity } from "monaco-editor/esm/vs/editor/editor.api";
+import { Editor, Monaco } from "@monaco-editor/react";
+import { editor, MarkerSeverity } from "monaco-editor/esm/vs/editor/editor.api";
 import { useAppDispatch, useRemoteSelector } from "../../store/store";
-import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
 import { useEffect, useRef, useState } from "react";
 import scriptContextDefinitions from "../../../main/script-context-definitions?raw";
 import { IDisposable } from "xterm";
-import { Button, Card, CardBody } from "@nextui-org/react";
-import { ipc } from "../../app";
-import { toast } from "react-toastify";
 import { FaCircleExclamation, FaCircleInfo, FaCircleQuestion, FaCircleXmark, FaJs } from "react-icons/fa6";
-import { useDispatch } from "react-redux";
-import { sessionExecuteScript, sessionUpdateScript, setScriptContent } from "../../store/remotesSlice";
-import { render } from "react-dom";
-import { IconType } from "react-icons";
-import { FaGreaterThan } from "react-icons/fa";
+import { setScriptContent } from "../../store/remotesSlice";
+import { useScripts } from "./scripts.hook";
 
 export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
   const dispatch = useAppDispatch();
 
-  const script = useRemoteSelector(id, (r) => r.session.scripts.original.find((x) => x.scriptId == scriptId));
   const editorRef = useRef<ScriptEditorData>(null);
   const [markers, setMarkers] = useState<editor.IMarker[]>([]);
 
-  console.log("RENDER Script", id, scriptId, script);
+  const scripts = useScripts(id);
+  const script = scripts.getCurrentScript();
+
+  console.log("RENDER Script", id, scriptId);
+
+  // keep a script ref for the monaco editor..
+  const scriptsRef = useRef(scripts);
+  useEffect(() => {
+    scriptsRef.current = scripts;
+  }, [scripts]);
 
   // configure dispose
   useEffect(() => {
     // This effect does nothing on mount, but on unmount it disposes the editor and model
     return () => {
       if (editorRef?.current) {
-        console.log("DISPOSE");
         for (let disposable of editorRef.current.disposables) {
           disposable?.dispose();
         }
       }
     };
-  }, []);
+  }, [editorRef]);
 
   // configure monaco
   const handleEditorWillMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-    console.log("MOUNT EDITOR", editorRef.current);
-
+    // configure defaults (one time)
     const jsDefaults: typeof monaco.languages.typescript.javascriptDefaults & { configured?: boolean } = monaco
       .languages.typescript.javascriptDefaults as any;
     if (!jsDefaults.configured) {
       jsDefaults.configured = true;
-      console.log("configure jsDefaults of monaco one time");
 
       // validation settings
       jsDefaults.setDiagnosticsOptions({
@@ -95,10 +93,19 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
       //const model = monaco.editor.createModel(scriptContextDefinitions, "typescript", monaco.Uri.parse(libUri));
     }
 
-    /* const x = (options?: {hello?: string, world?: string}) => {
-      return "";
-    }
-    x({});*/
+    // register shortcuts for this editor instance
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function () {
+      scriptsRef.current.saveScript(script.scriptId);
+    });
+    editor.addCommand(monaco.KeyCode.F5, function () {
+      scriptsRef.current.saveAndExecuteScript(script.scriptId);
+    });
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyR, function () {
+      scriptsRef.current.saveAndExecuteScript(script.scriptId);
+    });
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyN, function () {
+      scriptsRef.current.addScript();
+    });
 
     // subscribe to markers change
     const onDidChangeMarkersSub = monaco.editor.onDidChangeMarkers(([uri]) => {

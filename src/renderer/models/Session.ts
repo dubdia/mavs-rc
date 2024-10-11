@@ -7,6 +7,9 @@ import { SessionTunnel } from "./SessionTunnel";
 import { TabName } from "./TabName";
 import { RemoteDto } from "../../shared/models/RemoteDto";
 import { ScriptList } from "./ScriptList";
+import { EntityState } from "@reduxjs/toolkit";
+import { ScriptInfo } from "../../main/models/Script";
+import { scriptsAdapter } from "../store/remotesSlice";
 
 /** state information about a connected remote */
 
@@ -91,17 +94,9 @@ export const createRemoteSession = (dto: RemoteDto) =>
       editTunnelId: null,
     },
     scripts: {
-      searchColumn: "name",
-      searchText: "",
-      filtered: [],
-      original: [],
-      sortDescriptor: {
-        column: "name",
-        direction: "ascending",
-      },
-      filters: [],
       loading: false,
       editScriptId: null,
+      data: scriptsAdapter.getInitialState(),
     },
 
     shortcuts: {
