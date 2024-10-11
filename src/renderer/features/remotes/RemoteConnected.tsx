@@ -1,4 +1,4 @@
-import { Button, Tab, Tabs, Tooltip } from "@nextui-org/react";
+import { Button, Tab, Tabs } from "@nextui-org/react";
 import { Services } from "../services/Services";
 import { useAppDispatch, useRemoteSelector } from "../../store/store";
 import { closeRemote, sessionCreateShell, setSelectedTab } from "../../store/remotesSlice";
@@ -15,6 +15,7 @@ import { TabName } from "../../models/TabName";
 import { IconType } from "react-icons";
 import { Script } from "../script/Script";
 import { Scripts } from "../script/Scripts";
+import { Tooltip } from "../../components/Tooltip";
 
 export interface TabInfo {
   name: TabName;
@@ -109,14 +110,14 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
       header={
         <div className="flex flex-row gap-2">
           {/* Option to create new shells */}
-          <Tooltip color="foreground" offset={25} content="Spawns a new shell">
+          <Tooltip content="Spawns a new shell">
             <Button isIconOnly={true} variant="light" onClick={() => dispatch(sessionCreateShell({ id: id }))}>
               <FaTerminal />
             </Button>
           </Tooltip>
 
           {/* Option to close the connection */}
-          <Tooltip color="foreground" offset={25} content="Closes the connection to the remote">
+          <Tooltip content="Closes the connection to the remote">
             <Button isIconOnly={true} variant="light" onClick={() => dispatch(closeRemote(id))}>
               <FaXmark />
             </Button>

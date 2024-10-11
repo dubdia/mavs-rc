@@ -5,13 +5,9 @@ import {
   CardHeader,
   Checkbox,
   Input,
-  Select,
-  SelectItem,
   Textarea,
-  Selection,
   Autocomplete,
   AutocompleteItem,
-  Tooltip,
 } from "@nextui-org/react";
 import { memo, useEffect, useState } from "react";
 import { useAppDispatch, useRemoteSelector } from "../../store/store";
@@ -23,6 +19,7 @@ import { Layout } from "../../components/Layout";
 import { ipc } from "../../app";
 import { RemoteInfo } from "../../../shared/models/RemoteInfo";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
+import { Tooltip } from "../../components/Tooltip";
 
 export const RemoteDisconnected = memo(({ id }: { id: string }) => {
   console.log("RENDER RemoteDisconnected", id);
@@ -204,11 +201,7 @@ export const RemoteDisconnected = memo(({ id }: { id: string }) => {
                     value={form.password}
                     onChange={handleChange}
                   />
-                  <Tooltip
-                    color="foreground"
-                    offset={25}
-                    content="Caution: if true, the password will be stored plaintext in the configuration file"
-                  >
+                  <Tooltip content="Caution: if true, the password will be stored plaintext in the configuration file">
                     <Checkbox
                       name="storePassword"
                       className="col-span-12 md:col-span-4"
@@ -267,11 +260,7 @@ export const RemoteDisconnected = memo(({ id }: { id: string }) => {
                     />
                   )}
                   {form.privateKeySource == "text" && (
-                    <Tooltip
-                      color="foreground"
-                      offset={25}
-                      content="Caution: if true, the private-key will be stored plaintext in the configuration file"
-                    >
+                    <Tooltip content="Caution: if true, the private-key will be stored plaintext in the configuration file">
                       <Checkbox
                         name="storePrivateKey"
                         className="col-span-12 md:col-span-4"
@@ -293,11 +282,7 @@ export const RemoteDisconnected = memo(({ id }: { id: string }) => {
                     value={form.passphrase}
                     onChange={handleChange}
                   />
-                  <Tooltip
-                    color="foreground"
-                    offset={25}
-                    content="Caution: if true, the passphrase will be stored plaintext in the configuration file"
-                  >
+                  <Tooltip content="Caution: if true, the passphrase will be stored plaintext in the configuration file">
                     <Checkbox
                       name="storePassphrase"
                       className="col-span-12 md:col-span-4"

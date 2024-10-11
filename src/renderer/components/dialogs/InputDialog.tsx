@@ -39,6 +39,11 @@ export const InputServiceProvider: React.FC<{ children: ReactNode }> = ({ childr
     setOptions(null);
   };
 
+  const handleKeyDown = (e: any) => {
+    if (e?.key === "Enter") {
+      handle(value);
+    }
+  };
   return (
     <>
       <InputContext.Provider value={openModal} children={children} />
@@ -49,7 +54,12 @@ export const InputServiceProvider: React.FC<{ children: ReactNode }> = ({ childr
             <ModalHeader className="flex flex-col gap-1">{options && options.title ? options.title : ""}</ModalHeader>
             <ModalBody>
               {options?.message}
-              <Input autoFocus={true} value={value} onChange={(c) => setValue(c.target.value)}></Input>
+              <Input
+                autoFocus={true}
+                value={value}
+                onChange={(c) => setValue(c.target.value)}
+                onKeyDown={handleKeyDown}
+              ></Input>
             </ModalBody>
             <ModalFooter>
               <Button color="danger" variant="light" onPress={() => handle(null)} autoFocus>

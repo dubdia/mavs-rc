@@ -69,7 +69,7 @@ export class ScriptManager {
     }
     const newScript = <Script>{
       info: {
-        content: "// write your typescript code here:\nalert('Hello World');\n",
+        content: "async function run() {\n    // write your typescript code here:\n    \n}",
         name: name,
         scriptId: v4(),
       },
@@ -82,7 +82,7 @@ export class ScriptManager {
   }
   public async deleteByIdAsync(id: string) {
     log.info("Delete script");
-    this.scripts = this.scripts.filter((x) => x.info.scriptId == id);
+    this.scripts = this.scripts.filter((x) => x.info.scriptId !== id);
     this.updateConfig();
   }
   public update(scriptInfo: ScriptInfo) {

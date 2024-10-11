@@ -129,24 +129,6 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
   };
 
   // functions
-  const saveAndExecuteScript = async () => {
-    // save current
-    await dispatch(sessionUpdateScript({ id: id, script: script }));
-
-    // check
-    if (script == null || script.content == "") {
-      toast.warn("Please enter a script first");
-    }
-
-    // try to execute
-    try {
-      await dispatch(sessionExecuteScript({ id: id, scriptId: scriptId }));
-    } catch (err) {
-      console.error("failed to execute script", err);
-      toast.error("Failed to execute script: " + err?.toString());
-    }
-  };
-
   const navigateToMarker = (marker: editor.IMarker) => {
     editorRef.current.editor.setSelection(marker);
   };
@@ -187,60 +169,42 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
 
   // render
   return (
-    <HeaderScrollBodyLayout
-      header={
-        <div className="flex flex-row gap-2 items-center">
-          {/* Space */}
-          <span className="flex-1"></span>
-
-          {/* Execute */}
-          <Button color="success" onClick={saveAndExecuteScript}>
-            <FaJs></FaJs>
-            Run
-          </Button>
+    <div className="w-full h-full max-h-full flex flex-col pb-4">
+      <div className="flex-1 relative">
+        <div
+          className={`absolute top-0 left-0 right-0 bottom-0 no-select border-divider border-t-1 ${
+            markers && markers.length > 0 ? "border-b-0" : "border-b-1"
+          }`}
+        >
+          <Editor
+            theme="vs-dark"
+            language="javascript"
+            height="100%"
+            value={script.content}
+            onChange={(x) => dispatch(setScriptContent({ id: id, scriptId: scriptId, content: x }))}
+            onMount={handleEditorWillMount}
+          />
         </div>
-      }
-      bodyScrollable={false}
-      headerInCard={false}
-      body={
-        <div className="w-full h-full max-h-full flex flex-col pb-4">
-          <div className="flex-1 relative">
-            <div
-              className={`absolute top-0 left-0 right-0 bottom-0 no-select border-divider border-t-1 ${
-                markers && markers.length > 0 ? "border-b-0" : "border-b-1"
-              }`}
-            >
-              <Editor
-                theme="vs-dark"
-                language="javascript"
-                height="100%"
-                value={script.content}
-                onChange={(x) => dispatch(setScriptContent({ id: id, scriptId: scriptId, content: x }))}
-                onMount={handleEditorWillMount}
-              />
-            </div>
-          </div>
-          {/* Problems Tab */}
-          {markers && markers.length > 0 && (
-            <div
-              className={`max-h-16 overflow-y-auto overflow-x-hidden border-divider border-t-1 ${
-                script.log && script.log.length > 0 ? "border-b-0" : "border-b-1"
-              }`}
-            >
-              {markers.map((marker, index) => renderMarker(marker, index))}
-            </div>
-          )}
-          {/* Logs  */}
-          {script.log && script.log.length > 0 && (
-            <div className="max-h-16 overflow-y-auto overflow-x-hidden border-divider border-1">
-              {script.log.map((log, index) => (
-                <span key={"log-" + index}>{log}</span>
-              ))}
-            </div>
-          )}
+      </div>
+      {/* Problems Tab */}
+      {markers && markers.length > 0 && (
+        <div
+          className={`max-h-16 overflow-y-auto overflow-x-hidden border-divider border-t-1 ${
+            script.log && script.log.length > 0 ? "border-b-0" : "border-b-1"
+          }`}
+        >
+          {markers.map((marker, index) => renderMarker(marker, index))}
         </div>
-      }
-    ></HeaderScrollBodyLayout>
+      )}
+      {/* Logs  */}
+      {script.log && script.log.length > 0 && (
+        <div className="max-h-16 overflow-y-auto overflow-x-hidden border-divider border-1">
+          {script.log.map((log, index) => (
+            <span key={"log-" + index}>{log}</span>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

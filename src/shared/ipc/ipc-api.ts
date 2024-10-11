@@ -87,7 +87,7 @@ type Commands = {
   // shells
   listScripts: () => ScriptInfo[];
   createScript: (name: string) => ScriptInfo[];
-  deleteScript: (tunnelId: string) => ScriptInfo[];
+  deleteScript: (scriptId: string) => ScriptInfo[];
   updateScript: (script: ScriptInfo) => ScriptInfo[];
   executeScript: (id: string, scriptId: string) => ScriptExecutionResult;
 

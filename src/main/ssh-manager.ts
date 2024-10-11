@@ -214,13 +214,17 @@ export class SshManager {
     const connection = this.remotesManager.findOrError(id, { mustBeConnected: true }).connection;
     try {
       const result = await connection.ssh.exec(command);
-      log.verbose(` > ${result}`);
+      if (appConfigManager.config.logSsh) {
+        log.verbose(` > ${result}`);
+      }
       return {
         output: result,
         success: true,
       };
     } catch (err) {
-      log.verbose(` > command failed: ${err}`);
+      if (appConfigManager.config.logSsh) {
+        log.verbose(` > command failed: ${err}`);
+      }
       if (err && typeof err === "string" && err != "") {
         // the command failed
         return {
