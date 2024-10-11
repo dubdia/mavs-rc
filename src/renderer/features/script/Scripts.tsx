@@ -1,22 +1,6 @@
-import { Editor, Monaco, useMonaco } from "@monaco-editor/react";
-import { languages, editor } from "monaco-editor/esm/vs/editor/editor.api";
 import { useAppDispatch, useRemoteSelector } from "../../store/store";
-import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
-import { useEffect, useState } from "react";
-import scriptContextDefinitions from "../../../main/script-context-definitions?raw";
-import { IDisposable } from "xterm";
 import { Button, Card, CardBody, Tab, tabs, Tabs } from "@nextui-org/react";
-import { ipc } from "../../app";
-import { toast } from "react-toastify";
-import { FaJs } from "react-icons/fa6";
-import {
-  selectScript,
-  sessionCreateScript,
-  sessionDeleteScript,
-  sessionFetchScripts,
-  setSelectedTab,
-} from "../../store/remotesSlice";
-import { useDispatch } from "react-redux";
+import { selectScript, sessionCreateScript, sessionDeleteScript, sessionFetchScripts } from "../../store/remotesSlice";
 import { Script } from "./Script";
 import { useAsyncEffect } from "../../utils/useAsyncEffect";
 import { useInput } from "../../components/dialogs/InputDialog";
@@ -49,36 +33,32 @@ export const Scripts = ({ id }: { id: string }) => {
 
   return (
     <div className="w-full h-full pb-4">
-      <Card className="h-full w-full">
-        <CardBody>
-          <div className="flex flex-row gap-2 h-full w-full ">
-            {/* Tabs in the top part */}
-            <div className="flex flex-col gap-2 h-full">
-              <Tabs
-                placement="start"
-                aria-label="Tabs"
-                variant="underlined"
-                size="lg"
-                selectedKey={editScriptId}
-                onSelectionChange={(key) => appDispatch(selectScript({ id: id, scriptId: key.toString() }))}
-                items={scripts.filtered}
-              >
-                {(item) => <Tab key={item.info.scriptId} title={item.info.name}></Tab>}
-              </Tabs>
-              <Button onClick={addScript}>Add Script</Button>
-            </div>
+      <div className="flex flex-row gap-2 h-full w-full ">
+        {/* Tabs in the top part */}
+        <div className="flex flex-col gap-2 h-full">
+          <Tabs
+            placement="start"
+            aria-label="Tabs"
+            variant="underlined"
+            size="lg"
+            selectedKey={editScriptId}
+            onSelectionChange={(key) => appDispatch(selectScript({ id: id, scriptId: key.toString() }))}
+            items={scripts.filtered}
+          >
+            {(item) => <Tab key={item.scriptId} title={item.name}></Tab>}
+          </Tabs>
+          <Button onClick={addScript}>Add Script</Button>
+        </div>
 
-            {/* Selected tab fills the bottom */}
-            <div className="flex-1 relative">
-              {editScriptId && (
-                <div className="absolute top-0 left-0 right-0 bottom-0">
-                  <Script key={"script-" + editScriptId} id={id} scriptId={editScriptId}></Script>
-                </div>
-              )}
+        {/* Selected tab fills the bottom */}
+        <div className="flex-1 relative">
+          {editScriptId && (
+            <div className="absolute top-0 left-0 right-0 bottom-0">
+              <Script key={"script-" + editScriptId} id={id} scriptId={editScriptId}></Script>
             </div>
-          </div>
-        </CardBody>
-      </Card>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import { Background } from "./components/Background";
 import { AppProvider } from "./providers/appProvider";
 import Body from "./body";
-import { appendShellData, loadRemotes, sessionDestroyShell } from "./store/remotesSlice";
+import { appendScriptLog, appendShellData, loadRemotes, sessionDestroyShell } from "./store/remotesSlice";
 import { store } from "./store/store";
 
 // render react on root element
@@ -35,6 +35,9 @@ ipc.on("disposeRemote", (_, id) => {
 ipc.on("disposeShell", (_, id, shellId) => {
   console.log("A shell was disposed. Remove it now");
   store.dispatch(sessionDestroyShell({ id: id, shellId: shellId, onlyRemoveFromRenderer: true }));
+});
+ipc.on("scriptLog", (_, id, scriptId, message) => {
+  store.dispatch(appendScriptLog({ id: id, scriptId: scriptId, message: message }));
 });
 
 // the app

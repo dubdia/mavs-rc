@@ -245,6 +245,8 @@ Mav's RC was built using a variety of cool open-source tools and libraries. Many
 - [XTerm](https://xtermjs.org/): Enabled the integrated terminal functionality.
 - [Monaco Editor](https://www.npmjs.com/package/@monaco-editor/react): For the sophisticated text editing features.
 - [TailwindCSS](https://tailwindcss.com/): For utility-first CSS management.
+- [Custom Electron Prompt](https://github.com/Araxeus/custom-electron-prompt): For good looking prompts in electron
+
 
 
 

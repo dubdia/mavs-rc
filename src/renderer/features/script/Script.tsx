@@ -16,13 +16,13 @@ import { IconType } from "react-icons";
 import { FaGreaterThan } from "react-icons/fa";
 
 export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
-  console.log("RENDER Script", id, scriptId);
-
   const dispatch = useAppDispatch();
 
-  const script = useRemoteSelector(id, (r) => r.session.scripts.original.find((x) => x.info.scriptId == scriptId));
+  const script = useRemoteSelector(id, (r) => r.session.scripts.original.find((x) => x.scriptId == scriptId));
   const editorRef = useRef<ScriptEditorData>(null);
   const [markers, setMarkers] = useState<editor.IMarker[]>([]);
+
+  console.log("RENDER Script", id, scriptId, script);
 
   // configure dispose
   useEffect(() => {
@@ -95,11 +95,10 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
       //const model = monaco.editor.createModel(scriptContextDefinitions, "typescript", monaco.Uri.parse(libUri));
     }
 
-   /* const x = (options?: {hello?: string, world?: string}) => {
+    /* const x = (options?: {hello?: string, world?: string}) => {
       return "";
     }
     x({});*/
-
 
     // subscribe to markers change
     const onDidChangeMarkersSub = monaco.editor.onDidChangeMarkers(([uri]) => {
@@ -132,10 +131,10 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
   // functions
   const saveAndExecuteScript = async () => {
     // save current
-    await dispatch(sessionUpdateScript({ id: id, script: script.info }));
+    await dispatch(sessionUpdateScript({ id: id, script: script }));
 
     // check
-    if (script == null || script.info.content == "") {
+    if (script == null || script.content == "") {
       toast.warn("Please enter a script first");
     }
 
@@ -152,7 +151,7 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
     editorRef.current.editor.setSelection(marker);
   };
 
-  const renderMarker = (marker: editor.IMarker): React.ReactNode => {
+  const renderMarker = (marker: editor.IMarker, index: number): React.ReactNode => {
     let Icon: React.ReactNode;
     switch (marker.severity) {
       case MarkerSeverity.Error:
@@ -172,7 +171,8 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
 
     return (
       <div
-        className="ml-1 flex flex-row gap-2 cursor-pointer items-center font-mono text-xs"
+        key={"marker-" + index}
+        className="p-1 flex flex-row gap-2 cursor-pointer items-center font-mono text-xs hover:bg-divider"
         onClick={() => navigateToMarker(marker)}
       >
         {Icon}
@@ -206,15 +206,15 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
         <div className="w-full h-full max-h-full flex flex-col pb-4">
           <div className="flex-1 relative">
             <div
-              className={`absolute top-0 left-0 right-0 bottom-0 no-select border-gray-400 border-1 ${
-                markers && markers.length > 0 ? "border-b-0" : ""
+              className={`absolute top-0 left-0 right-0 bottom-0 no-select border-divider border-t-1 ${
+                markers && markers.length > 0 ? "border-b-0" : "border-b-1"
               }`}
             >
               <Editor
                 theme="vs-dark"
                 language="javascript"
                 height="100%"
-                value={script.info.content}
+                value={script.content}
                 onChange={(x) => dispatch(setScriptContent({ id: id, scriptId: scriptId, content: x }))}
                 onMount={handleEditorWillMount}
               />
@@ -222,8 +222,20 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
           </div>
           {/* Problems Tab */}
           {markers && markers.length > 0 && (
-            <div className="max-h-16 overflow-y-auto overflow-x-hidden border-gray-400 border-1">
-              {markers.map((marker, index) => renderMarker(marker))}
+            <div
+              className={`max-h-16 overflow-y-auto overflow-x-hidden border-divider border-t-1 ${
+                script.log && script.log.length > 0 ? "border-b-0" : "border-b-1"
+              }`}
+            >
+              {markers.map((marker, index) => renderMarker(marker, index))}
+            </div>
+          )}
+          {/* Logs  */}
+          {script.log && script.log.length > 0 && (
+            <div className="max-h-16 overflow-y-auto overflow-x-hidden border-divider border-1">
+              {script.log.map((log, index) => (
+                <span key={"log-" + index}>{log}</span>
+              ))}
             </div>
           )}
         </div>

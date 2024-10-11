@@ -508,18 +508,18 @@ export const sessionExecuteScript = createAsync(
   {
     onPending: (state: State, arg) => {
       const s = state.data.entities[arg.id!].session;
-      const script = s.scripts.original.find((x) => x.info.scriptId == arg.scriptId);
+      const script = s.scripts.original.find((x) => x.scriptId == arg.scriptId);
       script.running = true;
     },
     onRejected: (state: State, _error, arg) => {
       const s = state.data.entities[arg.id!].session;
-      const script = s.scripts.original.find((x) => x.info.scriptId == arg.scriptId);
+      const script = s.scripts.original.find((x) => x.scriptId == arg.scriptId);
       script.running = false;
       toast.error("An error occured while executing the script");
     },
     onFulfilled: (state: State, data, arg) => {
       const s = state.data.entities[arg.id!].session;
-      const script = s.scripts.original.find((x) => x.info.scriptId == arg.scriptId);
+      const script = s.scripts.original.find((x) => x.scriptId == arg.scriptId);
       script.running = false;
       if (data.success) {
         toast.success("Successfully ran script!");
@@ -630,7 +630,10 @@ export const appSlice = createSlice({
       const session = state.data.entities[action.payload.id].session;
       processList(session.tunnels, action.payload.params);
     },
-    processSessionScripts: (state, action: PayloadAction<{ id: string; params: ProcessableListParams<Script> }>) => {
+    processSessionScripts: (
+      state,
+      action: PayloadAction<{ id: string; params: ProcessableListParams<ScriptInfo> }>
+    ) => {
       const session = state.data.entities[action.payload.id].session;
       processList(session.scripts, action.payload.params);
     },
@@ -664,8 +667,16 @@ export const appSlice = createSlice({
     },
     setScriptContent: (state, action: PayloadAction<{ id: string; scriptId: string; content: string }>) => {
       const s = state.data.entities[action.payload.id].session;
-      const script = s.scripts.original.find((x) => x.info.scriptId == action.payload.scriptId);
-      script.info.content = action.payload.content;
+      const script = s.scripts.original.find((x) => x.scriptId == action.payload.scriptId);
+      script.content = action.payload.content;
+    },
+    appendScriptLog: (state, action: PayloadAction<{ id: string; scriptId: string; message: string }>) => {
+      const session = state.data.entities[action.payload.id].session;
+      const script = session.scripts.original.find((x) => x.scriptId == action.payload.scriptId);
+      if (script.log == null) {
+        script.log = [];
+      }
+      script.log.push(action.payload.message ?? "");
     },
   },
   extraReducers: (builder) => {
@@ -727,5 +738,6 @@ export const {
   processSessionScripts,
   selectScript,
   setScriptContent,
+  appendScriptLog,
 } = appSlice.actions;
 export default appSlice.reducer;

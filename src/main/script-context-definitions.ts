@@ -61,6 +61,10 @@ declare namespace ScriptContractV1 { //global
   const remoteId: string;
   const remoteName: string;
   const remotePosixType: ('posix' | 'windows');
+  
+  const scriptId: string;
+  const scriptName: string;
+
 
   // generic functions
   function alert(message: string | number | boolean | Date): void;

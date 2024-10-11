@@ -305,7 +305,9 @@ export class SshManager {
         }
 
         // store in shell history
-        log.verbose("Shell STDOUT", text);
+        if (appConfigManager.config.logSsh) {
+          log.verbose("Shell STDOUT", text);
+        }
         shell.history.push(text);
         mainWindow.webContents.send("shellReceive", remote.info.id, shell.shellId, text);
       });
@@ -322,7 +324,9 @@ export class SshManager {
         }
 
         // store in shell history
-        log.verbose("Shell STDERR", text);
+        if (appConfigManager.config.logSsh) {
+          log.verbose("Shell STDERR", text);
+        }
         shell.history.push(text);
         mainWindow.webContents.send("shellReceive", remote.info.id, shell.shellId, text);
       });

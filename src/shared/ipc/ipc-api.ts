@@ -21,7 +21,7 @@ type Events = {
   shellReceive: (id: string, shellId: string, data: string) => void;
   disposeRemote: (id: string) => void;
   disposeShell: (id: string, shellId: string) => void;
-  
+  scriptLog: (id: string, scriptId: string, message: string) => void;
 };
 
 /** definition of possible commands that can be invoked on the main by the renderer */
@@ -85,10 +85,10 @@ type Commands = {
   disconnectTunnel: (id: string, tunnelId: string) => RemoteTunnelDto[];
 
   // shells
-  listScripts: () => Script[];
-  createScript: (name: string) => Script[];
-  deleteScript: (tunnelId: string) => Script[];
-  updateScript: (script: ScriptInfo) => Script[];
+  listScripts: () => ScriptInfo[];
+  createScript: (name: string) => ScriptInfo[];
+  deleteScript: (tunnelId: string) => ScriptInfo[];
+  updateScript: (script: ScriptInfo) => ScriptInfo[];
   executeScript: (id: string, scriptId: string) => ScriptExecutionResult;
 
 };

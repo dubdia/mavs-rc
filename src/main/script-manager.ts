@@ -18,6 +18,7 @@ import { getFileName } from "../shared/utils/io/getFileName";
 import { getDirectoryName } from "../shared/utils/io/getDirectoryName";
 import { getFileExtension } from "../shared/utils/io/getFileExtension";
 import { OsType } from "../shared/models/OsType";
+import { mainWindow } from "./main";
 
 /** used to transcompile and run scripts */
 export class ScriptManager {
@@ -116,6 +117,8 @@ export class ScriptManager {
       return { success: false, error: "Script is empty" };
     }
 
+    //Todo set script to running
+
     // transpile
     let transpilation: ts.TranspileOutput;
     try {
@@ -138,7 +141,7 @@ export class ScriptManager {
     // create context
     let context: vm.Context;
     try {
-      context = this.createContext(remote);
+      context = this.createContext(remote, script.info);
       if (context == null) {
         throw new Error("createContext returned null");
       }
@@ -152,12 +155,13 @@ export class ScriptManager {
       log.verbose("Start execution of script", transpilation.outputText);
 
       const result = await new Promise((resolve, reject) => {
+        // add functions to resolve and reject THIS promise to the context.
+        // so the script itself will end the execution/ resolve the promise.
+        // see the extra lines added to the transpile() method
         context.__resolve = (err: any) => {
-          log.verbose("Resolve vm promise");
           resolve(err);
         };
         context.__reject = (arg: any) => {
-          log.verbose("Reject vm promise");
           reject(arg);
         };
         vm.runInContext(transpilation.outputText, context);
@@ -204,7 +208,7 @@ export class ScriptManager {
   }
 
   /** creates a new script-execution vm context */
-  private createContext(remote: Remote): vm.Context {
+  private createContext(remote: Remote, script: ScriptInfo): vm.Context {
     const exec = <T>(name: string, ignoreErrors: boolean, func: () => T): T => {
       try {
         console.log(`execute ${name}`);
@@ -249,12 +253,14 @@ export class ScriptManager {
       }
     };
 
-    fs.stat;
-
     const context: typeof ScriptContractV1 = {
       // constants
       remoteId: remote.info.id,
       remoteName: remote.info.name,
+
+      scriptId: script.scriptId,
+      scriptName: script.name,
+
       remotePosixType: remote.connection?.osType == OsType.Windows ? "windows" : "posix",
 
       // generic functions
@@ -293,7 +299,8 @@ export class ScriptManager {
         }),
       log: (message, optionalParams) =>
         exec("log", true, () => {
-          console.log(message, optionalParams);
+          log.verbose("Log from Script:", message, optionalParams);
+          mainWindow.webContents.send("scriptLog", remote.info.id, script.scriptId, message?.toString() ?? "");
         }),
       delay: (timeInMs) =>
         execAsync("delay", false, async () => {
