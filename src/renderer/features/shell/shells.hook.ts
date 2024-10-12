@@ -1,9 +1,6 @@
 import { toast } from "react-toastify";
-import { useConfirm } from "../../components/dialogs/ConfirmDialog";
-import { useInput } from "../../components/dialogs/InputDialog";
-import { useAppDispatch, useRemoteSelector } from "../../store/store";
+import { useAppDispatch, useRemote, useRemoteSelector } from "../../store/store";
 import {
-  selectScriptById,
   selectAllShells,
   sessionCreateShell,
   sessionDestroyShell,
@@ -12,9 +9,8 @@ import {
 } from "../../store/remotesSlice";
 
 export const useShells = (id: string) => {
-  const input = useInput();
   const appDispatch = useAppDispatch();
-  const confirm = useConfirm();
+  const remote = useRemote(id);
   const shells = useRemoteSelector(id, (remote) => selectAllShells(remote.session));
   const shell = useRemoteSelector(id, (remote) =>
     selectShellById(remote.session, remote.session.shells.selectedShellId)
@@ -27,12 +23,11 @@ export const useShells = (id: string) => {
     return shell;
   };
   const add = async () => {
-    try {
-      await appDispatch(sessionCreateShell({ id: id }));
-      toast.success("Created shell");
-    } catch (err) {
-      console.error("failed to create shell", err);
-      toast.error("Failed to create new shell");
+    await appDispatch(sessionCreateShell({ id: id }));
+  };
+  const addFirstOrDoNothing = async () => {
+    if (shells.length == 0 && !remote.session.shells.initializedFirstShell) {
+      await add();
     }
   };
   const remove = async (shellId: string) => {
@@ -40,14 +35,7 @@ export const useShells = (id: string) => {
     if (shellById == null || shellById.shellId == null) {
       return;
     }
-    try {
-      // remove
-      await appDispatch(sessionDestroyShell({ id: id, shellId: shellById.shellId, onlyRemoveFromRenderer: false }));
-      toast.success("Removed shell");
-    } catch (err) {
-      console.error("failed to remove shell", shellById, err);
-      toast.error("Failed to remove shell");
-    }
+    await appDispatch(sessionDestroyShell({ id: id, shellId: shellById.shellId, onlyRemoveFromRenderer: false }));
   };
   const select = (shellId: string) => {
     try {
@@ -65,5 +53,6 @@ export const useShells = (id: string) => {
     add,
     remove,
     select,
+    addFirstOrDoNothing
   };
 };

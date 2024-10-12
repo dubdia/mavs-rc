@@ -404,6 +404,10 @@ export const sessionCreateShell = createAsync(
     return await ipc.invoke("createShell", params.id);
   },
   {
+    onPending(state: State, arg) {
+      const session = state.data.entities[arg?.id!].session;
+      session.shells.initializedFirstShell = true;
+    },
     onRejected: (_state: State, _error, _arg) => {
       toast.error("An error occured while creates a new shell");
     },
@@ -578,7 +582,7 @@ export const { selectAll: selectAllScripts, selectById: selectScriptById } = scr
 // create adapter for managing the shells array
 export const shellsAdapter = createEntityAdapter<ShellEntry, string>({
   selectId: (x) => x!.shellId!,
-  sortComparer: (a, b) => (a?.name ?? "").localeCompare(b.name ?? ""),
+  sortComparer: (a, b) => (a?.shellId ?? "").localeCompare(b.shellId ?? ""), //todo maybe use date
 });
 export const { selectAll: selectAllShells, selectById: selectShellById } = shellsAdapter.getSelectors<Session>(
   (state) => state.shells.data

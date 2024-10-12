@@ -1,16 +1,27 @@
 import { useAppDispatch, useRemoteSelector } from "../../store/store";
 import { Autocomplete, AutocompleteItem, Button, ButtonGroup } from "@nextui-org/react";
 import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
-import { FaPlay, FaPlus, FaTrash } from "react-icons/fa6";
+import { FaPaste, FaPlay, FaPlus, FaTrash } from "react-icons/fa6";
 import { Tooltip } from "../../components/Tooltip";
-import { FaSave, FaTimes } from "react-icons/fa";
+import { FaCopy, FaSave, FaTimes } from "react-icons/fa";
 import { useShells } from "./shells.hook";
 import { Shell } from "./Shell";
+import { useEffect, useRef, useState } from "react";
+import { useAsyncEffect } from "../../utils/useAsyncEffect";
 
 export const Shells = ({ id }: { id: string }) => {
   console.log("RENDER Shells", id);
   const appDispatch = useAppDispatch();
   const shells = useShells(id);
+  const shellRef = useRef<any>();
+  const [addingFirstShell, setAddingFirstShell] = useState(false);
+
+  useAsyncEffect(async () => {
+    if (!addingFirstShell && shells.list().length == 0) {
+      setAddingFirstShell(true);
+      await shells.addFirstOrDoNothing();
+    }
+  }, [appDispatch]);
 
   return (
     <HeaderScrollBodyLayout
@@ -35,9 +46,25 @@ export const Shells = ({ id }: { id: string }) => {
               </Button>
             ))}
           </ButtonGroup>
-
-          {/* Closes the current shell */}
           <div className="flex-1"></div>
+
+          {/* Copy Clipboard */}
+          {shells.get() && (
+            <Tooltip content="Copies the current selection to the clipboard">
+              <Button isIconOnly={true} variant="flat" onClick={() => shellRef?.current?.copyToClipboard()}>
+                <FaCopy></FaCopy>
+              </Button>
+            </Tooltip>
+          )}
+          {/* Paste Clipboard */}
+          {shells.get() && (
+            <Tooltip content="Writes the content of the clipboard to the shell">
+              <Button isIconOnly={true} variant="flat" onClick={() => shellRef?.current?.pasteFromClipboard()}>
+                <FaPaste></FaPaste>
+              </Button>
+            </Tooltip>
+          )}
+          {/* Closes the current shell */}
           {shells.get() && (
             <Tooltip content="Removes the current shell">
               <Button
@@ -58,7 +85,12 @@ export const Shells = ({ id }: { id: string }) => {
           <div className="w-full h-full max-h-full flex flex-col gap-4 pb-4">
             <div className="flex-1 relative">
               <div className="absolute top-0 left-0 right-0 bottom-0">
-                <Shell key={"shell-" + shells.get().shellId} id={id} shellId={shells.get().shellId}></Shell>
+                <Shell
+                  ref={shellRef}
+                  key={"shell-" + shells.get().shellId}
+                  id={id}
+                  shellId={shells.get().shellId}
+                ></Shell>
               </div>
             </div>
           </div>

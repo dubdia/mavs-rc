@@ -99,6 +99,7 @@ export const createRemoteSession = (dto: RemoteDto) =>
     shells: {
       loading: false,
       selectedShellId: null,
+      initializedFirstShell: false,
       data: shellsAdapter.getInitialState(),
     },
 

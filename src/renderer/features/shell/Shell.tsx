@@ -1,7 +1,7 @@
 import { Card, CardBody } from "@nextui-org/react";
 import { useRemoteSelector } from "../../store/store";
 import XTerm from "../../components/XTerm";
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import debounce from "lodash.debounce";
 import { Mutex } from "async-mutex";
 import { computeColor } from "../../utils/computeColor";
@@ -10,10 +10,11 @@ import { FitAddon, ITerminalDimensions } from "@xterm/addon-fit";
 import { TerminalSize } from "src/shared/models/TerminalSize";
 import { TabName } from "../../models/TabName";
 import { useShells } from "./shells.hook";
+import { toast } from "react-toastify";
 
 //let start: number;
 const color = computeColor("hsl(var(--nextui-content1) / var(--nextui-content1-opacity, var(--tw-bg-opacity)));");
-export const Shell = ({ id, shellId }: { id: string; shellId: string }) => {
+export const Shell =  forwardRef( ({ id, shellId }: { id: string; shellId: string }, ref) => {
   // use hooks
   const xtermRef = useRef<XTerm>(null);
 
@@ -23,7 +24,7 @@ export const Shell = ({ id, shellId }: { id: string; shellId: string }) => {
 
   // get shell from remote
   const shells = useShells(id);
-  const remoteShell = shells.list().find(x => x.shellId == shellId);
+  const remoteShell = shells.list().find((x) => x.shellId == shellId);
   if (remoteShell == null || remoteShell.shellId == null) {
     return <p>Shell not found: {shellId}</p>;
   }
@@ -33,8 +34,6 @@ export const Shell = ({ id, shellId }: { id: string; shellId: string }) => {
   // register events on terminal
   useEffect(() => {
     const terminalElement = xtermRef.current?.terminalRef?.current;
-    if (terminalElement) {
-    }
     terminalElement?.addEventListener("contextmenu", handleRightClickPaste);
     return () => {
       terminalElement?.removeEventListener("contextmenu", handleRightClickPaste);
@@ -118,6 +117,35 @@ export const Shell = ({ id, shellId }: { id: string; shellId: string }) => {
     fitAddon?.current?.fit();
   }, 200);
 
+  const copyToClipboard = async () => {
+    const terminal = xtermRef.current.terminal;
+    if (!terminal) {
+      toast.warn('Terminal is not ready');
+      return;
+    }
+    const selection = terminal.getSelection();
+    const text = await navigator.clipboard.writeText(selection?.toString() ?? '');
+    toast.info('Clipboard updated');
+  };
+  const pasteFromClipboard = async () => {
+    const terminal = xtermRef.current.terminal;
+    if (!terminal) {
+      toast.warn('Terminal is not ready');
+      return;
+    }
+    const selection = terminal.getSelection();
+    const text = await navigator.clipboard.readText();
+    if(!text) {
+      return;
+    }
+    terminal.paste(text); // or terminal.write(text), depending on what's available
+  };
+
+
+  useImperativeHandle(ref, () => ({
+    copyToClipboard,
+    pasteFromClipboard
+  }));
   return (
     <div className="w-full h-full pb-4">
       {/* Remote Connection Info */}
@@ -143,4 +171,4 @@ export const Shell = ({ id, shellId }: { id: string; shellId: string }) => {
       </Card>
     </div>
   );
-};
+});

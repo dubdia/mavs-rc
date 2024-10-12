@@ -1,6 +1,7 @@
 import { EntityState } from "@reduxjs/toolkit";
 import { ScriptInfo } from "../../main/models/Script";
 import { RemoteShellDto } from "../../shared/models/RemoteShellDto";
+import Xterm from "../components/XTerm";
 
 /** contains a list of all scripts */
 export type ShellList = {
@@ -9,6 +10,8 @@ export type ShellList = {
 
   /** id of the shell that is currently beeing viewed */
   selectedShellId: string | null;
+
+  initializedFirstShell: boolean,
 
   /** all the shells */
   data: EntityState<ShellEntry, string>;
@@ -20,15 +23,11 @@ export type ShellEntry = {
 
   /** the complete shell history */
   data: string[];
-
-  /** name */
-  name: string;
 };
 
 export function createShellEntry(shellDto: RemoteShellDto): ShellEntry {
   return <ShellEntry>{
     shellId: shellDto.shellId,
     data: [],
-    name: "shell-" + new Date().getTime().toString(), //todo
   };
 }
