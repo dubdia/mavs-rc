@@ -9,10 +9,11 @@ import { ipc } from "../../app";
 import { FitAddon, ITerminalDimensions } from "@xterm/addon-fit";
 import { TerminalSize } from "src/shared/models/TerminalSize";
 import { TabName } from "../../models/TabName";
+import { useShells } from "./shells.hook";
 
 //let start: number;
 const color = computeColor("hsl(var(--nextui-content1) / var(--nextui-content1-opacity, var(--tw-bg-opacity)));");
-export const Shell = ({ id, shellTab }: { id: string; shellTab: TabName }) => {
+export const Shell = ({ id, shellId }: { id: string; shellId: string }) => {
   // use hooks
   const xtermRef = useRef<XTerm>(null);
 
@@ -21,9 +22,10 @@ export const Shell = ({ id, shellTab }: { id: string; shellTab: TabName }) => {
   const fitAddon = useRef(new FitAddon());
 
   // get shell from remote
-  const remoteShell = useRemoteSelector(id, (r) => r.session.shells.find((x) => x.tab == shellTab));
-  if (remoteShell == null || remoteShell.tab == null) {
-    return <p>Shell not found: {shellTab}</p>;
+  const shells = useShells(id);
+  const remoteShell = shells.list().find(x => x.shellId == shellId);
+  if (remoteShell == null || remoteShell.shellId == null) {
+    return <p>Shell not found: {shellId}</p>;
   }
   const data = remoteShell.data ?? [];
   console.log("RENDER Shell", remoteShell);

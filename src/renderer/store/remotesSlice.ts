@@ -19,6 +19,7 @@ import { State } from "../models/State";
 import { Script, ScriptInfo } from "../../main/models/Script";
 import { createScriptEntry, ScriptEntry } from "../models/ScriptList";
 import { FaLeaf } from "react-icons/fa";
+import { createShellEntry, ShellEntry } from "../models/ShellList";
 
 export const loadRemotes = createAsync("loadRemotes", async () => await ipc.invoke("listRemotes"), {
   onPending: (state: State) => {
@@ -408,11 +409,8 @@ export const sessionCreateShell = createAsync(
     },
     onFulfilled: (state: State, data, arg) => {
       const session = state.data.entities[arg?.id!].session;
-      session.shells.push({
-        data: [],
-        shellId: data.shellId,
-        tab: `shell-${data.shellId}`,
-      });
+      shellsAdapter.addOne(session.shells.data, createShellEntry(data));
+      session.shells.selectedShellId = data.shellId;
     },
   }
 );
@@ -430,7 +428,15 @@ export const sessionDestroyShell = createAsync(
     },
     onFulfilled: (state: State, data, arg) => {
       const session = state.data.entities[arg?.id!].session;
-      session.shells = session.shells.filter((x) => x.shellId != arg.shellId);
+      shellsAdapter.removeOne(session.shells.data, arg.shellId);
+
+      // select another?
+      if (arg.shellId == session.shells.selectedShellId) {
+        // select next one
+        if (session.shells.data.ids.length > 0) {
+          session.shells.selectedShellId = session.shells.data.ids.find((x) => x != arg.shellId);
+        }
+      }
     },
   }
 );
@@ -499,6 +505,14 @@ export const sessionDeleteScript = createAsync(
     onFulfilled: (state: State, data, arg) => {
       const session = state.data.entities[arg?.id!].session;
       scriptsAdapter.removeOne(session.scripts.data, arg.scriptId);
+
+      // select another?
+      if (arg.scriptId == session.scripts.editScriptId) {
+        // select next one
+        if (session.scripts.data.ids.length > 0) {
+          session.scripts.editScriptId = session.scripts.data.ids.find((x) => x != arg.scriptId);
+        }
+      }
     },
   }
 );
@@ -559,6 +573,15 @@ export const scriptsAdapter = createEntityAdapter<ScriptEntry, string>({
 });
 export const { selectAll: selectAllScripts, selectById: selectScriptById } = scriptsAdapter.getSelectors<Session>(
   (state) => state.scripts.data
+);
+
+// create adapter for managing the shells array
+export const shellsAdapter = createEntityAdapter<ShellEntry, string>({
+  selectId: (x) => x!.shellId!,
+  sortComparer: (a, b) => (a?.name ?? "").localeCompare(b.name ?? ""),
+});
+export const { selectAll: selectAllShells, selectById: selectShellById } = shellsAdapter.getSelectors<Session>(
+  (state) => state.shells.data
 );
 
 // create initial state
@@ -669,10 +692,19 @@ export const appSlice = createSlice({
       }
     },
 
+    selectShell: (state, action: PayloadAction<{ id: string; shellId: string }>) => {
+      const s = state.data.entities[action.payload.id].session;
+      s.shells.selectedShellId = action.payload.shellId;
+    },
     appendShellData: (state, action: PayloadAction<{ id: string; shellId: string; data: string }>) => {
       const session = state.data.entities[action.payload.id].session;
-      const shell = session.shells.find((x) => x.shellId == action.payload.shellId);
-      shell.data.push(action.payload.data ?? "");
+      const entry = session.shells.data.entities[action.payload.shellId];
+      shellsAdapter.updateOne(session.shells.data, {
+        id: action.payload.shellId,
+        changes: {
+          data: [...(entry.data ?? []), action.payload.data],
+        },
+      });
     },
 
     selectScript: (state, action: PayloadAction<{ id: string; scriptId: string }>) => {
@@ -752,6 +784,7 @@ export const {
   processSessionExplorer,
   processSessionTunnels,
   appendShellData,
+  selectShell,
   editSessionTunnel,
   changeSessionTunnel,
   selectScript,

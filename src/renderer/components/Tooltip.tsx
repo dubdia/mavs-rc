@@ -6,7 +6,7 @@ type MyTooltipProps = PropsWithChildren & {
 };
 export const Tooltip = (props: MyTooltipProps) => {
   return (
-    <NextUiTooltip color="foreground" offset={25} content={props.content}>
+    <NextUiTooltip color="foreground" offset={25} delay={150} content={props.content}>
       {props.children}
     </NextUiTooltip>
   );

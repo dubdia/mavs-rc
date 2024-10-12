@@ -9,7 +9,8 @@ import { RemoteDto } from "../../shared/models/RemoteDto";
 import { ScriptList } from "./ScriptList";
 import { EntityState } from "@reduxjs/toolkit";
 import { ScriptInfo } from "../../main/models/Script";
-import { scriptsAdapter } from "../store/remotesSlice";
+import { scriptsAdapter, shellsAdapter } from "../store/remotesSlice";
+import { ShellList } from "./ShellList";
 
 /** state information about a connected remote */
 
@@ -21,7 +22,7 @@ export type Session = {
   loading: boolean;
 
   /** information about the shell */
-  shells: SessionShell[];
+  shells: ShellList;
 
   /** information about the services */
   services: SessionServices;
@@ -47,10 +48,6 @@ export const createRemoteSession = (dto: RemoteDto) =>
   <Session>{
     selectedTab: "info",
     loading: false,
-    shells: [],
-    command: "",
-    commandResult: null,
-    commandLoading: false,
 
     services: {
       searchColumn: "name",
@@ -97,6 +94,12 @@ export const createRemoteSession = (dto: RemoteDto) =>
       loading: false,
       editScriptId: null,
       data: scriptsAdapter.getInitialState(),
+    },
+
+    shells: {
+      loading: false,
+      selectedShellId: null,
+      data: shellsAdapter.getInitialState(),
     },
 
     shortcuts: {

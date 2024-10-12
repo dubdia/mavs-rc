@@ -16,6 +16,7 @@ import { IconType } from "react-icons";
 import { Script } from "../script/Script";
 import { Scripts } from "../script/Scripts";
 import { Tooltip } from "../../components/Tooltip";
+import { Shells } from "../shell/Shells";
 
 export interface TabInfo {
   name: TabName;
@@ -32,12 +33,12 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
   const name = useRemoteSelector(id, (r) => r.dto.info?.name ?? "Unnamed");
   const selectedTab = useRemoteSelector(id, (r) => r.session.selectedTab);
   const files = useRemoteSelector(id, (r) => r.session.files);
-  const shells = useRemoteSelector(id, (r) => r.session.shells);
+
   const tabs: TabInfo[] = [
     {
       name: "info",
       icon: FaInfo,
-      label: "Info",
+      label: "",
       render: () => <Info key={"info" + id} id={id}></Info>,
     },
     {
@@ -45,6 +46,12 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
       icon: FaCircleNodes,
       label: "Tunnels",
       render: () => <Tunnels key={"tunnels" + id} id={id}></Tunnels>,
+    },
+    {
+      name: "shells",
+      icon: FaTerminal,
+      label: "Shells",
+      render: () => <Shells key={"shell" + id} id={id}></Shells>,
     },
     {
       name: "services",
@@ -72,13 +79,7 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
       render: () => <FileEditor key={file.tab} id={id} fileTab={file.tab}></FileEditor>,
     });
   }
-  for (let shell of shells) {
-    tabs.push({
-      name: shell.tab,
-      icon: FaTerminal,
-      render: () => <Shell key={shell.tab} id={id} shellTab={shell.tab}></Shell>,
-    });
-  }
+
 
   const renderSelectedTab = (): React.ReactNode => {
     const body = tabs.find((x) => x.name == selectedTab)?.render();
@@ -109,13 +110,6 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
       name={name}
       header={
         <div className="flex flex-row gap-2">
-          {/* Option to create new shells */}
-          <Tooltip content="Spawns a new shell">
-            <Button isIconOnly={true} variant="light" onClick={() => dispatch(sessionCreateShell({ id: id }))}>
-              <FaTerminal />
-            </Button>
-          </Tooltip>
-
           {/* Option to close the connection */}
           <Tooltip content="Closes the connection to the remote">
             <Button isIconOnly={true} variant="light" onClick={() => dispatch(closeRemote(id))}>

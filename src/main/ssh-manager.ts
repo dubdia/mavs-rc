@@ -337,12 +337,12 @@ export class SshManager {
 
       // add shell to remote
       remote.connection.shells.push(shell);
+      return shell;
     } catch (err) {
       log.error("failed to create shell, dispose now", err);
       await this.remotesManager.disposeShellAsync(shell, remote);
+      throw err;
     }
-
-    return shell;
   }
 
   public async destroyShellAsync(id: string, shellId: string) {
