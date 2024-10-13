@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { Background } from "./components/Background";
 import { AppProvider } from "./providers/appProvider";
-import Body from "./Body";
+import Body from "./body";
 import { appendScriptLog, appendShellData, loadRemotes, sessionDestroyShell } from "./store/remotesSlice";
 import { store } from "./store/store";
 
