@@ -111,7 +111,7 @@ export function registerIpcHandlers() {
 
   // sftp
   typedIpcMain.handle("listDirectory", async (_, id, path) => {
-    return await sshManager.listDirectoryAsync(id, path, false);
+    return await sshManager.listDirectoryAsync(id, path, false, true);
   });
   typedIpcMain.handle("readText", async (_, id, filePath) => {
     return await sshManager.readTextAsync(id, filePath, "utf8");

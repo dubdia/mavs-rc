@@ -17,5 +17,8 @@ export class AppConfigManager extends ConfigManager<AppConfig> {
     if (config.devTools == null || (config.devTools as any) == "") {
       config.devTools = false;
     }
+    if (config.logSsh == null || (config.logSsh as any) == "") {
+      config.logSsh = false;
+    }
   }
 }

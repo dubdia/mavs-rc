@@ -12,13 +12,9 @@ import { RemotesManager } from "./remotes-manager";
 import { Remote } from "./models/Remote";
 import { SshManager } from "./ssh-manager";
 import { exec as childProcessExec } from "child_process";
-import { joinPath } from "../shared/utils/io/joinPath";
-import { default as pathLib } from "path";
-import { getFileName } from "../shared/utils/io/getFileName";
-import { getDirectoryName } from "../shared/utils/io/getDirectoryName";
-import { getFileExtension } from "../shared/utils/io/getFileExtension";
 import { OsType } from "../shared/models/OsType";
 import { mainWindow } from "./main";
+import { currentPath, getPath, getPathForOsType } from "../shared/utils/path-utils";
 
 /** used to transcompile and run scripts */
 export class ScriptManager {
@@ -314,12 +310,7 @@ export class ScriptManager {
           throw new ScriptExit(message?.toString() ?? "");
         }),
 
-      joinPath: (parts, type) =>
-        exec("joinPath", false, () => {
-          return joinPath(parts, type == "windows" ? OsType.Windows : OsType.Posix);
-        }),
-
-      // local operations
+        // local operations
       local: {
         // folder
         mkDir: (path, options) =>
@@ -583,7 +574,7 @@ export class ScriptManager {
             try {
               await new Promise((resolve, reject) => {
                 archive
-                  .file(sourceFilePath, { name: getFileName(sourceFilePath) })
+                  .file(sourceFilePath, { name: currentPath().basename(sourceFilePath) })
                   .on("error", (err: archiver.ArchiverError) => reject(err))
                   .pipe(stream);
 
@@ -599,34 +590,34 @@ export class ScriptManager {
         // path
         isAbsolutePath: (path: string) =>
           exec("local isAbsolutePath", false, () => {
-            return pathLib.isAbsolute(path);
+            return currentPath().isAbsolute(path);
           }),
 
         joinPath: (...paths: string[]) =>
           exec("local joinPath", false, () => {
-            return pathLib.join(...paths);
+            return currentPath().join(...paths);
           }),
 
         getDirName: (path) =>
           exec("local getDirName", false, () => {
-            return pathLib.dirname(path);
+            return currentPath().dirname(path);
           }),
         getFileName: (path) =>
           exec("local getFileName", false, () => {
-            return pathLib.basename(path);
+            return currentPath().basename(path);
           }),
         getExtension: (path) =>
           exec("local getExtension", false, () => {
-            return pathLib.extname(path);
+            return currentPath().extname(path);
           }),
 
         resolvePath: (...paths: string[]) =>
           exec("local resolvePath", false, () => {
-            return pathLib.resolve(...paths);
+            return currentPath().resolve(...paths);
           }),
         normalizePath: (path: string) =>
           exec("local normalizePath", false, () => {
-            return pathLib.normalize(path);
+            return currentPath().normalize(path);
           }),
       },
 
@@ -790,44 +781,24 @@ export class ScriptManager {
         // path
         isAbsolutePath: (path: string) =>
           exec("remote isAbsolutePath", false, () => {
-            if (remote.connection.osType == OsType.Windows) {
-              return pathLib.win32.isAbsolute(path);
-            } else {
-              return pathLib.posix.isAbsolute(path);
-            }
+            return getPathForOsType(remote.connection.osType).isAbsolute(path);
           }),
         joinPath: (...paths: string[]) =>
           exec("remote joinPath", false, () => {
-            if (remote.connection.osType == OsType.Windows) {
-              return pathLib.win32.join(...paths);
-            } else {
-              return pathLib.posix.join(...paths);
-            }
+            return getPathForOsType(remote.connection.osType).join(...paths);
           }),
 
         getDirName: (path) =>
           exec("remote getDirName", false, () => {
-            if (remote.connection.osType == OsType.Windows) {
-              return pathLib.win32.dirname(path);
-            } else {
-              return pathLib.posix.dirname(path);
-            }
+            return getPathForOsType(remote.connection.osType).dirname(path);
           }),
         getFileName: (path) =>
           exec("remote getFileName", false, () => {
-            if (remote.connection.osType == OsType.Windows) {
-              return pathLib.win32.basename(path);
-            } else {
-              return pathLib.posix.basename(path);
-            }
+            return getPathForOsType(remote.connection.osType).basename(path);
           }),
         getExtension: (path) =>
           exec("remote getExtension", false, () => {
-            if (remote.connection.osType == OsType.Windows) {
-              return pathLib.win32.extname(path);
-            } else {
-              return pathLib.posix.extname(path);
-            }
+            return getPathForOsType(remote.connection.osType).extname(path);
           }),
       },
     };

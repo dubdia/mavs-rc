@@ -25,11 +25,14 @@ import {
   FaArchive,
   FaArrowRight,
   FaBars,
+  FaCube,
   FaDownload,
   FaFile,
   FaFolder,
   FaFolderPlus,
   FaInfo,
+  FaMicrochip,
+  FaQuestion,
   FaSearch,
   FaTerminal,
   FaTrash,
@@ -45,7 +48,7 @@ import { ShortcutsDropdown } from "../shortcuts/ShortcutsDropdown";
 import { ShortcutsToggle } from "../shortcuts/ShortcutsToggle";
 import { PermissionModal } from "./PermissionModal";
 import { OwnerModal } from "./OwnerModal";
-import { Fa0, FaFileCirclePlus } from "react-icons/fa6";
+import { Fa0, FaDiagramProject, FaFileCirclePlus, FaLink, FaPenToSquare, FaRightLeft } from "react-icons/fa6";
 import { RemoteFile } from "../../../shared/models/RemoteFile";
 import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
 
@@ -101,6 +104,26 @@ export const Files = ({ id }: { id: string }) => {
     const segments = base.split("/").filter((x) => x != null && x != "");
     return ["Root", ...segments];
   };
+
+  const getIcon = (file: RemoteFile): React.ReactNode => {
+    if(file.isDirectory) {
+      return <FaFolder className="text-yellow-300"></FaFolder>;
+    } else if(file.isRegularFile) {
+      return <FaFile className="text-zinc-300"></FaFile>
+    } else if(file.isBlockDevice) {
+      return <FaCube className="text-zinc-300"></FaCube>
+    } else if(file.isCharacterDevice) {
+      return <FaMicrochip className="text-zinc-300"></FaMicrochip>
+    } else if(file.isNamedPipe) {
+      return <FaRightLeft className="text-zinc-300"></FaRightLeft>
+    } else if(file.isSocket) {
+      return <FaDiagramProject className="text-zinc-300"></FaDiagramProject>
+    } else if(file.isSymbolicLink) {
+      return <FaLink className="text-zinc-300"></FaLink>
+    } else {
+      return <FaQuestion className="text-pink-300"></FaQuestion>
+    }
+  }
 
   console.log("RENDER Files", explorer);
 
@@ -279,8 +302,7 @@ export const Files = ({ id }: { id: string }) => {
                         item.name == ".." && "mb-2"
                       )}
                     >
-                      {item.isDirectory && <FaFolder className="text-yellow-300"></FaFolder>}
-                      {item.isRegularFile && <FaFile className="text-zinc-300"></FaFile>}
+                      {getIcon(item)}
                       {item.name}
                     </p>
                   </TableCell>
@@ -330,7 +352,7 @@ export const Files = ({ id }: { id: string }) => {
                               <DropdownItem
                                 key="rename"
                                 onClick={() => files.renameFile(item.fullName!)}
-                                startContent={<Fa0 />}
+                                startContent={<FaPenToSquare />}
                               >
                                 Rename
                               </DropdownItem>,

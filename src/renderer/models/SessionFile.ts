@@ -1,4 +1,5 @@
-import { getFileName } from "../../shared/utils/io/getFileName";
+import { OsType } from "../../shared/models/OsType";
+import { getPathForOsType } from "../../shared/utils/path-utils";
 import { TabName } from "./TabName";
 
 /** the state of the react file component (a opened file) */
@@ -38,17 +39,19 @@ export const createFile = ({
   onCloseNavigateBackTo,
   isNew,
   contents,
+  osType,
 }: {
   tab: TabName;
   filePath: string;
   onCloseNavigateBackTo: TabName | null | undefined;
   isNew: boolean;
   contents: string;
+  osType: OsType
 }): SessionFile => {
   return {
     tab: tab,
     filePath: filePath,
-    name: getFileName(filePath),
+    name: getPathForOsType(osType).basename(filePath),
     onCloseNavigateBackTo: onCloseNavigateBackTo,
     isNew: isNew,
     type: filePath?.endsWith(".service") ? "Service" : "File",

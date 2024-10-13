@@ -74,8 +74,6 @@ declare namespace ScriptContractV1 { //global
   function delay(timeInMs: number): Promise<void>;
   function exit(message?: string | number | boolean | Date): never;
 
-  function joinPath(parts: string[], type: ('posix' | 'windows')): string;
-
   // local & remote functions
   const local: ScriptContractV1_Local;
   const remote: ScriptContractV1_Remote;

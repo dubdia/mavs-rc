@@ -6,9 +6,8 @@ import debounce from "lodash.debounce";
 import { Mutex } from "async-mutex";
 import { computeColor } from "../../utils/computeColor";
 import { ipc } from "../../app";
-import { FitAddon, ITerminalDimensions } from "@xterm/addon-fit";
+import { FitAddon } from "@xterm/addon-fit";
 import { TerminalSize } from "src/shared/models/TerminalSize";
-import { TabName } from "../../models/TabName";
 import { useShells } from "./shells.hook";
 import { toast } from "react-toastify";
 

@@ -10,13 +10,10 @@ import { UserGroup } from "../shared/models/UserGroup";
 import { OsType } from "../shared/models/OsType";
 import { DebugFunction, FileEntryWithStats, Server, Stats } from "ssh2";
 import * as fs from "fs";
-import * as path from "path";
-import { app } from "electron";
 import log from "electron-log/main";
 import { Remote } from "./models/Remote";
 import { RemoteConnection } from "./models/RemoteConnection";
 
-import { joinPath } from "../shared/utils/io/joinPath";
 import { escapeUnixShellArg } from "../shared/utils/escapeUnixShellArg";
 import { dialog } from "electron";
 import { appConfigManager, mainWindow } from "./main";
@@ -26,9 +23,9 @@ import { TunnelConfig } from "./ssh2-promise/src/tunnelConfig";
 import { v4 } from "uuid";
 import { SSH2Promise } from "./ssh2-promise/src";
 import { TerminalSize } from "src/shared/models/TerminalSize";
-import { SshCert } from "./models/SshCert";
 import { SshCertManager } from "./ssh-cert-manager";
 import { RemoteShell } from "./models/RemoteShell";
+import { currentPath, getPath, getPathForOsType } from "../shared/utils/path-utils";
 
 /** used to do everyting related to ssh and sftp */
 export class SshManager {
@@ -419,18 +416,47 @@ export class SshManager {
 
   // SFTP -----------------------------
 
-  public async listDirectoryAsync(id: string, path: string, recursive: boolean): Promise<RemoteFile[]> {
+  public async listDirectoryAsync(
+    id: string,
+    path: string,
+    recursive: boolean,
+    addDotFolders: boolean
+  ): Promise<RemoteFile[]> {
     log.verbose(`List directory ${path}...`);
     const remote = this.remotesManager.findOrError(id, { mustBeConnected: true });
-    return await this.listDirectoryInternalAsync(remote, path, recursive);
+    return await this.listDirectoryInternalAsync(remote, path, recursive, addDotFolders);
   }
-  public async listDirectoryInternalAsync(remote: Remote, path: string, recursive: boolean): Promise<RemoteFile[]> {
+  public async listDirectoryInternalAsync(
+    remote: Remote,
+    path: string,
+    recursive: boolean,
+    addDotFolders: boolean
+  ): Promise<RemoteFile[]> {
     // read everything in this directory and map it
     const result = await remote.connection.sftp.readdir(path);
     const files: RemoteFile[] = result.map((x: FileEntryWithStats) => {
-      const fullPath = joinPath([path, x.filename], remote.connection.osType);
+      const fullPath = getPathForOsType(remote.connection.osType).join(path, x.filename);
       return this.mapFile(x.attrs, fullPath, remote);
     });
+
+    // add "." and ".." folders if not in root
+    if (addDotFolders) {
+      // add ".." if not rooted
+      const isRoot = getPathForOsType(remote.connection.osType).isRoot(path);
+      if (!isRoot) {
+        const dotDotPath = getPathForOsType(remote.connection.osType).dirname(path);
+        const dotDotPathStats = await remote.connection.sftp.stat(dotDotPath);
+        const dotDot = this.mapFile(dotDotPathStats, dotDotPath, remote);
+        dotDot.name = '..';
+        files.unshift(dotDot);
+      }
+
+      // add "." to every folder because it is the current dir
+      const dotPathStats = await remote.connection.sftp.stat(path);
+      const dot = this.mapFile(dotPathStats, path, remote);
+      dot.name = '.';
+      files.unshift(dot);
+    }
 
     // recursive?
     if (recursive) {
@@ -454,7 +480,7 @@ export class SshManager {
         }
 
         // add contents of it too
-        const contentsOfSubDir = await this.listDirectoryInternalAsync(remote, file.fullName, true);
+        const contentsOfSubDir = await this.listDirectoryInternalAsync(remote, file.fullName, true, addDotFolders);
         files.push(...contentsOfSubDir);
       }
     }
@@ -475,7 +501,7 @@ export class SshManager {
     // create remote file from given stats
     const remoteFile = <RemoteFile>{
       fullName: fullName, // joinPath([dir, file.filename], remote.connection?.osType),
-      name: path.basename(fullName),
+      name: getPathForOsType(remote.connection.osType).basename(fullName),
     };
 
     // map all attributes of the file
@@ -639,7 +665,7 @@ export class SshManager {
       const stat = await remote.connection.sftp.stat(path);
       if (stat.isDirectory()) {
         // get everything inside of this directory
-        const files = await this.listDirectoryInternalAsync(remote, path, true);
+        const files = await this.listDirectoryInternalAsync(remote, path, true, false);
         for (let file of files) {
           // check
           await remote.connection.sftp.chmod(file.fullName, mode);
@@ -744,7 +770,7 @@ export class SshManager {
     }
 
     // get target path from user
-    const fileName = path.basename(filePath);
+    const fileName = getPathForOsType(remote.connection.osType).basename(filePath);
     const saveDialogResult = await dialog.showSaveDialog(mainWindow, {
       title: "Choose path to download file",
       defaultPath: fileName,
@@ -815,7 +841,7 @@ export class SshManager {
     if (!targetDirectory || targetDirectory == "") {
       return false;
     }
-    targetDirectory = path.join(targetDirectory, path.basename(directoryPath));
+    targetDirectory = currentPath().join(targetDirectory, currentPath().basename(directoryPath));
     if (fs.existsSync(targetDirectory)) {
       const localStats = await fs.statSync(targetDirectory);
       if (!localStats.isDirectory()) {
@@ -831,13 +857,13 @@ export class SshManager {
 
     // list all files and sort them from A-Z
     let remoteEntries: (RemoteFile & { relativePath?: string; localPath?: string })[] =
-      await this.listDirectoryInternalAsync(remote, directoryPath, true); // get everything below that path
+      await this.listDirectoryInternalAsync(remote, directoryPath, true, false); // get everything below that path
     remoteEntries = remoteEntries.filter((x) => x && x.fullName); // filter for files and folders
     remoteEntries.sort((a, b) => a.fullName.localeCompare(b.fullName)); // sort from a-z
     remoteEntries.forEach((x) => {
       // set relative and local path
       x.relativePath = x.fullName.substring(directoryPath.length);
-      x.localPath = path.join(targetDirectory, x.relativePath);
+      x.localPath = currentPath().join(targetDirectory, x.relativePath);
     });
     if (remoteEntries.length == 0) {
       return true; // nothing to download

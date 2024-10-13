@@ -1,8 +1,8 @@
 import * as fs from "fs";
-import * as path from "path";
 import { app } from "electron";
 import log from "electron-log/main";
 import { SshCert } from "./models/SshCert";
+import { currentPath } from "../shared/utils/path-utils";
 
 /** can be used to retrieve a list of ssh certs */
 export class SshCertManager {
@@ -10,7 +10,7 @@ export class SshCertManager {
   /** return a list of available ssh certs */
   public listSshCerts(): SshCert[] {
     // for now the ssh path is fixed //Todo
-    const sshDir = path.join(app.getPath("home"), ".ssh");
+    const sshDir = currentPath().join(app.getPath("home"), ".ssh");
     const sshDirExists = fs.existsSync(sshDir);
     if (!sshDirExists) {
       log.warn(`Could not find Users .ssh directory: ${sshDir}`);
@@ -30,7 +30,7 @@ export class SshCertManager {
       }
 
       // build path
-      const filePath = path.join(sshDir, fileName);
+      const filePath = currentPath().join(sshDir, fileName);
 
       // check stats
       const fileStats = fs.statSync(filePath);

@@ -2,21 +2,16 @@ import { toast } from "react-toastify";
 import { useConfirm } from "../../components/dialogs/ConfirmDialog";
 import { useInput } from "../../components/dialogs/InputDialog";
 import { SessionService } from "src/renderer/models/SessionService";
-import {
-  addSessionFile,
-  sessionFetchServices,
-  sessionList,
-  setSelectedTab,
-} from "../../store/remotesSlice";
+import { addSessionFile, sessionFetchServices, sessionList, setSelectedTab } from "../../store/remotesSlice";
 import { useAppDispatch, useRemote } from "../../store/store";
 import { useState } from "react";
 import { useInfo } from "../../components/dialogs/InfoDialog";
 import { replaceAll } from "../../../shared/utils/replaceAll";
 import { getFileTabName } from "../../utils/getFileTabName";
 import { ipc } from "../../app";
-import { joinPath } from "../../../shared/utils/io/joinPath";
 import { createFile } from "../../models/SessionFile";
 import { useFiles } from "../files/files.hook";
+import { getPathForOsType } from "../../../shared/utils/path-utils";
 
 export const useServices = (id: string) => {
   const input = useInput();
@@ -96,7 +91,7 @@ export const useServices = (id: string) => {
       }
 
       // execute
-      const result = await ipc.invoke('executeSshCommand', remote.id, command);
+      const result = await ipc.invoke("executeSshCommand", remote.id, command);
       let msg = "";
       if (!result.success && result.output) {
         msg += result.output + "\n";
@@ -153,7 +148,7 @@ export const useServices = (id: string) => {
         " && " +
         "systemctl daemon-reload && " +
         "systemctl reset-failed";
-      const result = await ipc.invoke('executeSshCommand', remote.id, command);
+      const result = await ipc.invoke("executeSshCommand", remote.id, command);
       let msg = "";
       if (!result.success != null && result.output) {
         msg += result.output + "\n";
@@ -165,7 +160,7 @@ export const useServices = (id: string) => {
 
       // delete service
       try {
-        await ipc.invoke('delete', id, servicePath);
+        await ipc.invoke("delete", id, servicePath);
         toast.info("Service deleted");
       } catch (err) {
         console.error("failed to delete service file", err, serviceName, servicePath);
@@ -189,8 +184,8 @@ export const useServices = (id: string) => {
     try {
       // open file
       const filePath = await getServicePath(service.name);
-      if(filePath) {
-        await files.openFile(filePath, 'services');
+      if (filePath) {
+        await files.openFile(filePath, "services");
       }
     } catch (err) {
       console.error("failed to read service file", err, service);
@@ -223,14 +218,14 @@ export const useServices = (id: string) => {
 
       // check service name
       const checkCommand = 'systemctl list-unit-files "' + serviceName + '"';
-      const checkCommandResult = await ipc.invoke('executeSshCommand', id, checkCommand);
+      const checkCommandResult = await ipc.invoke("executeSshCommand", id, checkCommand);
       if (checkCommandResult.output?.indexOf("\n0 unit files listed.") == -1) {
         toast.warn("Service '" + serviceName + "' already exists. Choose another name");
         return;
       }
 
       // add session file
-      const servicePath = joinPath(["/etc/systemd/system/", serviceName], remote.dto.osType);
+      const servicePath = getPathForOsType(remote.dto.osType).join("/etc/systemd/system/", serviceName);
       const sessionFile = createFile({
         tab: getFileTabName(id, servicePath),
         filePath: servicePath,
@@ -238,6 +233,7 @@ export const useServices = (id: string) => {
         isNew: true,
         contents:
           "[Unit]\nDescription=\n\n[Service]\nUser=\nWorkingDirectory=\nExecStart=\nRestart=always\nRestartSec=3\n\n[Install]\nWantedBy=multi-user.target",
+        osType: remote.dto.osType,
       });
       dispatch(addSessionFile({ id: id, file: sessionFile, select: true }));
     } catch (err) {
@@ -261,10 +257,10 @@ export const useServices = (id: string) => {
     setLoading(true);
     const service = getServiceByName(serviceName);
     try {
-      const result = await ipc.invoke('executeSshCommand', remote.id!, command);
-      if (!result.success && result.output && result.output != '') {
+      const result = await ipc.invoke("executeSshCommand", remote.id!, command);
+      if (!result.success && result.output && result.output != "") {
         toast.error(result.output);
-      } else if (!result.output || result.output == '') {
+      } else if (!result.output || result.output == "") {
         toast.warn("No result");
       } else {
         await info({ title: service.name, message: result.output });
@@ -279,7 +275,7 @@ export const useServices = (id: string) => {
 
   const daemonReload = async () => {
     try {
-      const result = await ipc.invoke('executeSshCommand', id, "sudo systemctl daemon-reload");
+      const result = await ipc.invoke("executeSshCommand", id, "sudo systemctl daemon-reload");
       if (!result.success != null) {
         toast.error(result.output);
       } else {

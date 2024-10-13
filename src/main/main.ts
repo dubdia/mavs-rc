@@ -1,14 +1,13 @@
 import { app, BrowserWindow, globalShortcut, session } from "electron";
-import path from "path";
 import windowStateKeeper from "electron-window-state";
 import { SshManager } from "./ssh-manager";
 import log from "electron-log/main";
 import { RemotesManager } from "./remotes-manager";
 import { registerIpcHandlers } from "./ipc-handlers";
 import { AppConfigManager } from "./config/app-config-manager";
-import { RemotesConfigManager } from "./config/remotes-config-manager";
 import { SshCertManager } from "./ssh-cert-manager";
 import { ScriptManager } from "./script-manager";
+import { currentPath, getPath } from "../shared/utils/path-utils";
 
 // handle uncaught exceptions
 process.on("uncaughtException", function (error) {
@@ -160,7 +159,7 @@ app.on("ready", () => {
     minHeight: 420,
 
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: currentPath().join(__dirname, "preload.js"),
 
       // web features
       devTools: devTools,
@@ -205,7 +204,7 @@ app.on("ready", () => {
     log.info(`Development Mode. Load from ${MAIN_WINDOW_VITE_DEV_SERVER_URL}`);
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL + relativeIndexHtmlFilePath);
   } else {
-    const indexHtmlFilePath = path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/${relativeIndexHtmlFilePath}`);
+    const indexHtmlFilePath = currentPath().join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/${relativeIndexHtmlFilePath}`);
     log.info(`Producation Mode. Load index.html from ${indexHtmlFilePath}`);
     mainWindow.loadFile(indexHtmlFilePath);
   }

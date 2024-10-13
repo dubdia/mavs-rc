@@ -13,13 +13,10 @@ import { escapeUnixShellArg } from "../../../shared/utils/escapeUnixShellArg";
 import { useInfo } from "../../components/dialogs/InfoDialog";
 import { ipc } from "../../app";
 import { RemoteFile } from "../../../shared/models/RemoteFile";
-import { joinPath } from "../../../shared/utils/io/joinPath";
-import { getDirectoryName } from "../../../shared/utils/io/getDirectoryName";
-import { getFileExtension } from "../../../shared/utils/io/getFileExtension";
-import { getFileName } from "../../../shared/utils/io/getFileName";
 import { getFileTabName } from "../../utils/getFileTabName";
 import { createFile } from "../../models/SessionFile";
 import { TabName } from "../../models/TabName";
+import { getPathForOsType } from "../../../shared/utils/path-utils";
 
 export const useFiles = (id: string) => {
   const input = useInput();
@@ -50,6 +47,7 @@ export const useFiles = (id: string) => {
           contents: fileContents.contents ?? "",
           onCloseNavigateBackTo: onCloseNavigateBackTo,
           isNew: false,
+          osType: remote.dto.osType,
         });
 
         // open and select it
@@ -126,7 +124,7 @@ export const useFiles = (id: string) => {
       }
 
       // create it
-      const dir = joinPath([remote.session.explorer.dir, name.trim()], remote.dto.osType);
+      const dir = getPathForOsType(remote.dto.osType).join(remote.session.explorer.dir, name.trim());
       const dirParam = escapeUnixShellArg(dir);
       if (type == "file") {
         await ipc.invoke("executeSshCommand", id, "touch " + dirParam);
@@ -210,8 +208,8 @@ export const useFiles = (id: string) => {
       //const oldDirArg = escapeUnixShellArg(joinPath([remote.session.explorer.dir, file.name ?? ""], remote.dto.osType));
       //const newDirArg = escapeUnixShellArg(joinPath([remote.session.explorer.dir, name.trim()], remote.dto.osType));
 
-      const oldDir = joinPath([remote.session.explorer.dir, file.name ?? ""], remote.dto.osType);
-      const newDir = joinPath([remote.session.explorer.dir, name.trim()], remote.dto.osType);
+      const oldDir = getPathForOsType(remote.dto.osType).join(remote.session.explorer.dir, file.name ?? "");
+      const newDir = getPathForOsType(remote.dto.osType).join(remote.session.explorer.dir, name.trim());
 
       if (file.isRegularFile || file.isDirectory) {
         //ipc.invoke("executeSshCommand", id, "mv " + oldDirArg + " " + newDirArg);
@@ -301,8 +299,8 @@ export const useFiles = (id: string) => {
       }
 
       // ask user for file path
-      const fileName = getFileName(localFilePath) ?? "file.bin";
-      const originalPath = joinPath([directory, fileName], remote.dto.osType);
+      const fileName = getPathForOsType(remote.dto.osType).basename(localFilePath) ?? "file.bin";
+      const originalPath = getPathForOsType(remote.dto.osType).join(directory, fileName);
       const remoteFilePath = await input({ message: "Enter upload path", yes: "Upload", initialValue: originalPath });
       if (remoteFilePath == null || remoteFilePath == "") {
         return;
@@ -346,7 +344,7 @@ export const useFiles = (id: string) => {
 
       // build initial target dir
       let targetDir = "";
-      const fileExtension = getFileExtension(fileInfo.fullName);
+      const fileExtension = getPathForOsType(remote.dto.osType).extname(fileInfo.fullName);
       if (fileExtension != null && fileExtension.length > 0) {
         const filePathWithoutExtension = fileInfo.fullName.substring(
           0,
@@ -354,7 +352,7 @@ export const useFiles = (id: string) => {
         );
         targetDir = filePathWithoutExtension;
       } else {
-        targetDir = getDirectoryName(fileInfo.fullName);
+        targetDir = getPathForOsType(remote.dto.osType).dirname(fileInfo.fullName);
       }
 
       // input for path

@@ -2,7 +2,7 @@ import { app } from "electron";
 import log from "electron-log/main";
 
 import * as fs from "fs";
-import * as path from "path";
+import { currentPath, getPath } from "../../shared/utils/path-utils";
 
 /** base class for managing configuration files in the user-data directory */
 export abstract class ConfigManager<TConfig> {
@@ -11,7 +11,7 @@ export abstract class ConfigManager<TConfig> {
 
   constructor(fileName: string) {
     const userDataPath = app.getPath("userData");
-    this.configFilePath = path.join(userDataPath, fileName);
+    this.configFilePath = currentPath().join(userDataPath, fileName);
     this.init();
   }
 
