@@ -39,14 +39,28 @@ Compatibility Information: Built using Electron, Mav's RC is inherently multi-pl
       </td>
     </tr>
     <tr style="vertical-align:top">
-      <td width=100><b>Shell</td>
+      <td width=100><b>Shells</td>
       <td align="left">
         <ul>
           <li><b>Integrated Shell:</b> Execute commands and scripts directly within Mav's RC.</b></li>
+            <li><b>Multiple Shells:</b> Spawn multiple shells next to each other</b></li>
+                  <li><b>Clipboard support:</b> Copy and paste between clipboard and shell with ease</b></li>
         </ul>
       </td>
       <td width=200 align="right">
       <img width=200 src="./doc/img/shell.jpg" alt="Shell Screen">
+      </td>
+    </tr>
+    <tr style="vertical-align:top">
+      <td width=100><b>Scripts</td>
+      <td align="left">
+        <ul>
+          <li><b>Scripting support:</b> Create scripts within Mav's RC to automate tasks or workflows between your local and the remote mashine. The scripts can be written in Typescript or Javascript. Better documentation is coming soon!</li>
+            <li><b>Powerful editor:</b> The same editor that powers Visual-Studio Code is used here: Monaco</li>
+        </ul>
+      </td>
+      <td width=200 align="right">
+      <img width=200 src="./doc/img/scripts.jpg" alt="Scripts Screen">
       </td>
     </tr>
     <tr style="vertical-align:top">
@@ -102,7 +116,6 @@ Compatibility Information: Built using Electron, Mav's RC is inherently multi-pl
     </tr>
   </tbody>
 </table>
-
 </br>
 
 # 🔥 Get started
@@ -204,7 +217,7 @@ Encountering issues can be frustrating; here are some common problems and their 
 Consider modifying your sudoers file to provide necessary permissions to your user.
 
 ### Application Failures
-- Check Logs: Review the log files for clues: _%APPDATA%/mavs-rc/rc.log_
+- Check Logs: Review the log files for clues: _%APPDATA%/mavs-rc/logs/_
 - Reset Application Data: If issues persist, try deleting the application data directory. You may want to back up important configurations such as rc-remotes.config.json_ beforehand: _%APPDATA%/mavs-rc/_
 
 ### Build Issues
@@ -263,7 +276,7 @@ The modified code can be found under _/mavs-rc/src/main/ssh2-promise_
 
 # ⬇️ Screenshots
 
-![Connect](/doc/img/connect.jpg) ![Shell](/doc/img/shell.jpg) ![Service Management](/doc/img/services.jpg) ![Explorer](/doc/img/explorer.jpg) ![File Editor](/doc/img/file.jpg)![SSH Tunnels](/doc/img/tunnels.jpg) ![System Info](/doc/img/info.jpg)
+![Connect](/doc/img/connect.jpg) ![Shell](/doc/img/shell.jpg) ![Shell](/doc/img/scripts.jpg) ![Service Management](/doc/img/services.jpg) ![Explorer](/doc/img/explorer.jpg) ![File Editor](/doc/img/file.jpg)![SSH Tunnels](/doc/img/tunnels.jpg) ![System Info](/doc/img/info.jpg)
 
 </br>
 

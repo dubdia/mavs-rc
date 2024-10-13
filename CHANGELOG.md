@@ -8,8 +8,10 @@ All notable changes to this project will be documented in this file.
 - User can have multiple shells now
 - Shell now resizes correctly
 - Shell supports right click for pasting
+- Added buttons for copy/paste clipboard in shell
 - Split 'sshConfig.json' into 'rc.config.json' and 'rc-remotes.config.json'
 - Added 'Script' section where user can write and execute typescript code
+- Added menu with links to useful application files and also this Github repo
 
 ### Changed
 

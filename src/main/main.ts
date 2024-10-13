@@ -23,8 +23,8 @@ process.on("uncaughtException", function (error) {
 // loading configuration and configure logger
 export let appConfigManager = new AppConfigManager();
 log.transports.console.level = appConfigManager.config.logLevel; // MAIN_WINDOW_VITE_DEV_SERVER_URL != null ? "debug" : appConfigManager.config.logLevel
-const userDataPath = app.getPath("userData");
-log.transports.file.resolvePathFn = () => path.join(userDataPath, "rc.log");
+//const userDataPath = app.getPath("userData");
+//log.transports.file.resolvePathFn = () => path.join(userDataPath, "rc.log");
 log.transports.file.level = appConfigManager.config.logLevel;
 
 // print startup message

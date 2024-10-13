@@ -1,7 +1,7 @@
 {
   "name": "mavs-rc",
   "productName": "mavs-rc",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Remote control systems via ssh",
   "keywords": [
     "Server Remote Control",
@@ -27,7 +27,8 @@
     "makeAndInstall": "electron-forge make && node ./scripts/install.js",
     "installScript": "node ./scripts/install.js",
     "publish": "electron-forge publish",
-    "lint": "eslint --ext .ts,.tsx ."
+    "lint": "eslint --ext .ts,.tsx .",
+    "compressDocImages": "node ./scripts/compressDocImages.js"
   },
   "dependencies": {
     "@heroku/socksv5": "^0.0.9",
@@ -87,6 +88,7 @@
     "electron": "32.1.0",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.30.0",
+    "sharp": "^0.33.5",
     "ts-node": "^10.9.2",
     "typescript": "~4.5.4",
     "vite": "^5.4.5",

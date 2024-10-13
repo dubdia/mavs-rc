@@ -16,6 +16,8 @@ import { RemoteShellDto } from "../models/RemoteShellDto";
 import { Script, ScriptInfo } from "../../main/models/Script";
 import { ScriptExecutionResult } from "../../main/script-manager";
 
+export type AppAction = 'openGithub' | 'openAppData' | 'openLog' | 'openAppConfig' | 'openRemotesConfig';
+
 /** definitions of possible events that can occur on the main and can be listened to from the renderer */
 type Events = {
   shellReceive: (id: string, shellId: string, data: string) => void;
@@ -27,6 +29,7 @@ type Events = {
 /** definition of possible commands that can be invoked on the main by the renderer */
 type Commands = {
   getAppVersion: () => string;
+  invokeAction: (action: AppAction) => Promise<void>;
 
   // remotes
   listRemotes: () => RemoteDto[];

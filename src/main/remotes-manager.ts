@@ -16,7 +16,7 @@ import { RemoteShell } from "./models/RemoteShell";
 /** used to manage remotes  */
 export class RemotesManager {
   public remotes: Remote[];
-  private config = new RemotesConfigManager();
+  public config = new RemotesConfigManager();
 
   constructor() {
     // load remotes from config

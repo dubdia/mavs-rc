@@ -1,12 +1,49 @@
-import { app } from "electron";
+import { app, shell } from "electron";
 import { typedIpcMain } from "../shared/ipc/ipc-api";
-import { remotesManager, scriptManager, sshCertManager, sshManager } from "./main";
+import { appConfigManager, remotesManager, scriptManager, sshCertManager, sshManager } from "./main";
+import log from "electron-log/main";
 
 /** registers the ipc handlers of main */
 export function registerIpcHandlers() {
   // app
   typedIpcMain.handle("getAppVersion", () => {
     return app.getVersion();
+  });
+  typedIpcMain.handle("invokeAction", async (_, action) => {
+    try {
+      log.verbose("Handle app action", action);
+      switch (action) {
+        case "openAppData":
+          await shell.openPath(app.getPath("userData"));
+          break;
+        case "openLog":
+          await shell.showItemInFolder(app.getPath("logs"));
+          break;
+        case "openAppConfig":
+          {
+            const err = await shell.openPath(appConfigManager.configFilePath);
+            if (err && err != "") {
+              throw new Error(err);
+            }
+          }
+          break;
+        case "openRemotesConfig":
+          {
+            const err = await shell.openPath(remotesManager.config.configFilePath);
+            if (err && err != "") {
+              throw new Error(err);
+            }
+          }
+          break;
+        case "openGithub":
+          await shell.openExternal("https://github.com/dubdia/mavs-rc");
+          break;
+        default:
+          throw new Error("Unkown action");
+      }
+    } catch (err) {
+      log.error("failed to execute action", action, err);
+    }
   });
 
   // remotes

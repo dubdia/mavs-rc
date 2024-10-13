@@ -5,7 +5,15 @@ import { closeRemote, sessionCreateShell, setSelectedTab } from "../../store/rem
 import { Shell } from "../shell/Shell";
 import { Files } from "../files/Files";
 import { FileEditor } from "../files/FileEditor";
-import { FaCircleNodes, FaCode, FaFolderTree, FaLayerGroup, FaServicestack, FaTerminal, FaXmark } from "react-icons/fa6";
+import {
+  FaCircleNodes,
+  FaCode,
+  FaFolderTree,
+  FaLayerGroup,
+  FaServicestack,
+  FaTerminal,
+  FaXmark,
+} from "react-icons/fa6";
 import { memo } from "react";
 import { Layout } from "../../components/Layout";
 import { FaInfo, FaTimes } from "react-icons/fa";
@@ -31,6 +39,10 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
 
   const dispatch = useAppDispatch();
   const name = useRemoteSelector(id, (r) => r.dto.info?.name ?? "Unnamed");
+  const ipAndPort = useRemoteSelector(
+    id,
+    (r) => `Connected on ${r.dto.info.host}:${r.dto.info.port} as ${r.dto.info.user ?? "unknown user"}`
+  );
   const selectedTab = useRemoteSelector(id, (r) => r.session.selectedTab);
   const files = useRemoteSelector(id, (r) => r.session.files);
 
@@ -80,7 +92,6 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
     });
   }
 
-
   const renderSelectedTab = (): React.ReactNode => {
     const body = tabs.find((x) => x.name == selectedTab)?.render();
     if (body == null) {
@@ -107,7 +118,7 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
 
   return (
     <Layout
-      name={name}
+      name={<Tooltip content={ipAndPort}>{name}</Tooltip>}
       header={
         <div className="flex flex-row gap-2">
           {/* Option to close the connection */}

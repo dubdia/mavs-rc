@@ -1,5 +1,5 @@
 import { Card, CardBody } from "@nextui-org/react";
-import body from "../body";
+import body from "../Body";
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 
 interface HeaderScrollBodyLayoutProps {

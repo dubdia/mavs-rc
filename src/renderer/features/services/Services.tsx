@@ -85,7 +85,7 @@ export const Services = ({ id }: { id: string }) => {
           </Checkbox>
 
           {/* Shortcuts */}
-          <ShortcutsDropdown id={id} type={"service"}></ShortcutsDropdown>
+          <ShortcutsDropdown key="services-shortcuts"  id={id} type={"service"}></ShortcutsDropdown>
 
           {/* Refresh Button */}
           <Button

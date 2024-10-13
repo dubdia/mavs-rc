@@ -179,7 +179,7 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
     <div className="w-full h-full max-h-full flex flex-col pb-4">
       <div className="flex-1 relative">
         <div
-          className={`absolute top-0 left-0 right-0 bottom-0 no-select border-divider border-t-1 ${
+          className={`absolute top-0 left-0 right-0 bottom-0 select-none border-divider border-t-1 ${
             markers && markers.length > 0 ? "border-b-0" : "border-b-1"
           }`}
         >

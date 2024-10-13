@@ -162,7 +162,7 @@ export const Files = ({ id }: { id: string }) => {
             />
 
             {/* Favs button */}
-            <ShortcutsDropdown id={id} type={"file"}></ShortcutsDropdown>
+            <ShortcutsDropdown key="files-shortcuts" id={id} type={"file"}></ShortcutsDropdown>
 
             {/* Dropdown */}
             <Dropdown backdrop="blur" isDisabled={explorer.loading}>
@@ -219,7 +219,6 @@ export const Files = ({ id }: { id: string }) => {
             </Dropdown>
           </div>
         }
-        
         body={
           <Table
             aria-label="List of files and folders"
