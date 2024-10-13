@@ -15,7 +15,7 @@ export const external = [
   ...builtins,
   ...Object.keys("dependencies" in pkg ? (pkg.dependencies as Record<string, unknown>) : {}),
 ];
-//console.log('Packages:', external.join(', '));
+// console.log('Packages:', external.join(', '));
 
 export function getBuildConfig(env: ConfigEnv<"build">): UserConfig {
   const { root, mode, command } = env;
