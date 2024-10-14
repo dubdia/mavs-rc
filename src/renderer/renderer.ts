@@ -1,7 +1,7 @@
-declare global {
+/*declare global {
   const __mode: string; // set by vite define
-}
-export const isDev = __mode == "development";
+}*/
+export const isDev = true; //todo __mode == "development";
 console.log(`👋 Hello, i am the renderer! The app is ${isDev ? "running in Dev-Mode" : "is packacked"}`);
 
 // for security, we dont allow any fetch or XMLHttpRequest calls
@@ -20,12 +20,15 @@ XMLHttpRequest.prototype.open = () => console.warn("XMLHttpRequest for security 
 // the variable "window.isAppPackaged" is set in main.ts
 //todo checkout https://www.jameskerr.blog/posts/offline-monaco-editor-in-electron/
 import { loader } from "@monaco-editor/react";
+import * as monaco from "monaco-editor";
+loader.config({ monaco });
+/*
 if (isDev) {
   loader.config({ paths: { vs: "/node_modules/monaco-editor/min/vs" } });
 } else {
   loader.config({ paths: { vs: "./../../../../../node_modules/monaco-editor/min/vs" } });
 }
-
+*/
 // configure monaco in prod
 /*if (!isDev) {
   window.MonacoEnvironment = {

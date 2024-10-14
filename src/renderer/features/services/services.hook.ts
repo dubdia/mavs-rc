@@ -1,7 +1,7 @@
 import { toast } from "react-toastify";
 import { useConfirm } from "../../components/dialogs/ConfirmDialog";
 import { useInput } from "../../components/dialogs/InputDialog";
-import { SessionService } from "src/renderer/models/SessionService";
+import { SessionService } from "../../../renderer/models/SessionService";
 import { addSessionFile, sessionFetchServices, sessionList, setSelectedTab } from "../../store/remotesSlice";
 import { useAppDispatch, useRemote } from "../../store/store";
 import { useState } from "react";

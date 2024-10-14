@@ -2,11 +2,13 @@ import { Editor, Monaco } from "@monaco-editor/react";
 import { editor, MarkerSeverity } from "monaco-editor/esm/vs/editor/editor.api";
 import { useAppDispatch, useRemoteSelector } from "../../store/store";
 import { useEffect, useRef, useState } from "react";
-import scriptContextDefinitions from "../../../main/script-context-definitions?raw";
+import scriptContextDefinitions from "../../../main/script-context-definitions.ts?raw";
 import { IDisposable } from "xterm";
 import { FaCircleExclamation, FaCircleInfo, FaCircleQuestion, FaCircleXmark, FaJs } from "react-icons/fa6";
 import { setScriptContent } from "../../store/remotesSlice";
 import { useScripts } from "./scripts.hook";
+
+console.log('DEV', scriptContextDefinitions);
 
 export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
   const dispatch = useAppDispatch();

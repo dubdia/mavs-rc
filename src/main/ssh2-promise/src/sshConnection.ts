@@ -12,7 +12,7 @@ import { SSHConstants } from "./sshConstants";
 import { TunnelConfig } from "./tunnelConfig";
 import { rejects } from "assert";
 
-const socks = require("@heroku/socksv5");
+//const socks = require("@heroku/socksv5");
 
 const defaultOptions: Partial<SSHConfig> = {
   reconnect: true,
@@ -330,57 +330,59 @@ export class SSHConnection extends EventEmitter {
     } else {
       return new Promise((resolve, reject) => {
         var server: any;
-        if (tunnelConfig.socks) {
-          server = socks
-            .createServer((info: any, accept: Function, deny: Function) => {
-              this.connect().then(() => {
-                this.sshConnection.forwardOut(info.srcAddr, info.srcPort, info.dstAddr, info.dstPort, (err, stream) => {
-                  if (err) {
-                    this.emit(SSHConstants.CHANNEL.TUNNEL, SSHConstants.STATUS.DISCONNECT, {
-                      tunnelConfig: tunnelConfig,
-                      err: err,
-                    });
-                    return deny();
-                  }
-                  const clientSocket = accept(true);
-                  if (clientSocket) {
-                    this.activeTunnels[tunnelConfig.name].sockets.push(clientSocket);
-                    stream
-                      .pipe(clientSocket)
-                      .pipe(stream)
-                      .on("close", () => {
 
-                        stream.end();
-                      });
-                  } else if (stream) {
-                    stream.end();
-                  }
+        // if (tunnelConfig.socks) {
+        //   server = socks
+        //     .createServer((info: any, accept: Function, deny: Function) => {
+        //       this.connect().then(() => {
+        //         this.sshConnection.forwardOut(info.srcAddr, info.srcPort, info.dstAddr, info.dstPort, (err, stream) => {
+        //           if (err) {
+        //             this.emit(SSHConstants.CHANNEL.TUNNEL, SSHConstants.STATUS.DISCONNECT, {
+        //               tunnelConfig: tunnelConfig,
+        //               err: err,
+        //             });
+        //             return deny();
+        //           }
+        //           const clientSocket = accept(true);
+        //           if (clientSocket) {
+        //             this.activeTunnels[tunnelConfig.name].sockets.push(clientSocket);
+        //             stream
+        //               .pipe(clientSocket)
+        //               .pipe(stream)
+        //               .on("close", () => {
+
+        //                 stream.end();
+        //               });
+        //           } else if (stream) {
+        //             stream.end();
+        //           }
+        //         });
+        //       });
+        //     })
+        //     .useAuth(socks.auth.None());
+        // } else {
+
+        server = net.createServer().on("connection", (socket) => {
+          this.activeTunnels[tunnelConfig.name].sockets.push(socket);
+          this.connect().then(() => {
+            this.sshConnection.forwardOut("", 0, tunnelConfig.remoteAddr, tunnelConfig.remotePort, (err, stream) => {
+              if (err) {
+                this.emit(SSHConstants.CHANNEL.TUNNEL, SSHConstants.STATUS.DISCONNECT, {
+                  tunnelConfig: tunnelConfig,
+                  err: err,
                 });
-              });
-            })
-            .useAuth(socks.auth.None());
-        } else {
-          server = net.createServer().on("connection", (socket) => {
-            this.activeTunnels[tunnelConfig.name].sockets.push(socket);
-            this.connect().then(() => {
-              this.sshConnection.forwardOut("", 0, tunnelConfig.remoteAddr, tunnelConfig.remotePort, (err, stream) => {
-                if (err) {
-                  this.emit(SSHConstants.CHANNEL.TUNNEL, SSHConstants.STATUS.DISCONNECT, {
-                    tunnelConfig: tunnelConfig,
-                    err: err,
-                  });
-                  return;
-                }
-                stream
-                  .pipe(socket)
-                  .pipe(stream)
-                  .on("close", () => {
-                    stream.end();
-                  });
-              });
+                return;
+              }
+              stream
+                .pipe(socket)
+                .pipe(stream)
+                .on("close", () => {
+                  stream.end();
+                });
             });
           });
-        }
+        });
+        //}
 
         tunnelConfig.localPort = tunnelConfig.localPort || 0;
         server
@@ -427,8 +429,8 @@ export class SSHConnection extends EventEmitter {
         });
 
         // close socket
-        if(tunnel.sockets) {
-          for(let socket of tunnel.sockets) {
+        if (tunnel.sockets) {
+          for (let socket of tunnel.sockets) {
             socket.destroySoon();
           }
         }

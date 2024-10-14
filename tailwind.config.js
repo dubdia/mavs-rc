@@ -1,6 +1,6 @@
 const {nextui} = require('@nextui-org/theme');
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
     "./src/renderer/index.html",
     "./src/renderer/index.css",

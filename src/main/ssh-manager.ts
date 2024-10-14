@@ -1,7 +1,7 @@
 import { RemotesManager } from "./remotes-manager";
 import { RemoteFile } from "../shared/models/RemoteFile";
 import { RemoteTunnelDto } from "../shared/models/RemoteTunnelDto";
-import { RemoteShellDto } from "src/shared/models/RemoteShellDto";
+import { RemoteShellDto } from "../shared/models/RemoteShellDto";
 import { FileText } from "../shared/models/FileText";
 import { SystemInfo } from "../shared/models/SystemInfo";
 import { CommandResult } from "../shared/models/CommandResult";
@@ -22,7 +22,7 @@ import { SSHConfig } from "./ssh2-promise/src/sshConfig";
 import { TunnelConfig } from "./ssh2-promise/src/tunnelConfig";
 import { v4 } from "uuid";
 import { SSH2Promise } from "./ssh2-promise/src";
-import { TerminalSize } from "src/shared/models/TerminalSize";
+import { TerminalSize } from "../shared/models/TerminalSize";
 import { SshCertManager } from "./ssh-cert-manager";
 import { RemoteShell } from "./models/RemoteShell";
 import { currentPath, getPath, getPathForOsType } from "../shared/utils/path-utils";

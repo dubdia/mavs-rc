@@ -1,4 +1,3 @@
-import { SessionShell } from "./SessionShell";
 import { SessionFile } from "./SessionFile";
 import { SessionExplorer } from "./SessionExplorer";
 import { SessionServices } from "./SessionServices";
@@ -7,8 +6,6 @@ import { SessionTunnel } from "./SessionTunnel";
 import { TabName } from "./TabName";
 import { RemoteDto } from "../../shared/models/RemoteDto";
 import { ScriptList } from "./ScriptList";
-import { EntityState } from "@reduxjs/toolkit";
-import { ScriptInfo } from "../../main/models/Script";
 import { scriptsAdapter, shellsAdapter } from "../store/remotesSlice";
 import { ShellList } from "./ShellList";
 

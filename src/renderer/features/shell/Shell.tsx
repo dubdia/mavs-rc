@@ -7,7 +7,7 @@ import { Mutex } from "async-mutex";
 import { computeColor } from "../../utils/computeColor";
 import { ipc } from "../../app";
 import { FitAddon } from "@xterm/addon-fit";
-import { TerminalSize } from "src/shared/models/TerminalSize";
+import { TerminalSize } from "../../../shared/models/TerminalSize";
 import { useShells } from "./shells.hook";
 import { toast } from "react-toastify";
 
