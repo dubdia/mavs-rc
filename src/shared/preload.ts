@@ -1,6 +1,7 @@
 import { typedIpcMain, typedIpcRenderer } from "./ipc/ipc-api";
 const { contextBridge, ipcRenderer } = require("electron");
 
+
 // expose ipc
 contextBridge.exposeInMainWorld("api", {
   ipcRenderer: {
@@ -23,7 +24,7 @@ contextBridge.exposeInMainWorld("api", {
   },
 });
 
-const electronHandler = {
+const exposedApi = {
   ipcRenderer: typedIpcRenderer,
   ipcMain: typedIpcMain,
 };
@@ -31,6 +32,6 @@ const electronHandler = {
 // create strongly typed window.api that can be used in the renderer to access IPC commands
 declare global {
   interface Window {
-    api: typeof electronHandler;
+    api: typeof exposedApi;
   }
 }

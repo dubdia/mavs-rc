@@ -108,8 +108,8 @@ app.on("ready", () => {
       if (existsInAllowed) {
         callback({ cancel: false });
       } else {
-        callback({ cancel: true });
         log.warn(`Blocked web request url: ${requestUrl}}`);
+        callback({ cancel: true });
       }
     });
   }

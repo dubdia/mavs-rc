@@ -13,6 +13,9 @@ export default defineConfig((env) => {
     root,
     mode,
     base: './',
+    define: {
+      __mode: JSON.stringify(mode),
+    },
     build: {
       outDir: `.vite/renderer/${name}`,
       chunkSizeWarningLimit: 2000,

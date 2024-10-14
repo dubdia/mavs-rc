@@ -133,6 +133,7 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
         <div className="flex flex-col gap-2 h-full w-full ">
           {/* Tabs in the top part */}
           <Tabs
+            className="max-w-full overflow-auto"
             placement="top"
             aria-label="Tabs"
             variant="underlined"
