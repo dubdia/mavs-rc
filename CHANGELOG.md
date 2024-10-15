@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.0.4] - 2024-10-15
+
+### Fixed
+
+- Fixed monaco code editor in production mode (see Monaco.md for more information)
+
 ## [1.0.3] - 2024-10-14
  
 ### Added

@@ -171,6 +171,7 @@ app.on("ready", () => {
       contextIsolation: true,
       webSecurity: true,
       allowRunningInsecureContent: false,
+      nodeIntegrationInWorker: false,
       sandbox: true,
     },
 

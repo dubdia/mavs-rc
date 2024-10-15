@@ -18,7 +18,6 @@ export default defineConfig((env) => {
     },
     build: {
       outDir: `.vite/renderer/${name}`,
-      chunkSizeWarningLimit: 2000,
       rollupOptions: {
         input: {
           app: "./src/renderer/index.html",
@@ -28,6 +27,7 @@ export default defineConfig((env) => {
     plugins: [
       pluginExposeRenderer(name),
       monacoEditorPlugin({
+        publicPath: mode != 'development' ?  './' : undefined, // in production we need to adapt this path. Also see renderer.ts.
         languageWorkers: ['typescript', 'css', 'html', 'json', 'editorWorkerService'],
       }),
     ],

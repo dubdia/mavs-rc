@@ -1,7 +1,7 @@
 {
   "name": "mavs-rc",
   "productName": "mavs-rc",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Remote control systems via ssh",
   "keywords": [
     "Server Remote Control",
