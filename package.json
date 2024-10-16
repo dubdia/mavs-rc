@@ -28,7 +28,8 @@
     "installScript": "node ./scripts/install.js",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
-    "compressDocImages": "node ./scripts/compressDocImages.js"
+    "compressDocImages": "node ./scripts/compressDocImages.js",
+    "releaseVersion": "node ./scripts/releaseVersion.js"
   },
   "dependencies": {
     "@heroku/socksv5": "^0.0.9",
