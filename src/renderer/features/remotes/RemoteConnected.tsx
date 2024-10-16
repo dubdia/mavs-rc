@@ -1,8 +1,7 @@
 import { Button, Tab, Tabs } from "@nextui-org/react";
 import { Services } from "../services/Services";
 import { useAppDispatch, useRemoteSelector } from "../../store/store";
-import { closeRemote, sessionCreateShell, setSelectedTab } from "../../store/remotesSlice";
-import { Shell } from "../shell/Shell";
+import { closeRemote, setSelectedTab } from "../../store/remotesSlice";
 import { Files } from "../files/Files";
 import { FileEditor } from "../files/FileEditor";
 import {
@@ -10,18 +9,16 @@ import {
   FaCode,
   FaFolderTree,
   FaLayerGroup,
-  FaServicestack,
   FaTerminal,
   FaXmark,
 } from "react-icons/fa6";
 import { memo } from "react";
 import { Layout } from "../../components/Layout";
-import { FaInfo, FaTimes } from "react-icons/fa";
+import { FaInfo } from "react-icons/fa";
 import { Info } from "../info/Info";
 import { Tunnels } from "../tunnel/Tunnels";
 import { TabName } from "../../models/TabName";
 import { IconType } from "react-icons";
-import { Script } from "../script/Script";
 import { Scripts } from "../script/Scripts";
 import { Tooltip } from "../../components/Tooltip";
 import { Shells } from "../shell/Shells";
@@ -84,7 +81,7 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
       render: () => <Scripts key={"scripts"} id={id}></Scripts>,
     },
   ];
-  for (let file of files) {
+  for (const file of files) {
     tabs.push({
       name: file.tab,
       label: file.name,
@@ -139,7 +136,7 @@ export const RemoteConnected = memo(({ id }: { id: string }) => {
             variant="underlined"
             size="lg"
             selectedKey={selectedTab}
-            onSelectionChange={(key) => dispatch(setSelectedTab({ id: id, key: key as any }))}
+            onSelectionChange={(key) => dispatch(setSelectedTab({ id: id, key: key as TabName }))}
             items={tabs}
           >
             {(item) => <Tab key={item.name} title={renderTabHeader(item)}></Tab>}

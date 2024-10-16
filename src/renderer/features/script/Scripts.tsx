@@ -1,12 +1,10 @@
-import { useAppDispatch, useRemoteSelector } from "../../store/store";
+import { useAppDispatch } from "../../store/store";
 import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
 import { sessionFetchScripts } from "../../store/remotesSlice";
 import { Script } from "./Script";
 import { useAsyncEffect } from "../../utils/useAsyncEffect";
-import { useInput } from "../../components/dialogs/InputDialog";
 import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
 import { FaPlay, FaPlus, FaTrash } from "react-icons/fa6";
-import { useConfirm } from "../../components/dialogs/ConfirmDialog";
 import { Tooltip } from "../../components/Tooltip";
 import { FaSave } from "react-icons/fa";
 import { useScripts } from "./scripts.hook";

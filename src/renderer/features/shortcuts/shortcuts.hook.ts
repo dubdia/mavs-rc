@@ -106,9 +106,11 @@ export const useShortcuts = (id: string) => {
             })
           );
           dispatch(setSelectedTab({ id, key: "services" }));
+          break;
         }
         default:
           console.warn(`Unknown shortcut type ${shortcut.type}`, shortcut);
+          break;
       }
     } catch (err) {
       console.error("could not process shortcut", err, shortcut);

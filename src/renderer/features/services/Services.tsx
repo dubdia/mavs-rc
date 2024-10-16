@@ -1,7 +1,5 @@
 import {
   Button,
-  Card,
-  CardBody,
   Checkbox,
   Input,
   Spinner,
@@ -21,7 +19,6 @@ import { useServices } from "./services.hook";
 import { ServicesDropdown } from "./ServicesDropdown";
 import { ShortcutsToggle } from "../shortcuts/ShortcutsToggle";
 import { ShortcutsDropdown } from "../shortcuts/ShortcutsDropdown";
-import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
 
 export const Services = ({ id }: { id: string }) => {

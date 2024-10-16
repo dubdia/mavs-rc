@@ -1,5 +1,6 @@
 import { typedIpcMain, typedIpcRenderer } from "./ipc/ipc-api";
-const { contextBridge, ipcRenderer } = require("electron");
+import { contextBridge, ipcRenderer } from "electron";
+//const { contextBridge, ipcRenderer } = require("electron");
 
 
 // expose ipc

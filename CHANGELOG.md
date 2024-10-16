@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [1.0.5] - Not released yet
+
+### Changed
+
+- Enforced code style standarts using ESLint
+
 ## [1.0.4] - 2024-10-15
 
 ### Fixed

@@ -1,14 +1,13 @@
 import { toast } from "react-toastify";
 import { useConfirm } from "../../components/dialogs/ConfirmDialog";
 import { useInput } from "../../components/dialogs/InputDialog";
-import { useAppDispatch, useRemote, useRemoteSelector } from "../../store/store";
+import { useAppDispatch, useRemoteSelector } from "../../store/store";
 import {
   sessionCreateScript,
   sessionDeleteScript,
   selectScript as selectScriptLib,
   sessionUpdateScript,
   sessionExecuteScript,
-  scriptsAdapter,
   selectAllScripts,
   selectScriptById,
 } from "../../store/remotesSlice";

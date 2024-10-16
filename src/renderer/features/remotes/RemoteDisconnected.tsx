@@ -28,7 +28,7 @@ export const RemoteDisconnected = memo(({ id }: { id: string }) => {
   const confirm = useConfirm();
   const info = useRemoteSelector(id, (remote) => remote.dto.info);
   const loading = useRemoteSelector(id, (remote) => remote.session.loading);
-  const [form, setForm] = useState(info!);
+  const [form, setForm] = useState(info);
   const [certNames, setCertNames] = useState<string[] | null>(null);
 
   useEffect(() => {
@@ -42,9 +42,11 @@ export const RemoteDisconnected = memo(({ id }: { id: string }) => {
       });
   }, [ipc]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleChange = (event: any) => {
     // get name
     const target = event.target as HTMLInputElement;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const name = (target as any).name;
     if (name == null || name == "") {
       throw new Error("Please provide a name on the input");

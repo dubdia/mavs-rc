@@ -28,6 +28,7 @@
     "installScript": "node ./scripts/install.js",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
+    "lint:fix": "eslint --fix --ext .ts,.tsx .",
     "compressDocImages": "node ./scripts/compressDocImages.js",
     "releaseVersion": "node ./scripts/releaseVersion.js"
   },

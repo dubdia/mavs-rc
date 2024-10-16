@@ -59,17 +59,17 @@ export const parseUnixPermissions = (str: string): UnixPermissions => {
 
 export const getPermissionsText = (file: RemoteFile): string => {
     let p = '';
-    if (file.ownerCanRead == true) { p += 'r' } else { p += '-' };
-    if (file.ownerCanWrite == true) { p += 'w' } else { p += '-' };
-    if (file.ownerCanExecute == true) { p += 'x' } else { p += '-' };
+    if (file.ownerCanRead == true) { p += 'r' } else { p += '-' }
+    if (file.ownerCanWrite == true) { p += 'w' } else { p += '-' }
+    if (file.ownerCanExecute == true) { p += 'x' } else { p += '-' }
 
-    if (file.groupCanRead == true) { p += 'r' } else { p += '-' };
-    if (file.groupCanWrite == true) { p += 'w' } else { p += '-' };
-    if (file.groupCanExecute == true) { p += 'x' } else { p += '-' };
+    if (file.groupCanRead == true) { p += 'r' } else { p += '-' }
+    if (file.groupCanWrite == true) { p += 'w' } else { p += '-' }
+    if (file.groupCanExecute == true) { p += 'x' } else { p += '-' }
 
-    if (file.othersCanRead == true) { p += 'r' } else { p += '-' };
-    if (file.othersCanWrite == true) { p += 'w' } else { p += '-' };
-    if (file.othersCanExecute == true) { p += 'x' } else { p += '-' };
+    if (file.othersCanRead == true) { p += 'r' } else { p += '-' }
+    if (file.othersCanWrite == true) { p += 'w' } else { p += '-' }
+    if (file.othersCanExecute == true) { p += 'x' } else { p += '-' }
 
     return p;
 }

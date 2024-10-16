@@ -42,5 +42,6 @@ if (!isDev) {
 // import required css and tsx to the renderer
 import "./index.css";
 import "react-toastify/dist/ReactToastify.css";
+// eslint-disable-next-line import/no-unresolved
 import "overlayscrollbars/overlayscrollbars.css";
 import "./app";

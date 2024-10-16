@@ -1,7 +1,7 @@
 import { RemotesManager } from "./remotes-manager";
 import { RemoteFile } from "../shared/models/RemoteFile";
 import { RemoteTunnelDto } from "../shared/models/RemoteTunnelDto";
-import { RemoteShellDto } from "src/shared/models/RemoteShellDto";
+import { RemoteShellDto } from "../shared/models/RemoteShellDto";
 import { FileText } from "../shared/models/FileText";
 import { SystemInfo } from "../shared/models/SystemInfo";
 import { CommandResult } from "../shared/models/CommandResult";
@@ -22,10 +22,10 @@ import { SSHConfig } from "./ssh2-promise/src/sshConfig";
 import { TunnelConfig } from "./ssh2-promise/src/tunnelConfig";
 import { v4 } from "uuid";
 import { SSH2Promise } from "./ssh2-promise/src";
-import { TerminalSize } from "src/shared/models/TerminalSize";
+import { TerminalSize } from "../shared/models/TerminalSize";
 import { SshCertManager } from "./ssh-cert-manager";
 import { RemoteShell } from "./models/RemoteShell";
-import { currentPath, getPath, getPathForOsType } from "../shared/utils/path-utils";
+import { currentPath, getPathForOsType } from "../shared/utils/path-utils";
 
 /** used to do everyting related to ssh and sftp */
 export class SshManager {
@@ -39,7 +39,7 @@ export class SshManager {
     const remote = this.remotesManager.findOrError(id);
 
     // create empty connection object
-    let connection: RemoteConnection = {
+    const connection: RemoteConnection = {
       ssh: null,
       sftp: null,
       osType: OsType.Unknown,
@@ -99,7 +99,7 @@ export class SshManager {
         if (remote.info.usePasswordAuth && remote.info.usePrivateKeyAuth) {
           let sentPublicKey = false;
           let sentPassword = false;
-          connectionInfo.authHandler = (curAuthsLeft, curPartial, doNextAuth) => {
+          connectionInfo.authHandler = (_curAuthsLeft, _curPartial, _doNextAuth) => {
             if (!sentPublicKey) {
               sentPublicKey = true;
               return "publickey";
@@ -146,7 +146,7 @@ export class SshManager {
         const tunnelsToStart = remote.info.tunnels.filter(
           (x) => x && this.canStartTunnel(x) && x.autoConnectOnLogin == true
         );
-        for (let tunnel of tunnelsToStart) {
+        for (const tunnel of tunnelsToStart) {
           try {
             await this.connectTunnelInternalAsync(connection, tunnel);
           } catch (err) {
@@ -168,7 +168,7 @@ export class SshManager {
         success: true,
         remote: this.remotesManager.map(this.remotesManager.findOrError(id)),
       };
-    } catch (err: any) {
+    } catch (err) {
       // failed to connect, cleanup
       log.info(`Failed to conntect to remote: ${remote.info.id}`, err);
 
@@ -242,7 +242,7 @@ export class SshManager {
       if (result != null && result.toLowerCase().indexOf("linux") >= 0) {
         return OsType.Posix;
       }
-    } catch {}
+    } catch { /* ignore */ }
 
     // check for windows
     log.verbose(`Check if Windows...`);
@@ -251,7 +251,7 @@ export class SshManager {
       if (result != null && result.toLowerCase().indexOf("windows") >= 0) {
         return OsType.Windows;
       }
-    } catch {}
+    } catch { /* ignore */ }
 
     // unknown
     return OsType.Unknown;
@@ -283,7 +283,7 @@ export class SshManager {
       shell.channel = await remote.connection.ssh.shell(shell.config);
 
       // subscribe to events
-      shell.channel.on("exit", (code: number | null, signal?: string, dump?: string, desc?: string) => {
+      shell.channel.on("exit", (code: number | null, _signal?: string, _dump?: string, _desc?: string) => {
         // check if remote is disposing or disposed
         if (!remote.connection || remote.connection.disposed) {
           return;
@@ -460,7 +460,7 @@ export class SshManager {
 
     // recursive?
     if (recursive) {
-      for (let file of files) {
+      for (const file of files) {
         // check if normal directory
         if (file == null || !file.isDirectory) {
           continue;
@@ -632,7 +632,7 @@ export class SshManager {
       } else {
         throw new Error("No stats and no error");
       }
-    } catch (err: any) {
+    } catch (err) {
       if (err && (err.code === "ENOENT" || err.code == 2)) {
         return false;
       } else {
@@ -666,7 +666,7 @@ export class SshManager {
       if (stat.isDirectory()) {
         // get everything inside of this directory
         const files = await this.listDirectoryInternalAsync(remote, path, true, false);
-        for (let file of files) {
+        for (const file of files) {
           // check
           await remote.connection.sftp.chmod(file.fullName, mode);
         }
@@ -737,7 +737,7 @@ export class SshManager {
       .map((x) => x.trim())
       .filter((x) => x && x != "");
     const usersOrGroups: UserGroup[] = [];
-    for (let nameAndId of namesAndIds) {
+    for (const nameAndId of namesAndIds) {
       const split = nameAndId.split(" ");
       if (split.length != 2 || split[0] == "" || split[1] == "") {
         continue;
@@ -871,7 +871,7 @@ export class SshManager {
 
     // create all directories
     const remoteDirs = remoteEntries.filter((x) => x.isDirectory);
-    for (let remoteDir of remoteDirs) {
+    for (const remoteDir of remoteDirs) {
       log.verbose(" > check directory", remoteDir.fullName, remoteDir.relativePath, remoteDir.localPath);
 
       if (!fs.existsSync(remoteDir.localPath)) {
@@ -890,7 +890,7 @@ export class SshManager {
     // no we can download all files
     const remoteFiles = remoteEntries.filter((x) => x.isRegularFile);
     let allAction: "none" | "skip" | "overwrite" = "none";
-    for (let remoteFile of remoteFiles) {
+    for (const remoteFile of remoteFiles) {
       log.verbose(" > check file", remoteFile.fullName, remoteFile.relativePath, remoteFile.localPath);
 
       // check if already exists
@@ -963,7 +963,7 @@ export class SshManager {
     if (!dialogResult.filePaths || dialogResult.filePaths.length == 0) {
       return null;
     }
-    let filePath = dialogResult.filePaths[0];
+    const filePath = dialogResult.filePaths[0];
     if (!filePath || filePath == "") {
       return null;
     }

@@ -2,7 +2,6 @@ import { Dropdown, DropdownTrigger, Button, DropdownMenu, DropdownSection, Dropd
 import { FaBars } from "react-icons/fa";
 import { useFiles } from "./files.hook";
 import { SessionFile } from "../../models/SessionFile";
-import { ServicesDropdown } from "../services/ServicesDropdown";
 
 export const FileDropdown = ({ id, file }: { id: string; file: SessionFile }) => {
   const files = useFiles(id);

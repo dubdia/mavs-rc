@@ -9,7 +9,6 @@ import { mainWindow } from "./main";
 import { RemoteShortcut } from "../shared/models/RemoteShortcut";
 import { RemotesConfigManager } from "./config/remotes-config-manager";
 import { RemoteTunnel } from "./models/RemoteTunnel";
-import { SSHConnection } from "./ssh2-promise/src/sshConnection";
 import { RemoteConnection } from "./models/RemoteConnection";
 import { RemoteShell } from "./models/RemoteShell";
 
@@ -111,7 +110,7 @@ export class RemotesManager {
 
   public async disposeAsync() {
     if (this.remotes) {
-      for (let remote of this.remotes) {
+      for (const remote of this.remotes) {
         await this.disposeRemoteAsync(remote);
       }
     }
@@ -144,7 +143,7 @@ export class RemotesManager {
     try {
       if (connection.tunnels) {
         const tunnels = [...connection.tunnels];
-        for (let tunnel of tunnels) {
+        for (const tunnel of tunnels) {
           try {
             await this.disposeTunnelAsync(tunnel, connection);
           } catch (err) {
@@ -160,7 +159,7 @@ export class RemotesManager {
     try {
       if (connection.shells) {
         const shells = [...connection.shells];
-        for (let shell of shells) {
+        for (const shell of shells) {
           try {
             await this.disposeShellAsync(shell, remote);
           } catch (err) {

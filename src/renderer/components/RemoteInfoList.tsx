@@ -16,8 +16,8 @@ export const RemoteInfoList = () => {
       {/* Enumerate all existing remotes */}
       {list.map((remote) => (
         <Button
-          key={remote.info!.id}
-          onClick={() => dispatch(setActiveId({ id: remote.info?.id! }))}
+          key={remote.info.id}
+          onClick={() => dispatch(setActiveId({ id: remote.info?.id }))}
           variant="light"
           size="lg"
           color={remote.info?.id == activeId ? "primary" : "default"}

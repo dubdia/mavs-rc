@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-namespace */
 declare type ScriptContractV1_Stats = {
   path: string;
 
@@ -70,7 +72,7 @@ declare namespace ScriptContractV1 { //global
   function alert(message: string | number | boolean | Date): void;
   function confirm(message: string | number | boolean | Date): boolean;
   function prompt(message: string | number | boolean | Date, options?: { defaultText?: string, label?: string }): Promise<string | null>;
-  function log(message: any, ...optionalParams: any[]): void;
+  function log(message: unknown, ...optionalParams: unknown[]): void;
   function delay(timeInMs: number): Promise<void>;
   function exit(message?: string | number | boolean | Date): never;
 

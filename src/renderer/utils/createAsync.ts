@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SerializedError, ActionReducerMapBuilder, createAsyncThunk, AsyncThunk, AsyncThunkPayloadCreator, AsyncThunkAction, Dispatch } from "@reduxjs/toolkit";
 import { Draft } from "immer";
 
 export interface ThunkAndHandler<S, Returned, ThunkArg = void> {
-    (arg: ThunkArg | void | undefined): AsyncThunkAction<Returned, ThunkArg, any>,
-    thunk: AsyncThunk<Returned, ThunkArg, any>,
+    (arg: ThunkArg | void | undefined): AsyncThunkAction<Returned, ThunkArg, unknown>,
+    thunk: AsyncThunk<Returned, ThunkArg, unknown>,
     register: (builder: ActionReducerMapBuilder<S>) => void
 }
 export type AsyncThunkConfig = {
@@ -38,6 +39,7 @@ export const createAsync = <S, Returned, ThunkArg = null>(
             return rejectWithValue('ERROR');
         });
     }*/
+    // eslint-disable-next-line @typescript-eslint/ban-types
     const wrapperFunc: AsyncThunkPayloadCreator<Returned, ThunkArg, {}> = async (arg, { rejectWithValue  } ) => {
        try {
             return await func(arg);
@@ -87,7 +89,7 @@ export const createAsync = <S, Returned, ThunkArg = null>(
     // return both
     const thunkAndHandler: ThunkAndHandler<S, Returned, ThunkArg> = Object.assign(
         (arg: ThunkArg | void | undefined) => {
-            return thunk(arg! as any)
+            return thunk(arg as any)
         },
         {
             thunk: thunk,

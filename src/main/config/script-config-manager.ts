@@ -1,4 +1,3 @@
-import { RemotesConfig } from "./remotes-config";
 import { ConfigManager } from "./config-manager";
 import { ScriptsConfig } from "./scripts-config";
 

@@ -11,13 +11,13 @@ export class AppConfigManager extends ConfigManager<AppConfig> {
     return new AppConfig();
   }
   protected normalize(config: AppConfig): void {
-    if (config.logLevel == null || (config.logLevel as any) == "") {
+    if (config.logLevel == null || (config.logLevel?.toString()) == "") {
       config.logLevel = "info";
     }
-    if (config.devTools == null || (config.devTools as any) == "") {
+    if (config.devTools == null || (config.devTools?.toString()) == "") {
       config.devTools = false;
     }
-    if (config.logSsh == null || (config.logSsh as any) == "") {
+    if (config.logSsh == null || (config.logSsh?.toString()) == "") {
       config.logSsh = false;
     }
   }

@@ -3,7 +3,7 @@ import { FaStar } from "react-icons/fa";
 import { useRemoteSelector } from "../../store/store";
 import { FaXmark } from "react-icons/fa6";
 import { useShortcuts } from "./shortcuts.hook";
-import { RemoteShortcutType } from "src/shared/models/RemoteShortcutType";
+import { RemoteShortcutType } from "../../../shared/models/RemoteShortcutType";
 
 export const ShortcutsDropdown = ({ id, type }: { id: string; type: RemoteShortcutType }) => {
   const shortcuts = useShortcuts(id);

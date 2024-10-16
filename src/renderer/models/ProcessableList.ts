@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SortDescriptor } from "@nextui-org/react";
 
 /** the state of a list in the ui  */
@@ -46,7 +47,7 @@ export type ProcessableListFilter = {
   operator?: "equals" | "notEquals" | undefined;
 
   /** value to filter  (e.G. 'Harald Günter') */
-  value: any;
+  value: (string | number | boolean | Date);
 };
 
 /** changes given @param list using given @see params */
@@ -90,7 +91,7 @@ export const processList = <T>(list: ProcessableList<T>, params: ProcessableList
 
   // apply filtering on original
   if (list.filters != null && list.filtered.length > 0) {
-    for (let filter of list.filters) {
+    for (const filter of list.filters) {
       // check if filter is valid
       if (filter == null || filter.column == null || filter.column == "") {
         continue;
@@ -98,7 +99,7 @@ export const processList = <T>(list: ProcessableList<T>, params: ProcessableList
 
       // apply filtering
       list.filtered = list.filtered.filter((x) => {
-        const currentValue = (x as any)[filter.column as any];
+        const currentValue = (x as any)[filter.column];
         if (filter.operator == "notEquals") {
           return currentValue !== filter.value;
         } else {

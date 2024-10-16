@@ -1,7 +1,7 @@
 import { toast } from "react-toastify";
 import { useConfirm } from "../../components/dialogs/ConfirmDialog";
 import { useInput } from "../../components/dialogs/InputDialog";
-import { SessionService } from "src/renderer/models/SessionService";
+import { SessionService } from "../../../renderer/models/SessionService";
 import { addSessionFile, sessionFetchServices, sessionList, setSelectedTab } from "../../store/remotesSlice";
 import { useAppDispatch, useRemote } from "../../store/store";
 import { useState } from "react";
@@ -35,7 +35,7 @@ export const useServices = (id: string) => {
       throw new Error("No service name given");
     }
     const filePathCommand = "systemctl show -p FragmentPath " + serviceName;
-    const filePathResult = await ipc.invoke("executeSshCommand", remote.id!, filePathCommand);
+    const filePathResult = await ipc.invoke("executeSshCommand", remote.id, filePathCommand);
     if (!filePathResult.success) {
       throw new Error(filePathResult.output);
     } else if (!filePathResult.output) {
@@ -257,7 +257,7 @@ export const useServices = (id: string) => {
     setLoading(true);
     const service = getServiceByName(serviceName);
     try {
-      const result = await ipc.invoke("executeSshCommand", remote.id!, command);
+      const result = await ipc.invoke("executeSshCommand", remote.id, command);
       if (!result.success && result.output && result.output != "") {
         toast.error(result.output);
       } else if (!result.output || result.output == "") {

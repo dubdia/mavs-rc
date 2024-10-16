@@ -1,5 +1,4 @@
 import { Card, CardBody } from "@nextui-org/react";
-import { useRemoteSelector } from "../../store/store";
 import XTerm from "../../components/XTerm";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import debounce from "lodash.debounce";
@@ -7,13 +6,13 @@ import { Mutex } from "async-mutex";
 import { computeColor } from "../../utils/computeColor";
 import { ipc } from "../../app";
 import { FitAddon } from "@xterm/addon-fit";
-import { TerminalSize } from "src/shared/models/TerminalSize";
+import { TerminalSize } from "../../../shared/models/TerminalSize";
 import { useShells } from "./shells.hook";
 import { toast } from "react-toastify";
 
 //let start: number;
 const color = computeColor("hsl(var(--nextui-content1) / var(--nextui-content1-opacity, var(--tw-bg-opacity)));");
-export const Shell =  forwardRef( ({ id, shellId }: { id: string; shellId: string }, ref) => {
+export const Shell = forwardRef(({ id, shellId }: { id: string; shellId: string }, ref) => {
   // use hooks
   const xtermRef = useRef<XTerm>(null);
 
@@ -49,9 +48,6 @@ export const Shell =  forwardRef( ({ id, shellId }: { id: string; shellId: strin
 
   // initially fit size
   useEffect(() => {
-    const terminalElement = xtermRef.current?.terminalRef?.current;
-    if (terminalElement) {
-    }
     //console.log("useEffect", fitAddon.current.proposeDimensions());
     fitAddon.current.fit();
   }, []);
@@ -88,7 +84,7 @@ export const Shell =  forwardRef( ({ id, shellId }: { id: string; shellId: strin
   };
 
   /** handler to intercept right-clicks and paste clipboard contents */
-  const handleRightClickPaste = async (event: any) => {
+  const handleRightClickPaste = async (event: UIEvent) => {
     event?.preventDefault(); // Prevent the default context menu
     fitAddon.current.fit();
     const text = await navigator.clipboard.readText();
@@ -103,7 +99,7 @@ export const Shell =  forwardRef( ({ id, shellId }: { id: string; shellId: strin
   };
 
   /** tells xterm to fit to the new size (will trigger @see handleResize later) */
-  const handleWindowResize = (event: any) => {
+  const handleWindowResize = () => {
     debounceFit();
   };
 
@@ -119,31 +115,34 @@ export const Shell =  forwardRef( ({ id, shellId }: { id: string; shellId: strin
   const copyToClipboard = async () => {
     const terminal = xtermRef.current.terminal;
     if (!terminal) {
-      toast.warn('Terminal is not ready');
+      toast.warn("Terminal is not ready");
       return;
     }
     const selection = terminal.getSelection();
-    const text = await navigator.clipboard.writeText(selection?.toString() ?? '');
-    toast.info('Clipboard updated');
+    if (selection == null || selection == "") {
+      toast.warn("Selection is empty");
+      return;
+    }
+    await navigator.clipboard.writeText(selection?.toString() ?? "");
+    toast.info("Clipboard updated");
   };
   const pasteFromClipboard = async () => {
     const terminal = xtermRef.current.terminal;
     if (!terminal) {
-      toast.warn('Terminal is not ready');
+      toast.warn("Terminal is not ready");
       return;
     }
-    const selection = terminal.getSelection();
     const text = await navigator.clipboard.readText();
-    if(!text) {
+    if (!text) {
+      toast.warn("Clipboard is empty");
       return;
     }
     terminal.paste(text); // or terminal.write(text), depending on what's available
   };
 
-
   useImperativeHandle(ref, () => ({
     copyToClipboard,
-    pasteFromClipboard
+    pasteFromClipboard,
   }));
   return (
     <div className="w-full h-full pb-4">
@@ -157,7 +156,7 @@ export const Shell =  forwardRef( ({ id, shellId }: { id: string; shellId: strin
               key="xterm"
               ref={xtermRef}
               onData={handleData}
-              addons={[fitAddon.current as any]}
+              addons={[fitAddon.current]}
               options={{
                 cursorBlink: true,
                 theme: { background: color },

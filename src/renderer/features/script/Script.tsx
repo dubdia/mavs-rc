@@ -1,10 +1,11 @@
 import { Editor, Monaco } from "@monaco-editor/react";
 import { editor, MarkerSeverity } from "monaco-editor/esm/vs/editor/editor.api";
-import { useAppDispatch, useRemoteSelector } from "../../store/store";
+import { useAppDispatch } from "../../store/store";
 import { useEffect, useRef, useState } from "react";
+// eslint-disable-next-line import/no-unresolved
 import scriptContextDefinitions from "../../../main/script-context-definitions?raw";
 import { IDisposable } from "xterm";
-import { FaCircleExclamation, FaCircleInfo, FaCircleQuestion, FaCircleXmark, FaJs } from "react-icons/fa6";
+import { FaCircleExclamation, FaCircleInfo, FaCircleQuestion, FaCircleXmark } from "react-icons/fa6";
 import { setScriptContent } from "../../store/remotesSlice";
 import { useScripts } from "./scripts.hook";
 
@@ -30,7 +31,7 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
     // This effect does nothing on mount, but on unmount it disposes the editor and model
     return () => {
       if (editorRef?.current) {
-        for (let disposable of editorRef.current.disposables) {
+        for (const disposable of editorRef.current.disposables) {
           disposable?.dispose();
         }
       }
@@ -39,9 +40,8 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
 
   // configure monaco
   const handleEditorWillMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-    // configure defaults (one time)
-    const jsDefaults: typeof monaco.languages.typescript.javascriptDefaults & { configured?: boolean } = monaco
-      .languages.typescript.javascriptDefaults as any;
+    // configure defaults (one time) => we store a configured boolean at the javascriptDefaults object
+    const jsDefaults: typeof monaco.languages.typescript.javascriptDefaults & { configured?: boolean } = monaco.languages.typescript.javascriptDefaults;
     if (!jsDefaults.configured) {
       jsDefaults.configured = true;
 
@@ -72,7 +72,7 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
         .map((x) => (x.trim().endsWith("//global") ? "declare global {" : x))
         .join("\n");
       contents += "; export {}";
-      var libUri = "ts:filename/global.d.ts";
+      const libUri = "ts:filename/global.d.ts";
       jsDefaults.addExtraLib(contents, libUri);
 
       // add promise lib

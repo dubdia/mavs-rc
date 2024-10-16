@@ -2,7 +2,7 @@ import { app } from "electron";
 import log from "electron-log/main";
 
 import * as fs from "fs";
-import { currentPath, getPath } from "../../shared/utils/path-utils";
+import { currentPath } from "../../shared/utils/path-utils";
 
 /** base class for managing configuration files in the user-data directory */
 export abstract class ConfigManager<TConfig> {

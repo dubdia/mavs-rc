@@ -1,18 +1,19 @@
-import { useAppDispatch, useRemoteSelector } from "../../store/store";
-import { Autocomplete, AutocompleteItem, Button, ButtonGroup } from "@nextui-org/react";
+import { useAppDispatch } from "../../store/store";
+import { Button, ButtonGroup } from "@nextui-org/react";
 import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
-import { FaPaste, FaPlay, FaPlus, FaTrash } from "react-icons/fa6";
+import { FaPaste, FaPlus } from "react-icons/fa6";
 import { Tooltip } from "../../components/Tooltip";
-import { FaCopy, FaSave, FaTimes } from "react-icons/fa";
+import { FaCopy, FaTimes } from "react-icons/fa";
 import { useShells } from "./shells.hook";
 import { Shell } from "./Shell";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useAsyncEffect } from "../../utils/useAsyncEffect";
 
 export const Shells = ({ id }: { id: string }) => {
   console.log("RENDER Shells", id);
   const appDispatch = useAppDispatch();
   const shells = useShells(id);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const shellRef = useRef<any>();
   const [addingFirstShell, setAddingFirstShell] = useState(false);
 
@@ -40,7 +41,7 @@ export const Shells = ({ id }: { id: string }) => {
               <Button
                 key={shell.shellId}
                 color={shell == shells.get() ? "primary" : "default"}
-                onClick={(x) => shells.select(shell.shellId)}
+                onClick={() => shells.select(shell.shellId)}
               >
                 #{index + 1}
               </Button>

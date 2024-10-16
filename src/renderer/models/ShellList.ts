@@ -1,7 +1,5 @@
 import { EntityState } from "@reduxjs/toolkit";
-import { ScriptInfo } from "../../main/models/Script";
 import { RemoteShellDto } from "../../shared/models/RemoteShellDto";
-import Xterm from "../components/XTerm";
 
 /** contains a list of all scripts */
 export type ShellList = {

@@ -7,7 +7,7 @@ import { registerIpcHandlers } from "./ipc-handlers";
 import { AppConfigManager } from "./config/app-config-manager";
 import { SshCertManager } from "./ssh-cert-manager";
 import { ScriptManager } from "./script-manager";
-import { currentPath, getPath } from "../shared/utils/path-utils";
+import { currentPath } from "../shared/utils/path-utils";
 
 // handle uncaught exceptions
 process.on("uncaughtException", function (error) {
@@ -20,7 +20,7 @@ process.on("uncaughtException", function (error) {
 });
 
 // loading configuration and configure logger
-export let appConfigManager = new AppConfigManager();
+export const appConfigManager = new AppConfigManager();
 log.transports.console.level = appConfigManager.config.logLevel; // MAIN_WINDOW_VITE_DEV_SERVER_URL != null ? "debug" : appConfigManager.config.logLevel
 //const userDataPath = app.getPath("userData");
 //log.transports.file.resolvePathFn = () => path.join(userDataPath, "rc.log");
@@ -35,10 +35,10 @@ log.info(
 
 // create managers
 log.verbose(`Create managers...`);
-export let remotesManager = new RemotesManager();
-export let sshCertManager = new SshCertManager();
-export let sshManager = new SshManager(remotesManager, sshCertManager);
-export let scriptManager = new ScriptManager(remotesManager, sshManager);
+export const remotesManager = new RemotesManager();
+export const sshCertManager = new SshCertManager();
+export const sshManager = new SshManager(remotesManager, sshCertManager);
+export const scriptManager = new ScriptManager(remotesManager, sshManager);
 export let mainWindow!: BrowserWindow; // will be assigned later
 
 // configure close/dispose
@@ -136,7 +136,7 @@ app.on("ready", () => {
 
   // load the previous state with fallback to defaults
   log.verbose("Restore window state...");
-  let mainWindowState = windowStateKeeper({
+  const mainWindowState = windowStateKeeper({
     defaultWidth: 1100,
     defaultHeight: 740,
     fullScreen: false,

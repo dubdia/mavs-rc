@@ -20,7 +20,7 @@ export class SshCertManager {
     // read directory
     const fileNames = fs.readdirSync(sshDir);
     const certs: SshCert[] = [];
-    for (let fileName of fileNames) {
+    for (const fileName of fileNames) {
       // check file name
       if (fileName == null || fileName == "" || fileName.startsWith(".")) {
         continue; // must have valid name

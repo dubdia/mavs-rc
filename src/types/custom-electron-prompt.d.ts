@@ -10,7 +10,7 @@ declare module "custom-electron-prompt" {
         value?: string;
         type?: 'input' | 'select' | 'counter' | 'multiInput' | 'keybind';
         selectOptions?: { [key: string]: string } | string[];
-        keybindOptions?: any;
+        keybindOptions?: unknown;
         counterOptions?: {
             minimum?: number;
             maximum?: number;
@@ -27,5 +27,5 @@ declare module "custom-electron-prompt" {
     }
 
     // This declares that the default export of the module is this function
-    export default function prompt(options: PromptOptions, parentWindow?: Electron.BrowserWindow): Promise<any>;
+    export default function prompt(options: PromptOptions, parentWindow?: Electron.BrowserWindow): Promise<unknown>;
 }

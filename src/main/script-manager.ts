@@ -14,7 +14,7 @@ import { SshManager } from "./ssh-manager";
 import { exec as childProcessExec } from "child_process";
 import { OsType } from "../shared/models/OsType";
 import { mainWindow } from "./main";
-import { currentPath, getPath, getPathForOsType } from "../shared/utils/path-utils";
+import { currentPath, getPathForOsType } from "../shared/utils/path-utils";
 
 /** used to transcompile and run scripts */
 export class ScriptManager {
@@ -155,10 +155,10 @@ export class ScriptManager {
         // add functions to resolve and reject THIS promise to the context.
         // so the script itself will end the execution/ resolve the promise.
         // see the extra lines added to the transpile() method
-        context.__resolve = (err: any) => {
+        context.__resolve = (err: unknown) => {
           resolve(err);
         };
-        context.__reject = (arg: any) => {
+        context.__reject = (arg: unknown) => {
           reject(arg);
         };
         vm.runInContext(transpilation.outputText, context);
@@ -231,7 +231,7 @@ export class ScriptManager {
     const execCallback = async <T>(
       name: string,
       ignoreErrors: boolean,
-      func: (resolve: (arg?: T) => void, reject: (error: any) => void) => void
+      func: (resolve: (arg?: T) => void, reject: (error: unknown) => void) => void
     ): Promise<T> => {
       try {
         console.log(`execute ${name}`);
@@ -315,7 +315,7 @@ export class ScriptManager {
         // folder
         mkDir: (path, options) =>
           execCallback("local mkDir", options?.ignoreErrors, (resolve, reject) => {
-            fs.mkdir(path, { recursive: true }, (err, path) => {
+            fs.mkdir(path, { recursive: true }, (err, _path) => {
               if (err != null) {
                 reject(err);
               } else {
@@ -382,7 +382,7 @@ export class ScriptManager {
           }),
         fileExists: (filePath, options) =>
           execCallback("local fileExists", options?.ignoreErrors, (resolve, reject) => {
-            const stat = fs.stat(filePath, (err, stats) => {
+            fs.stat(filePath, (err, stats) => {
               if (err) {
                 reject(err);
               } else {
@@ -640,7 +640,7 @@ export class ScriptManager {
 
               // recursive?
               if (options?.recursive === true) {
-                for (let fileOrFolder of result) {
+                for (const fileOrFolder of result) {
                   // check if normal directory
                   if (fileOrFolder == null || !fileOrFolder.attrs.isDirectory()) {
                     continue;
@@ -806,11 +806,6 @@ export class ScriptManager {
   }
 }
 
-export interface ContextItem {
-  name: string;
-  summary: string;
-  item: any;
-}
 
 export interface ScriptExecutionResult {
   success: boolean;

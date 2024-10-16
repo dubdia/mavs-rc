@@ -1,12 +1,11 @@
 import { PayloadAction, createEntityAdapter, createSlice } from "@reduxjs/toolkit";
-import { createFile, SessionFile } from "../models/SessionFile";
+import { SessionFile } from "../models/SessionFile";
 import { SessionService } from "../models/SessionService";
 import { TabName } from "../models/TabName";
 import { createRemote, Remote } from "../models/Remote";
 import { createAsync } from "../utils/createAsync";
 import { toast } from "react-toastify";
 import { replaceAll } from "../../shared/utils/replaceAll";
-import { getFileTabName } from "../utils/getFileTabName";
 import { ipc } from "../app";
 import { RemoteInfo } from "../../shared/models/RemoteInfo";
 import { RemoteShortcut } from "../../shared/models/RemoteShortcut";
@@ -16,9 +15,8 @@ import { RemoteTunnelInfo } from "../../shared/models/RemoteTunnelInfo";
 import { processList, ProcessableListParams } from "../models/ProcessableList";
 import { createRemoteSession, Session } from "../models/Session";
 import { State } from "../models/State";
-import { Script, ScriptInfo } from "../../main/models/Script";
+import { ScriptInfo } from "../../main/models/Script";
 import { createScriptEntry, ScriptEntry } from "../models/ScriptList";
-import { FaLeaf } from "react-icons/fa";
 import { createShellEntry, ShellEntry } from "../models/ShellList";
 
 export const loadRemotes = createAsync("loadRemotes", async () => await ipc.invoke("listRemotes"), {
@@ -49,7 +47,7 @@ export const loadRemotes = createAsync("loadRemotes", async () => await ipc.invo
     }
 
     // update
-    for (let remoteId of state.data.ids) {
+    for (const remoteId of state.data.ids) {
       const localRemote = state.data.entities[remoteId];
       const otherRemote = data.find((x) => x.info.id == remoteId);
 
@@ -92,7 +90,7 @@ export const removeRemote = createAsync("removeRemote", async (id: string) => aw
   },
   onFulfilled: (state: State, _data, arg) => {
     state.dataStatus = "fulfilled";
-    remotesAdapter.removeOne(state.data, arg!);
+    remotesAdapter.removeOne(state.data, arg);
     if (state.activeId == arg && selectTotal(state) > 0) {
       state.activeId = selectAll(state)[0].id;
     }
@@ -107,21 +105,21 @@ export const updateRemote = createAsync(
       toast.error("An error occured while updating");
     },
     onFulfilled: (state: State, _data, arg) => {
-      state.data.entities[arg?.id!].dto.info = arg;
+      state.data.entities[arg.id].dto.info = arg;
       toast.success("Remote updated");
     },
   }
 );
 export const connectRemote = createAsync("connectRemote", async (id: string) => await ipc.invoke("connectRemote", id), {
   onPending: (state: State, arg) => {
-    state.data.entities[arg!].session.loading = true;
+    state.data.entities[arg].session.loading = true;
   },
   onRejected: (state: State, _error, arg) => {
-    state.data.entities[arg!].session.loading = false;
+    state.data.entities[arg].session.loading = false;
     toast.error("An error occured while connecting");
   },
   onFulfilled: (state: State, data, arg) => {
-    const s = state.data.entities[arg!];
+    const s = state.data.entities[arg];
     s.session.loading = false;
 
     if (data.success) {
@@ -133,14 +131,14 @@ export const connectRemote = createAsync("connectRemote", async (id: string) => 
 });
 export const closeRemote = createAsync("closeRemote", async (id: string) => await ipc.invoke("disconnectRemote", id), {
   onPending: (state: State, arg) => {
-    state.data.entities[arg!].session.loading = true;
+    state.data.entities[arg].session.loading = true;
   },
   onRejected: (state: State, _error, arg) => {
-    state.data.entities[arg!].session.loading = false;
+    state.data.entities[arg].session.loading = false;
     toast.error("An error occured while closing the connection");
   },
   onFulfilled: (state: State, data, arg) => {
-    state.data.entities[arg!].session.loading = false;
+    state.data.entities[arg].session.loading = false;
     // this should trigger the event "disposeRemote" which then just reloads the data
   },
 });
@@ -183,7 +181,7 @@ export const sessionFetchServices = createAsync(
       return [];
     }
     text = replaceAll(text, "●|").trim();
-    let lines = text
+    const lines = text
       .split("\n")
       .map((x) => x.trim())
       .filter((x) => x.length > 3);
@@ -213,11 +211,11 @@ export const sessionFetchServices = createAsync(
   },
   {
     onPending: (state: State, arg) => {
-      const s = state.data.entities[arg!].session.services;
+      const s = state.data.entities[arg].session.services;
       s.loading = true;
     },
     onRejected: (state: State, error, arg) => {
-      const s = state.data.entities[arg!].session.services;
+      const s = state.data.entities[arg].session.services;
       s.loading = false;
       processList(s, { original: [] });
       if (error && typeof error === "string" && error != "") {
@@ -227,7 +225,7 @@ export const sessionFetchServices = createAsync(
       }
     },
     onFulfilled: (state: State, data, arg) => {
-      const s = state.data.entities[arg!].session.services;
+      const s = state.data.entities[arg].session.services;
       s.loading = false;
       processList(s, { original: data });
     },
@@ -241,17 +239,17 @@ export const sessionList = createAsync(
   },
   {
     onPending: (state: State, arg) => {
-      const s = state.data.entities[arg?.id!].session.explorer;
+      const s = state.data.entities[arg.id].session.explorer;
       s.loading = true;
     },
     onRejected: (state: State, _error, arg) => {
-      const s = state.data.entities[arg?.id!].session.explorer;
+      const s = state.data.entities[arg.id].session.explorer;
       s.loading = false;
       processList(s, { original: [] });
       toast.error("An error occured while loading the services");
     },
     onFulfilled: (state: State, data, arg) => {
-      const s = state.data.entities[arg?.id!].session.explorer;
+      const s = state.data.entities[arg.id].session.explorer;
       s.loading = false;
       s.dir = arg?.path ?? "/";
       if (arg?.clearFilter === true) {
@@ -273,7 +271,7 @@ export const sessionAddShortcut = createAsync(
       toast.error("An error occured while adding the shortcut");
     },
     onFulfilled: (state: State, data, arg) => {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       session.shortcuts.shortcuts = data ?? [];
     },
   }
@@ -289,7 +287,7 @@ export const sessionRemoveShortcuts = createAsync(
       toast.error("An error occured while deleting the shortcut");
     },
     onFulfilled: (state: State, data, arg) => {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       session.shortcuts.shortcuts = data ?? [];
     },
   }
@@ -300,17 +298,17 @@ export const sessionFetchTunnels = createAsync(
   async (id: string) => ipc.invoke("listTunnels", id),
   {
     onPending: (state: State, arg) => {
-      const s = state.data.entities[arg!].session.tunnels;
+      const s = state.data.entities[arg].session.tunnels;
       s.loading = true;
     },
     onRejected: (state: State, _error, arg) => {
-      const s = state.data.entities[arg!].session.tunnels;
+      const s = state.data.entities[arg].session.tunnels;
       s.loading = false;
       processList(s, { original: [] });
       toast.error("An error occured while loading the tunnels");
     },
     onFulfilled: (state: State, data, arg) => {
-      const s = state.data.entities[arg!].session.tunnels;
+      const s = state.data.entities[arg].session.tunnels;
       s.loading = false;
       processList(s, { original: data });
     },
@@ -327,7 +325,7 @@ export const sessionCreateTunnel = createAsync(
       toast.error("An error occured while updating the tunnel");
     },
     onFulfilled: (state: State, data, arg) => {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       processList(session.tunnels, { original: data });
     },
   }
@@ -343,7 +341,7 @@ export const sessionUpdateTunnel = createAsync(
       toast.error("An error occured while updating the tunnel");
     },
     onFulfilled: (state: State, data, arg) => {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       processList(session.tunnels, { original: data });
       session.tunnels.editTunnelId = null;
     },
@@ -360,7 +358,7 @@ export const sessionRemoteTunnel = createAsync(
       toast.error("An error occured while removing the tunnel");
     },
     onFulfilled: (state: State, data, arg) => {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       processList(session.tunnels, { original: data });
     },
   }
@@ -376,7 +374,7 @@ export const sessionConnectTunnel = createAsync(
       toast.error("An error occured while connecting the tunnel");
     },
     onFulfilled: (state: State, data, arg) => {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       processList(session.tunnels, { original: data });
     },
   }
@@ -392,7 +390,7 @@ export const sessionDestroyTunnel = createAsync(
       toast.error("An error occured while destroying the tunnel");
     },
     onFulfilled: (state: State, data, arg) => {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       processList(session.tunnels, { original: data });
     },
   }
@@ -405,14 +403,14 @@ export const sessionCreateShell = createAsync(
   },
   {
     onPending(state: State, arg) {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       session.shells.initializedFirstShell = true;
     },
     onRejected: (_state: State, _error, _arg) => {
       toast.error("An error occured while creates a new shell");
     },
     onFulfilled: (state: State, data, arg) => {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       shellsAdapter.addOne(session.shells.data, createShellEntry(data));
       session.shells.selectedShellId = data.shellId;
     },
@@ -431,7 +429,7 @@ export const sessionDestroyShell = createAsync(
       toast.error("An error occured while destroying the shell");
     },
     onFulfilled: (state: State, data, arg) => {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       shellsAdapter.removeOne(session.shells.data, arg.shellId);
 
       // select another?
@@ -445,19 +443,19 @@ export const sessionDestroyShell = createAsync(
   }
 );
 
-export const sessionFetchScripts = createAsync("sessionFetchScripts", async (id: string) => ipc.invoke("listScripts"), {
+export const sessionFetchScripts = createAsync("sessionFetchScripts", async (_id: string) => ipc.invoke("listScripts"), {
   onPending: (state: State, arg) => {
-    const s = state.data.entities[arg!].session.scripts;
+    const s = state.data.entities[arg].session.scripts;
     s.loading = true;
   },
   onRejected: (state: State, _error, arg) => {
-    const s = state.data.entities[arg!].session.scripts;
+    const s = state.data.entities[arg].session.scripts;
     s.loading = false;
     scriptsAdapter.removeAll(s.data);
     toast.error("An error occured while loading the scripts");
   },
   onFulfilled: (state: State, data, arg) => {
-    const s = state.data.entities[arg!].session.scripts;
+    const s = state.data.entities[arg].session.scripts;
     s.loading = false;
     const scriptEntries = data.map((x) => createScriptEntry(x));
     scriptsAdapter.setAll(s.data, scriptEntries);
@@ -474,7 +472,7 @@ export const sessionCreateScript = createAsync(
       toast.error("An error occured while creating the script");
     },
     onFulfilled: (state: State, data, arg) => {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       scriptsAdapter.addOne(session.scripts.data, createScriptEntry(data));
       session.scripts.editScriptId = data.scriptId;
     },
@@ -491,7 +489,7 @@ export const sessionUpdateScript = createAsync(
       toast.error("An error occured while updating the script");
     },
     onFulfilled: (state: State, data, arg) => {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       scriptsAdapter.setOne(session.scripts.data, createScriptEntry(data));
     },
   }
@@ -507,7 +505,7 @@ export const sessionDeleteScript = createAsync(
       toast.error("An error occured while removing the script");
     },
     onFulfilled: (state: State, data, arg) => {
-      const session = state.data.entities[arg?.id!].session;
+      const session = state.data.entities[arg.id].session;
       scriptsAdapter.removeOne(session.scripts.data, arg.scriptId);
 
       // select another?
@@ -528,7 +526,7 @@ export const sessionExecuteScript = createAsync(
   },
   {
     onPending: (state: State, arg) => {
-      const s = state.data.entities[arg.id!].session;
+      const s = state.data.entities[arg.id].session;
       scriptsAdapter.updateOne(s.scripts.data, {
         id: arg.id,
         changes: {
@@ -537,7 +535,7 @@ export const sessionExecuteScript = createAsync(
       });
     },
     onRejected: (state: State, _error, arg) => {
-      const s = state.data.entities[arg.id!].session;
+      const s = state.data.entities[arg.id].session;
       scriptsAdapter.updateOne(s.scripts.data, {
         id: arg.id,
         changes: {
@@ -547,7 +545,7 @@ export const sessionExecuteScript = createAsync(
       toast.error("An error occured while executing the script");
     },
     onFulfilled: (state: State, data, arg) => {
-      const s = state.data.entities[arg.id!].session;
+      const s = state.data.entities[arg.id].session;
       scriptsAdapter.updateOne(s.scripts.data, {
         id: arg.id,
         changes: {
@@ -565,14 +563,14 @@ export const sessionExecuteScript = createAsync(
 
 // create adapter for managing the remotes array
 export const remotesAdapter = createEntityAdapter<Remote, string>({
-  selectId: (x) => x!.id!,
+  selectId: (x) => x.id,
   sortComparer: (a, b) => (a?.dto?.info?.name ?? "").localeCompare(b.dto?.info?.name ?? ""),
 });
 export const { selectAll, selectById, selectTotal } = remotesAdapter.getSelectors<State>((state) => state.data);
 
 // create adapter for managing the scripts array
 export const scriptsAdapter = createEntityAdapter<ScriptEntry, string>({
-  selectId: (x) => x!.scriptId!,
+  selectId: (x) => x.scriptId,
   sortComparer: (a, b) => (a?.name ?? "").localeCompare(b.name ?? ""),
 });
 export const { selectAll: selectAllScripts, selectById: selectScriptById } = scriptsAdapter.getSelectors<Session>(
@@ -581,7 +579,7 @@ export const { selectAll: selectAllScripts, selectById: selectScriptById } = scr
 
 // create adapter for managing the shells array
 export const shellsAdapter = createEntityAdapter<ShellEntry, string>({
-  selectId: (x) => x!.shellId!,
+  selectId: (x) => x.shellId,
   sortComparer: (a, b) => (a?.shellId ?? "").localeCompare(b.shellId ?? ""), //todo maybe use date
 });
 export const { selectAll: selectAllShells, selectById: selectShellById } = shellsAdapter.getSelectors<Session>(
@@ -629,7 +627,7 @@ export const appSlice = createSlice({
       const file = s.files.find((x) => x.filePath == action.payload.filePath);
       if (file != null) {
         s.files = s.files.filter((x) => x !== file);
-        if (file.onCloseNavigateBackTo != null && (file.onCloseNavigateBackTo as any) != "") {
+        if (file.onCloseNavigateBackTo != null && (file.onCloseNavigateBackTo.toString()) != "") {
           s.selectedTab = file.onCloseNavigateBackTo;
         } else {
           s.selectedTab = "services";

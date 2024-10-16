@@ -1,3 +1,6 @@
+/* eslint-disable no-var */
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,9 +31,9 @@ import { OsType } from "../models/OsType";
 // (so also no leading and trailing slashes - it does not distinguish
 // relative and absolute paths)
 function normalizeArray(parts: string[], allowAboveRoot: boolean) {
-  var res = [];
-  for (var i = 0; i < parts.length; i++) {
-    var p = parts[i];
+  const res = [];
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[i];
 
     // ignore empty parts
     if (!p || p === ".") continue;
@@ -52,13 +55,13 @@ function normalizeArray(parts: string[], allowAboveRoot: boolean) {
 // returns an array with empty elements removed from either end of the input
 // array or the original array if no elements need to be removed
 function trimArray(arr: string[]) {
-  var lastIndex = arr.length - 1;
-  var start = 0;
+  const lastIndex = arr.length - 1;
+  let start = 0;
   for (; start <= lastIndex; start++) {
     if (arr[start]) break;
   }
 
-  var end = lastIndex;
+  let end = lastIndex;
   for (; end >= 0; end--) {
     if (arr[end]) break;
   }
@@ -71,11 +74,11 @@ function trimArray(arr: string[]) {
 // Function to split a filename into [root, dir, basename, ext]
 function win32SplitPath(filename: string) {
   // Separate device+slash from tail
-  var result = splitDeviceRe.exec(filename),
+  const result = splitDeviceRe.exec(filename),
     device = (result[1] || "") + (result[2] || ""),
     tail = result[3] || "";
   // Split the tail into dir, basename and extension
-  var result2 = splitTailRe.exec(tail),
+  const result2 = splitTailRe.exec(tail),
     dir = result2[1],
     basename = result2[2],
     ext = result2[3];
@@ -83,7 +86,7 @@ function win32SplitPath(filename: string) {
 }
 
 function win32StatPath(path: string) {
-  var result = splitDeviceRe.exec(path),
+  const result = splitDeviceRe.exec(path),
     device = result[1] || "",
     isUnc = !!device && device[1] !== ":";
   return {
@@ -103,14 +106,14 @@ function posixSplitPath(filename: string) {
 
 // Regex to split a windows path into three parts: [*, device, slash,
 // tail] windows-only
-var splitDeviceRe = /^([a-zA-Z]:|[\\\/]{2}[^\\\/]+[\\\/]+[^\\\/]+)?([\\\/])?([\s\S]*?)$/;
+const splitDeviceRe = /^([a-zA-Z]:|[\\\/]{2}[^\\\/]+[\\\/]+[^\\\/]+)?([\\\/])?([\s\S]*?)$/;
 
 // Regex to split the tail part of the above into [*, dir, basename, ext]
-var splitTailRe = /^([\s\S]*?)((?:\.{1,2}|[^\\\/]+?|)(\.[^.\/\\]*|))(?:[\\\/]*)$/;
+const splitTailRe = /^([\s\S]*?)((?:\.{1,2}|[^\\\/]+?|)(\.[^.\/\\]*|))(?:[\\\/]*)$/;
 
 // Split a filename into [root, dir, basename, ext], unix version
 // 'root' is just a slash, or nothing.
-var splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+const splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
 
 export type Path = {
   sep: string;
@@ -138,12 +141,12 @@ export const win32Path: Path = {
     if (parts == null || parts.length == 0) {
       return "";
     }
-    var resolvedDevice = "",
+    let resolvedDevice = "",
       resolvedTail = "",
       resolvedAbsolute = false;
 
-    for (var i = parts.length - 1; i >= -1; i--) {
-      var path;
+    for (let i = parts.length - 1; i >= -1; i--) {
+      let path;
       if (i >= 0) {
         path = parts[i];
       } else if (!resolvedDevice) {
@@ -209,7 +212,7 @@ export const win32Path: Path = {
     if (path == null || path == "") {
       return "";
     }
-    var result = win32StatPath(path),
+    let result = win32StatPath(path),
       device = result.device,
       isUnc = result.isUnc,
       isAbsolute = result.isAbsolute,
@@ -238,15 +241,15 @@ export const win32Path: Path = {
     return win32StatPath(path).isAbsolute;
   },
   join: (...parts: string[]) => {
-    var paths = [];
-    for (var i = 0; i < parts.length; i++) {
-      var arg = parts[i];
+    const paths = [];
+    for (let i = 0; i < parts.length; i++) {
+      const arg = parts[i];
       if (arg) {
         paths.push(arg);
       }
     }
 
-    var joined = paths.join("\\");
+    let joined = paths.join("\\");
 
     // Make sure that the joined path doesn't start with two slashes, because
     // normalize() will mistake it for an UNC path then.
@@ -272,17 +275,17 @@ export const win32Path: Path = {
     to = win32Path.resolve(to);
 
     // windows is not case sensitive
-    var lowerFrom = from.toLowerCase();
-    var lowerTo = to.toLowerCase();
+    const lowerFrom = from.toLowerCase();
+    const lowerTo = to.toLowerCase();
 
-    var toParts = trimArray(to.split("\\"));
+    const toParts = trimArray(to.split("\\"));
 
-    var lowerFromParts = trimArray(lowerFrom.split("\\"));
-    var lowerToParts = trimArray(lowerTo.split("\\"));
+    const lowerFromParts = trimArray(lowerFrom.split("\\"));
+    const lowerToParts = trimArray(lowerTo.split("\\"));
 
-    var length = Math.min(lowerFromParts.length, lowerToParts.length);
-    var samePartsLength = length;
-    for (var i = 0; i < length; i++) {
+    const length = Math.min(lowerFromParts.length, lowerToParts.length);
+    let samePartsLength = length;
+    for (let i = 0; i < length; i++) {
       if (lowerFromParts[i] !== lowerToParts[i]) {
         samePartsLength = i;
         break;
@@ -293,8 +296,8 @@ export const win32Path: Path = {
       return to;
     }
 
-    var outputParts = [];
-    for (var i = samePartsLength; i < lowerFromParts.length; i++) {
+    let outputParts = [];
+    for (let i = samePartsLength; i < lowerFromParts.length; i++) {
       outputParts.push("..");
     }
 
@@ -307,7 +310,7 @@ export const win32Path: Path = {
       return "";
     }
 
-    var resolvedPath = win32Path.resolve(path);
+    const resolvedPath = win32Path.resolve(path);
 
     if (/^[a-zA-Z]\:\\/.test(resolvedPath)) {
       // path is local filesystem path, which needs to be converted
@@ -322,9 +325,9 @@ export const win32Path: Path = {
     return path;
   },
   dirname: (path: string) => {
-    var result = win32SplitPath(path),
-      root = result[0],
-      dir = result[1];
+    const result = win32SplitPath(path);
+    const root = result[0];
+    let dir = result[1];
 
     if (!root && !dir) {
       // No dirname whatsoever
@@ -339,7 +342,7 @@ export const win32Path: Path = {
     return root + dir;
   },
   basename: (path: string, ext?: string) => {
-    var f = win32SplitPath(path)[2];
+    let f = win32SplitPath(path)[2];
     // TODO: make this comparison case-insensitive on windows?
     if (ext && f.substr(-1 * ext.length) === ext) {
       f = f.substr(0, f.length - ext.length);
@@ -350,9 +353,9 @@ export const win32Path: Path = {
     return win32SplitPath(path)[3];
   },
   format: (pathObject: any) => {
-    var root = pathObject.root || "";
-    var dir = pathObject.dir;
-    var base = pathObject.base || "";
+    //const root = pathObject.root || "";
+    const dir = pathObject.dir;
+    const base = pathObject.base || "";
     if (!dir) {
       return base;
     }
@@ -362,7 +365,7 @@ export const win32Path: Path = {
     return dir + win32Path.sep + base;
   },
   parse: (pathString: string) => {
-    var allParts = win32SplitPath(pathString);
+    const allParts = win32SplitPath(pathString);
     if (!allParts || allParts.length !== 4) {
       throw new TypeError("Invalid path '" + pathString + "'");
     }
@@ -396,11 +399,11 @@ export const posixPath: Path = {
   sep: "/",
   delimiter: ":",
   resolve: (...parts: string[]) => {
-    var resolvedPath = "",
+    let resolvedPath = "",
       resolvedAbsolute = false;
 
-    for (var i = parts.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-      var path = i >= 0 ? parts[i] : process.cwd();
+    for (let i = parts.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+      const path = i >= 0 ? parts[i] : process.cwd();
 
       // Skip empty and invalid entries
       if (!path) {
@@ -420,7 +423,7 @@ export const posixPath: Path = {
     return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
   },
   normalize: (path: string) => {
-    var isAbsolute = posixPath.isAbsolute(path),
+    const isAbsolute = posixPath.isAbsolute(path),
       trailingSlash = path && path[path.length - 1] === "/";
 
     // Normalize the path
@@ -439,9 +442,9 @@ export const posixPath: Path = {
     return path.charAt(0) === "/";
   },
   join: (...parts: string[]) => {
-    var path = "";
-    for (var i = 0; i < parts.length; i++) {
-      var segment = parts[i];
+    let path = "";
+    for (let i = 0; i < parts.length; i++) {
+      const segment = parts[i];
       if (segment) {
         if (!path) {
           path += segment;
@@ -456,11 +459,11 @@ export const posixPath: Path = {
     from = posixPath.resolve(from).substr(1);
     to = posixPath.resolve(to).substr(1);
 
-    var fromParts = trimArray(from.split("/"));
-    var toParts = trimArray(to.split("/"));
+    const fromParts = trimArray(from.split("/"));
+    const toParts = trimArray(to.split("/"));
 
-    var length = Math.min(fromParts.length, toParts.length);
-    var samePartsLength = length;
+    const length = Math.min(fromParts.length, toParts.length);
+    let samePartsLength = length;
     for (var i = 0; i < length; i++) {
       if (fromParts[i] !== toParts[i]) {
         samePartsLength = i;
@@ -468,7 +471,7 @@ export const posixPath: Path = {
       }
     }
 
-    var outputParts = [];
+    let outputParts = [];
     for (var i = samePartsLength; i < fromParts.length; i++) {
       outputParts.push("..");
     }
@@ -481,9 +484,9 @@ export const posixPath: Path = {
     return path;
   },
   dirname: (path: string) => {
-    var result = posixSplitPath(path),
-      root = result[0],
-      dir = result[1];
+    const result = posixSplitPath(path);
+    const root = result[0];
+    let dir = result[1];
 
     if (!root && !dir) {
       // No dirname whatsoever
@@ -498,7 +501,7 @@ export const posixPath: Path = {
     return root + dir;
   },
   basename: (path: string, ext?: string) => {
-    var f = posixSplitPath(path)[2];
+    let f = posixSplitPath(path)[2];
     // TODO: make this comparison case-insensitive on windows?
     if (ext && f.substr(-1 * ext.length) === ext) {
       f = f.substr(0, f.length - ext.length);
@@ -509,14 +512,13 @@ export const posixPath: Path = {
     return posixSplitPath(path)[3];
   },
   format: (pathObject: any) => {
-    var root = pathObject.root || "";
-
-    var dir = pathObject.dir ? pathObject.dir + posixPath.sep : "";
-    var base = pathObject.base || "";
+    //const root = pathObject.root || "";
+    const dir = pathObject.dir ? pathObject.dir + posixPath.sep : "";
+    const base = pathObject.base || "";
     return dir + base;
   },
   parse: (pathString: string) => {
-    var allParts = posixSplitPath(pathString);
+    const allParts = posixSplitPath(pathString);
     if (!allParts || allParts.length !== 4) {
       throw new TypeError("Invalid path '" + pathString + "'");
     }

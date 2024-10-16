@@ -13,7 +13,7 @@ import { RemoteTunnelInfo } from "../models/RemoteTunnelInfo";
 import { RemoteShortcut } from "../models/RemoteShortcut";
 import { TerminalSize } from "../models/TerminalSize";
 import { RemoteShellDto } from "../models/RemoteShellDto";
-import { Script, ScriptInfo } from "../../main/models/Script";
+import { ScriptInfo } from "../../main/models/Script";
 import { ScriptExecutionResult } from "../../main/script-manager";
 
 export type AppAction = 'openGithub' | 'openAppData' | 'openLog' | 'openAppConfig' | 'openRemotesConfig';

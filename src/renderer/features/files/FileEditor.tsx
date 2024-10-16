@@ -1,14 +1,12 @@
-import { Button, Chip, Divider } from "@nextui-org/react";
+import { Button, Divider } from "@nextui-org/react";
 import { Editor } from "@monaco-editor/react";
 import { useAppDispatch, useRemoteSelector } from "../../store/store";
 import { changeSessionFile, closeSessionFile } from "../../store/remotesSlice";
 import { toast } from "react-toastify";
-import { filesize } from "filesize";
 import { useConfirm } from "../../components/dialogs/ConfirmDialog";
 import { ServicesDropdown } from "../services/ServicesDropdown";
-import { useFiles } from "./files.hook";
 import { useServices } from "../services/services.hook";
-import { FaBars, FaDownload, FaInfo, FaLayerGroup, FaSave, FaTimes, FaTrash } from "react-icons/fa";
+import { FaLayerGroup, FaSave, FaTimes } from "react-icons/fa";
 import { ipc } from "../../app";
 import { TabName } from "../../models/TabName";
 import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
@@ -20,7 +18,6 @@ export const FileEditor = ({ id, fileTab }: { id: string; fileTab: TabName }) =>
   // use hooks
   const dispatch = useAppDispatch();
   const confirm = useConfirm();
-  const files = useFiles(id);
   const services = useServices(id);
 
   // get file from remote

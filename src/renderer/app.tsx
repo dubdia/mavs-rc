@@ -9,6 +9,7 @@ import { store } from "./store/store";
 const root = document.getElementById("root");
 if (!root) throw new Error("No root element found");
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const anyWindow = window as any;
 if (anyWindow.rootInstance == null) {
   anyWindow.rootInstance = createRoot(root);
@@ -28,7 +29,7 @@ ipc.on("shellReceive", (_, id, shellId, data) => {
   }
   store.dispatch(appendShellData({ id: id, shellId: shellId, data: data }));
 });
-ipc.on("disposeRemote", (_, id) => {
+ipc.on("disposeRemote", (_, _id) => {
   console.log("A remote was disposed. Reload remotes now");
   store.dispatch(loadRemotes());
 });

@@ -22,11 +22,11 @@ export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
 export const useAppSelector = useSelector.withTypes<AppState>()
 
 export const useRemote = (id: string) => {
-    return useAppSelector((state) => state.data.data.entities[id!]);
+    return useAppSelector((state) => state.data.data.entities[id]);
 }
 export const useRemoteSelector = <T>(id: string | undefined | null, selector: (remote: Remote) => T) => {
     return useAppSelector((state) => {
-        const remote = state.data.data.entities[id!]
+        const remote = state.data.data.entities[id]
         return selector(remote);
     });
 }

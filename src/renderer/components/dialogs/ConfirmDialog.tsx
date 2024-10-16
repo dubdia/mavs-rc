@@ -23,7 +23,7 @@ interface PromiseRef {
 // Create Context
 const ConfirmContext = createContext<
   (options: ConfirmOptions) => Promise<boolean>
->(undefined as any);
+>(undefined);
 
 export const useConfirm = () => useContext(ConfirmContext);
 

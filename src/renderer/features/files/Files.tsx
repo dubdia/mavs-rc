@@ -2,8 +2,6 @@ import {
   BreadcrumbItem,
   Breadcrumbs,
   Button,
-  Card,
-  CardBody,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -48,7 +46,7 @@ import { ShortcutsDropdown } from "../shortcuts/ShortcutsDropdown";
 import { ShortcutsToggle } from "../shortcuts/ShortcutsToggle";
 import { PermissionModal } from "./PermissionModal";
 import { OwnerModal } from "./OwnerModal";
-import { Fa0, FaDiagramProject, FaFileCirclePlus, FaLink, FaPenToSquare, FaRightLeft } from "react-icons/fa6";
+import { FaDiagramProject, FaFileCirclePlus, FaLink, FaPenToSquare, FaRightLeft } from "react-icons/fa6";
 import { RemoteFile } from "../../../shared/models/RemoteFile";
 import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
 
@@ -84,8 +82,8 @@ export const Files = ({ id }: { id: string }) => {
     }
 
     // build new dir up to index
-    let folders = current.split("/");
-    let newDir = "/" + folders.filter(Boolean).slice(0, index).join("/");
+    const folders = current.split("/");
+    const newDir = "/" + folders.filter(Boolean).slice(0, index).join("/");
 
     // navigate
     dispatch(sessionList({ id: id, path: newDir, clearFilter: true }));
@@ -284,7 +282,7 @@ export const Files = ({ id }: { id: string }) => {
                       <ShortcutsToggle
                         id={id}
                         type={"file"}
-                        value={item.fullName!.substring(0, item.fullName!.length - 2)}
+                        value={item.fullName.substring(0, item.fullName.length - 2)}
                       ></ShortcutsToggle>
                     )}
                   </TableCell>
@@ -344,14 +342,14 @@ export const Files = ({ id }: { id: string }) => {
                               </DropdownItem>,
                               <DropdownItem
                                 key="delete"
-                                onClick={() => files.removeFile(item.fullName!)}
+                                onClick={() => files.removeFile(item.fullName)}
                                 startContent={<FaTrash />}
                               >
                                 Delete
                               </DropdownItem>,
                               <DropdownItem
                                 key="rename"
-                                onClick={() => files.renameFile(item.fullName!)}
+                                onClick={() => files.renameFile(item.fullName)}
                                 startContent={<FaPenToSquare />}
                               >
                                 Rename
@@ -372,14 +370,14 @@ export const Files = ({ id }: { id: string }) => {
                               </DropdownItem>,
                               <DropdownItem
                                 key="info"
-                                onClick={() => files.showInfo(item.fullName!)}
+                                onClick={() => files.showInfo(item.fullName)}
                                 startContent={<FaInfo />}
                               >
                                 Info
                               </DropdownItem>,
                               <DropdownItem
                                 key="download"
-                                onClick={() => files.download(item.fullName!)}
+                                onClick={() => files.download(item.fullName)}
                                 startContent={<FaDownload />}
                               >
                                 Download
@@ -388,7 +386,7 @@ export const Files = ({ id }: { id: string }) => {
                                 ? [
                                     <DropdownItem
                                       key="unzip"
-                                      onClick={() => files.unpackFile(item.fullName!)}
+                                      onClick={() => files.unpackFile(item.fullName)}
                                       startContent={<FaArchive />}
                                     >
                                       Extract

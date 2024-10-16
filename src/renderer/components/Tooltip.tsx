@@ -1,4 +1,4 @@
-import { Checkbox, Tooltip as NextUiTooltip } from "@nextui-org/react";
+import { Tooltip as NextUiTooltip } from "@nextui-org/react";
 import { PropsWithChildren } from "react";
 
 type MyTooltipProps = PropsWithChildren & {

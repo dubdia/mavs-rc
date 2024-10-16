@@ -16,7 +16,7 @@ export type Remote = {
 /** factory function to create a new @see Remote from given @see dto */
 export const createRemote = (dto: RemoteDto): Remote => {
   return {
-    id: dto.info!.id!,
+    id: dto.info.id,
     dto: dto,
     session: createRemoteSession(dto),
   };

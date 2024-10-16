@@ -13,7 +13,7 @@ interface PromiseRef {
 }
 
 // Create Context
-const InfoContext = createContext<(options: InfoOptions) => Promise<void>>(undefined as any);
+const InfoContext = createContext<(options: InfoOptions) => Promise<void>>(undefined);
 
 export const useInfo = () => useContext(InfoContext);
 export const InfoServiceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {

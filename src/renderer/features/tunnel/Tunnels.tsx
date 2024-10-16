@@ -1,7 +1,5 @@
 import {
   Button,
-  Card,
-  CardBody,
   Input,
   Spinner,
   Table,
@@ -119,7 +117,7 @@ export const Tunnels = ({ id }: { id: string }) => {
                         isIconOnly
                         variant="flat"
                         isDisabled={tunnels.loading}
-                        onClick={() => actions.connectTunnel(item.info?.id!)}
+                        onClick={() => actions.connectTunnel(item.info.id)}
                       >
                         <FaPlay></FaPlay>
                       </Button>
@@ -131,7 +129,7 @@ export const Tunnels = ({ id }: { id: string }) => {
                         isIconOnly
                         variant="flat"
                         isDisabled={tunnels.loading}
-                        onClick={() => actions.destroyTunnel(item.info!.id!)}
+                        onClick={() => actions.destroyTunnel(item.info.id)}
                       >
                         <FaStop></FaStop>
                       </Button>
@@ -143,7 +141,7 @@ export const Tunnels = ({ id }: { id: string }) => {
                         isIconOnly
                         variant="flat"
                         isDisabled={tunnels.loading}
-                        onClick={() => dispatch(editSessionTunnel({ id: id, editTunnelId: item.info!.id! }))}
+                        onClick={() => dispatch(editSessionTunnel({ id: id, editTunnelId: item.info.id }))}
                       >
                         <FaPen></FaPen>
                       </Button>
@@ -155,7 +153,7 @@ export const Tunnels = ({ id }: { id: string }) => {
                         isIconOnly
                         variant="flat"
                         isDisabled={tunnels.loading}
-                        onClick={() => actions.updateTunnel(item.info!)}
+                        onClick={() => actions.updateTunnel(item.info)}
                       >
                         <FaPen></FaPen>
                       </Button>
@@ -167,7 +165,7 @@ export const Tunnels = ({ id }: { id: string }) => {
                         isIconOnly
                         variant="flat"
                         isDisabled={tunnels.loading}
-                        onClick={() => actions.removeTunnel(item.info?.id!)}
+                        onClick={() => actions.removeTunnel(item.info.id)}
                       >
                         <FaTrash></FaTrash>
                       </Button>

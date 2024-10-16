@@ -8,8 +8,6 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Select,
-  SelectItem,
   Spinner,
 } from "@nextui-org/react";
 import { useAppDispatch, useRemote } from "../../store/store";
@@ -102,7 +100,7 @@ export const OwnerModal = ({ id, file, onClose }: { id: string; file: RemoteFile
 
       // change
       const command =
-        "sudo chown " + (recursive ? "-R " : "") + user + ":" + group + " " + escapeUnixShellArg(file.fullName!);
+        "sudo chown " + (recursive ? "-R " : "") + user + ":" + group + " " + escapeUnixShellArg(file.fullName);
       const result = await ipc.invoke("executeSshCommand", id, command);
       if (!result.success) {
         toast.error(result.output);

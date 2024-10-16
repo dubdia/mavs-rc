@@ -15,7 +15,7 @@ interface PromiseRef {
 }
 
 // Create Context
-const InputContext = createContext<(options: InputOptions) => Promise<string | null>>(undefined as any);
+const InputContext = createContext<(options: InputOptions) => Promise<string | null>>(undefined);
 
 export const useInput = () => useContext(InputContext);
 export const InputServiceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -39,7 +39,7 @@ export const InputServiceProvider: React.FC<{ children: ReactNode }> = ({ childr
     setOptions(null);
   };
 
-  const handleKeyDown = (e: any) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e?.key === "Enter") {
       handle(value);
     }

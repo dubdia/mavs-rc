@@ -8,7 +8,7 @@ import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 import { ipc } from "./app";
 import { useAsyncEffect } from "./utils/useAsyncEffect";
 import { Center } from "./components/Center";
-import { FaBars, FaBurger, FaGithub } from "react-icons/fa6";
+import { FaBars } from "react-icons/fa6";
 import { AppAction } from "../shared/ipc/ipc-api";
 export default function Body() {
   console.log("RENDER Body");
@@ -59,8 +59,8 @@ export default function Body() {
   }
 
   // build remotes
-  var remoteNodes = [];
-  for (let remoteId of remoteIds) {
+  const remoteNodes = [];
+  for (const remoteId of remoteIds) {
     remoteNodes.push(<RemoteWrapper key={remoteId} id={remoteId}></RemoteWrapper>);
   }
 

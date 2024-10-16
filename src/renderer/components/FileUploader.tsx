@@ -3,7 +3,7 @@ import { ChangeEvent, ReactElement, cloneElement, useRef } from "react";
 interface FileUploaderProps {
   onFileSelect: (file: File) => void;
   children: ReactElement; 
-};
+}
 export const FileUploader = (props: FileUploaderProps) => {
   const fileInput = useRef<HTMLInputElement>(null);
   const handleButtonClick = () => {

@@ -6,7 +6,6 @@ import {
   closeSessionFile,
   selectSessionFile,
   sessionList,
-  setSelectedTab,
 } from "../../store/remotesSlice";
 import { useAppDispatch, useRemote } from "../../store/store";
 import { escapeUnixShellArg } from "../../../shared/utils/escapeUnixShellArg";
@@ -230,7 +229,7 @@ export const useFiles = (id: string) => {
       const file = await getFile(path);
 
       // show info
-      let msg = JSON.stringify(file, null, 2);
+      const msg = JSON.stringify(file, null, 2);
       await info({ title: file.name, message: msg });
     } catch (err) {
       console.error("failed to show info", path, err);
@@ -395,7 +394,7 @@ export const useFiles = (id: string) => {
       if (path == null || path == "") {
         path = "/";
       }
-      const command = "\x15" + "cd " + escapeUnixShellArg(path) + "\r";
+      //const command = "\x15" + "cd " + escapeUnixShellArg(path) + "\r"; //TODO
 
       // get open shells
 

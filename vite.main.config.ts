@@ -14,7 +14,7 @@ export default defineConfig((env) => {
     build: {
       sourcemap: env.mode == "development",
       lib: {
-        entry: forgeConfigSelf.entry!,
+        entry: forgeConfigSelf.entry,
         fileName: () => "[name].js",
         formats: ["cjs"],
       },

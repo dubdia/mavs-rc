@@ -35,9 +35,9 @@ export const unixPermissionsToChmod = (permissions: UnixPermissions): string => 
 }
 
 export const sftpFileToChmod = (file: RemoteFile): number => {
-    let owner = calculatePermissionNumber(file.ownerCanRead, file.ownerCanWrite, file.ownerCanExecute);
-    let group = calculatePermissionNumber(file.groupCanRead, file.groupCanWrite, file.groupCanExecute);
-    let other = calculatePermissionNumber(file.othersCanRead, file.othersCanWrite, file.othersCanExecute);
+    const owner = calculatePermissionNumber(file.ownerCanRead, file.ownerCanWrite, file.ownerCanExecute);
+    const group = calculatePermissionNumber(file.groupCanRead, file.groupCanWrite, file.groupCanExecute);
+    const other = calculatePermissionNumber(file.othersCanRead, file.othersCanWrite, file.othersCanExecute);
 
     return +(owner.toString() + group.toString() + other.toString());
 }

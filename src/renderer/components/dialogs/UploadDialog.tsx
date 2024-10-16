@@ -16,7 +16,7 @@ interface PromiseRef {
 }
 
 // Create Context
-const UploadContext = createContext<(options: UploadOptions) => Promise<File | null>>(undefined as any);
+const UploadContext = createContext<(options: UploadOptions) => Promise<File | null>>(undefined);
 
 export const useUpload = () => useContext(UploadContext);
 export const UploadServiceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
