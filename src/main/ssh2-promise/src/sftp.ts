@@ -1,6 +1,7 @@
 import { ReadStreamOptions, WriteStreamOptions } from "ssh2-streams";
 import { SSH2Promise } from "./index";
 import { BaseSFTP } from "./BaseSFTP";
+import { Stats } from "ssh2";
 
 var stringFlagMap = ["r", "r+", "w", "wx", "xw", "w+", "wx+", "xw+", "a", "ax", "xa", "a+", "ax+", "xa+"];
 
@@ -113,5 +114,23 @@ export class SFTP extends BaseSFTP {
     return this.ssh.rawSFTP().then((sftp: any) => {
       return sftp.createWriteStream.apply(sftp, params);
     });
+  }
+
+  /** returns whether given path exists */
+  public async exists(path: string): Promise<Stats | null> {
+    try {
+      const stats = await this.stat(path);
+      if (stats) {
+        return stats;
+      } else {
+        throw new Error("No stats and no error");
+      }
+    } catch (err) {
+      if (err && (err.code === "ENOENT" || err.code == 2)) {
+        return null;
+      } else {
+        throw err;
+      }
+    }
   }
 }

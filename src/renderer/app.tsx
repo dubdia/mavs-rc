@@ -37,8 +37,8 @@ ipc.on("disposeShell", (_, id, shellId) => {
   console.log("A shell was disposed. Remove it now");
   store.dispatch(sessionDestroyShell({ id: id, shellId: shellId, onlyRemoveFromRenderer: true }));
 });
-ipc.on("scriptLog", (_, id, scriptId, message) => {
-  store.dispatch(appendScriptLog({ id: id, scriptId: scriptId, message: message }));
+ipc.on("scriptLog", (_, id, scriptId, scriptLog) => {
+  store.dispatch(appendScriptLog({ id: id, scriptId: scriptId, scriptLog: scriptLog }));
 });
 
 // the app

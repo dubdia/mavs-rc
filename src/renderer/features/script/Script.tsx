@@ -1,13 +1,17 @@
 import { Editor, Monaco } from "@monaco-editor/react";
 import { editor, MarkerSeverity } from "monaco-editor/esm/vs/editor/editor.api";
 import { useAppDispatch } from "../../store/store";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 // eslint-disable-next-line import/no-unresolved
 import scriptContextDefinitions from "../../../main/script-context-definitions?raw";
 import { IDisposable } from "xterm";
 import { FaCircleExclamation, FaCircleInfo, FaCircleQuestion, FaCircleXmark } from "react-icons/fa6";
 import { setScriptContent } from "../../store/remotesSlice";
 import { useScripts } from "./scripts.hook";
+import { ScriptLog, ScriptTab } from "../../models/ScriptList";
+// eslint-disable-next-line import/namespace
+import { Allotment } from "allotment";
+import { Tab, Tabs } from "@nextui-org/react";
 
 export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
   const dispatch = useAppDispatch();
@@ -16,8 +20,17 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
   const [markers, setMarkers] = useState<editor.IMarker[]>([]);
 
   const scripts = useScripts(id);
-  const script = scripts.getCurrentScript();
 
+  const tabs = [
+    {
+      name: "problems" as ScriptTab,
+      label: "Problems",
+    },
+    {
+      name: "logs" as ScriptTab,
+      label: "Logs",
+    },
+  ];
   console.log("RENDER Script", id, scriptId);
 
   // keep a script ref for the monaco editor..
@@ -41,7 +54,8 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
   // configure monaco
   const handleEditorWillMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     // configure defaults (one time) => we store a configured boolean at the javascriptDefaults object
-    const jsDefaults: typeof monaco.languages.typescript.javascriptDefaults & { configured?: boolean } = monaco.languages.typescript.javascriptDefaults;
+    const jsDefaults: typeof monaco.languages.typescript.javascriptDefaults & { configured?: boolean } =
+      monaco.languages.typescript.javascriptDefaults;
     if (!jsDefaults.configured) {
       jsDefaults.configured = true;
 
@@ -95,13 +109,13 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
 
     // register shortcuts for this editor instance
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function () {
-      scriptsRef.current.saveScript(script.scriptId);
+      scriptsRef.current.saveScript(scripts.script.scriptId);
     });
     editor.addCommand(monaco.KeyCode.F5, function () {
-      scriptsRef.current.saveAndExecuteScript(script.scriptId);
+      scriptsRef.current.saveAndExecuteScript(scripts.script.scriptId);
     });
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyR, function () {
-      scriptsRef.current.saveAndExecuteScript(script.scriptId);
+      scriptsRef.current.saveAndExecuteScript(scripts.script.scriptId);
     });
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyN, function () {
       scriptsRef.current.addScript();
@@ -174,43 +188,109 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
     );
   };
 
+  const renderLog = (log: ScriptLog, index: number): React.ReactNode => {
+    const parts: React.ReactNode[] = [<FaCircleInfo className="text-gray-200"></FaCircleInfo>];
+    if (log.timestamp && log.timestamp > 0) {
+      const date = new Date(log.timestamp);
+      const hours = date.getHours().toString().padStart(2, "0");
+      const minutes = date.getMinutes().toString().padStart(2, "0");
+      const seconds = date.getSeconds().toString().padStart(2, "0");
+      const milliseconds = date.getMilliseconds().toString().padStart(3, "0");
+      const formated = `${hours}:${minutes}:${seconds}.${milliseconds}`;
+      parts.push(<span className="text-gray-400">{formated}</span>);
+    }
+    if (log.message && log.message != "") {
+      parts.push(<span className="text-gray-200"> {log.message}</span>);
+    }
+    if (log.params && log.params.length > 0) {
+      parts.push(
+        ...log.params.map((param, paramIndex) => (
+          <span key={"log-" + index + "-" + paramIndex} className="text-gray-400">
+            {" "}
+            {param}
+          </span>
+        ))
+      );
+    }
+
+    return (
+      <div key={"log-" + index} className="p-1 flex flex-row gap-2 items-center font-mono text-xs hover:bg-divider">
+        {...parts}
+      </div>
+    );
+  };
+
   // render
   return (
-    <div className="w-full h-full max-h-full flex flex-col pb-4">
-      <div className="flex-1 relative">
-        <div
-          className={`absolute top-0 left-0 right-0 bottom-0 select-none border-divider border-t-1 ${
-            markers && markers.length > 0 ? "border-b-0" : "border-b-1"
-          }`}
-        >
-          <Editor
-            theme="vs-dark"
-            language="javascript"
-            height="100%"
-            value={script.content}
-            onChange={(x) => dispatch(setScriptContent({ id: id, scriptId: scriptId, content: x }))}
-            onMount={handleEditorWillMount}
-          />
+    <div className="w-full h-full max-h-full flex pb-4">
+      <Allotment
+        vertical={true}
+        className="flex-1"
+        defaultSizes={scripts.defaultSizes}
+        minSize={120}
+        onChange={(s) => scripts.setSizes(s)}
+      >
+        {/* Editor */}
+        <div className="w-full h-full relative">
+          <div
+            className={`absolute top-0 left-0 right-0 bottom-0 select-none border-divider border-t-1 ${
+              markers && markers.length > 0 ? "border-b-0" : "border-b-1"
+            }`}
+          >
+            <Editor
+              theme="vs-dark"
+              language="javascript"
+              height="100%"
+              value={scripts.script.content}
+              onChange={(x) => dispatch(setScriptContent({ id: id, scriptId: scriptId, content: x }))}
+              onMount={handleEditorWillMount}
+            />
+          </div>
         </div>
-      </div>
-      {/* Problems Tab */}
-      {markers && markers.length > 0 && (
-        <div
-          className={`max-h-16 overflow-y-auto overflow-x-hidden border-divider border-t-1 ${
-            script.log && script.log.length > 0 ? "border-b-0" : "border-b-1"
-          }`}
-        >
-          {markers.map((marker, index) => renderMarker(marker, index))}
+        {/* Tabs */}
+        <div className="flex flex-col gap-2 h-full w-full">
+          {/* Tabs in the top part */}
+          <Tabs
+            variant="underlined"
+            className="max-w-full overflow-auto"
+            size="sm"
+            selectedKey={scripts.script.selectedTab}
+            onSelectionChange={(key) => scripts.selectTab(scripts.script.scriptId, key as ScriptTab)}
+            items={tabs}
+          >
+            {(item) => <Tab key={item.name} title={item.label}></Tab>}
+          </Tabs>
+
+          {/* Selected tab fills the bottom */}
+          <div className="flex-1 relative">
+            <div className="absolute top-0 left-0 right-0 bottom-0">
+              {/* Problems Tab */}
+              {scripts.script.selectedTab == "problems" &&
+                (markers && markers.length > 0 ? (
+                  <div className={`h-full overflow-y-auto overflow-x-hidden`}>
+                    {markers.map((marker, index) => renderMarker(marker, index))}
+                  </div>
+                ) : (
+                  <p className="p-1 flex flex-row gap-2 items-center font-mono text-xs">
+                    No problems have been detected.
+                  </p>
+                ))}
+
+              {/* Logs  */}
+              {scripts.script.selectedTab == "logs" &&
+                (scripts.script.log && scripts.script.log.length > 0 ? (
+                  <div className="h-full overflow-y-auto overflow-x-hidden">
+                    {scripts.script.log.map((log, index) => renderLog(log, index))}
+                  </div>
+                ) : (
+                  <p className="p-1 flex flex-row gap-2 items-center font-mono text-xs">
+                    No logs so far. Use the log(...) function to log something.
+                  </p>
+                ))}
+            </div>
+          </div>
         </div>
-      )}
-      {/* Logs  */}
-      {script.log && script.log.length > 0 && (
-        <div className="max-h-16 overflow-y-auto overflow-x-hidden border-divider border-1">
-          {script.log.map((log, index) => (
-            <span key={"log-" + index}>{log}</span>
-          ))}
-        </div>
-      )}
+      </Allotment>
     </div>
   );
 };

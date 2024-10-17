@@ -10,23 +10,21 @@ import {
   sessionExecuteScript,
   selectAllScripts,
   selectScriptById,
+  setScriptTab,
+  setScriptsSizes,
 } from "../../store/remotesSlice";
+import { ScriptTab } from "../../models/ScriptList";
 
 export const useScripts = (id: string) => {
   const input = useInput();
   const appDispatch = useAppDispatch();
   const confirm = useConfirm();
+  const defaultSizes = useRemoteSelector(id, (remote) => remote.session.scripts.sizes);
   const scripts = useRemoteSelector(id, (remote) => selectAllScripts(remote.session));
   const script = useRemoteSelector(id, (remote) =>
     selectScriptById(remote.session, remote.session.scripts.editScriptId)
   );
 
-  const getScripts = () => {
-    return scripts;
-  };
-  const getCurrentScript = () => {
-    return script;
-  };
   const addScript = async () => {
     try {
       let nameOk = false;
@@ -129,14 +127,23 @@ export const useScripts = (id: string) => {
       toast.error("Failed to execute script: " + err?.toString());
     }
   };
+  const selectTab = (scriptId: string, tab: ScriptTab) => {
+    appDispatch(setScriptTab({ id: id, scriptId: scriptId, tab: tab }));
+  };
+  const setSizes = (sizes: number[]) => {
+    appDispatch(setScriptsSizes({ id: id, sizes: sizes }));
+  };
 
   return {
-    getScripts,
-    getCurrentScript,
+    script,
+    scripts,
+    defaultSizes,
     addScript,
     removeScript,
     selectScript,
     saveScript,
     saveAndExecuteScript,
+    selectTab,
+    setSizes,
   };
 };

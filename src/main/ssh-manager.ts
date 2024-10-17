@@ -625,20 +625,7 @@ export class SshManager {
     return await this.existsInternalAsync(connection, filePath);
   }
   public async existsInternalAsync(connection: RemoteConnection, filePath: string) {
-    try {
-      const stats = await connection.sftp.stat(filePath);
-      if (stats) {
-        return true;
-      } else {
-        throw new Error("No stats and no error");
-      }
-    } catch (err) {
-      if (err && (err.code === "ENOENT" || err.code == 2)) {
-        return false;
-      } else {
-        throw err;
-      }
-    }
+    return await connection.sftp.exists(filePath);
   }
 
   public async changePermissionAsync(id: string, path: string, chmod: number, recursive: boolean) {
@@ -788,7 +775,7 @@ export class SshManager {
     }
 
     // check remote path
-    const stats = await remote.connection.sftp.stat(filePath);
+    const stats = await remote.connection.sftp.exists(filePath);
     if (stats == null || !stats.isFile()) {
       throw new Error("Path cannot be downloaded");
     }
@@ -1015,15 +1002,15 @@ export class SshManager {
       if (remoteFilePath == null || remoteFilePath == "") {
         throw new Error("Remote file path not provided");
       }
-      if (await this.existsInternalAsync(remote.connection, remoteFilePath)) {
+      const remoteFileStats = await remote.connection.sftp.exists(remoteFilePath);
+      if (remoteFileStats) {
         // overwrite?
         if (!overwrite) {
           throw new Error("Remote file already exists");
         }
 
         // it must be a file, we dont overwrite folders
-        const stats = await remote.connection.sftp.stat(remoteFilePath);
-        if (stats == null || !stats.isFile()) {
+        if (!remoteFileStats.isFile()) {
           throw new Error("Remote path already exists, but its not a file");
         }
       }

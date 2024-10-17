@@ -15,6 +15,7 @@ import { exec as childProcessExec } from "child_process";
 import { OsType } from "../shared/models/OsType";
 import { mainWindow } from "./main";
 import { currentPath, getPathForOsType } from "../shared/utils/path-utils";
+import { ScriptLog } from "../renderer/models/ScriptList";
 
 /** used to transcompile and run scripts */
 export class ScriptManager {
@@ -294,10 +295,27 @@ export class ScriptManager {
             return response.toString();
           }
         }),
-      log: (message, optionalParams) =>
-        exec("log", true, () => {
-          log.verbose("Log from Script:", message, optionalParams);
-          mainWindow.webContents.send("scriptLog", remote.info.id, script.scriptId, message?.toString() ?? "");
+      log: (message, ...optionalParams) =>
+        exec("log", false, () => {
+          log.verbose("Log from Script:", message, ...optionalParams);
+          const stringify = (data: unknown) => {
+            if (data == null || data == "") {
+              return "";
+            } else if (typeof data === "object") {
+              return JSON.stringify(data);
+            } else {
+              return data.toString();
+            }
+          };
+          const scriptLog = <ScriptLog>{
+            timestamp: new Date().getTime(),
+            message: stringify(message),
+            params:
+              optionalParams && optionalParams.length && optionalParams.map
+                ? optionalParams.map((x) => stringify(x)).filter((x) => x && x != "")
+                : [],
+          };
+          mainWindow.webContents.send("scriptLog", remote.info.id, script.scriptId, scriptLog);
         }),
       delay: (timeInMs) =>
         execAsync("delay", false, async () => {
@@ -310,7 +328,7 @@ export class ScriptManager {
           throw new ScriptExit(message?.toString() ?? "");
         }),
 
-        // local operations
+      // local operations
       local: {
         // folder
         mkDir: (path, options) =>
@@ -324,7 +342,7 @@ export class ScriptManager {
             });
           }),
         rmDir: (path, options) =>
-          execCallback("local mkDir", options?.ignoreErrors, (resolve, reject) => {
+          execCallback("local rmDir", options?.ignoreErrors, (resolve, reject) => {
             fs.rmdir(path, {}, (err) => {
               if (err) {
                 reject(err);
@@ -347,7 +365,7 @@ export class ScriptManager {
           execCallback("local dirExists", options?.ignoreErrors, (resolve, reject) => {
             const exists = fs.existsSync(filePath);
             if (!exists) {
-              return false;
+              return resolve(false);
             }
 
             fs.stat(filePath, (err, stats) => {
@@ -364,13 +382,13 @@ export class ScriptManager {
           execCallback("local deleteFile", options?.ignoreErrors, (resolve, reject) => {
             const exists = fs.existsSync(filePath);
             if (!exists) {
-              return false;
+              return resolve();
             }
             const stat = fs.statSync(filePath, { throwIfNoEntry: false });
             if (stat == null) {
-              return;
+              reject("Unable to get stats");
             } else if (!stat.isFile()) {
-              throw new Error("Entry at that path is not a file!");
+              reject("Entry at that path is not a file!");
             }
             fs.rm(filePath, (err) => {
               if (err) {
@@ -444,11 +462,11 @@ export class ScriptManager {
         copyFile: (sourceFilePath, targetFilePath, options) =>
           execCallback("local copyFile", options?.ignoreErrors, (resolve, reject) => {
             if (!fs.existsSync(sourceFilePath)) {
-              throw new Error("Source file does not exists");
+              reject("Source file does not exists");
             }
             if (options.overwrite !== true) {
               if (fs.existsSync(targetFilePath)) {
-                throw new Error("Target file already exists");
+                reject("Target file already exists");
               }
             }
             fs.copyFile(sourceFilePath, targetFilePath, (err) => {
@@ -462,11 +480,11 @@ export class ScriptManager {
         copyDir: (sourcePath, targetPath, options) =>
           execCallback("local copyDir", options?.ignoreErrors, (resolve, reject) => {
             if (!fs.existsSync(sourcePath)) {
-              throw new Error("Source dir does not exists");
+              reject("Source dir does not exists");
             }
             if (options.overwrite !== true) {
               if (fs.existsSync(targetPath)) {
-                throw new Error("Target dir already exists");
+                reject("Target dir already exists");
               }
             }
             fs.cp(sourcePath, targetPath, (err) => {
@@ -629,7 +647,7 @@ export class ScriptManager {
             await remote.connection.sftp.mkdir(path);
           }),
         rmDir: (path, options) =>
-          execAsync("remote mkDir", options?.ignoreErrors, async () => {
+          execAsync("remote rmDir", options?.ignoreErrors, async () => {
             await remote.connection.sftp.rmdir(path);
           }),
         listDir: (path, options) =>
@@ -669,16 +687,16 @@ export class ScriptManager {
             const entries = await listDir(path);
             return entries;
           }),
-        dirExists: (filePath, options) =>
+        dirExists: (path, options) =>
           execAsync("remote dirExists", options?.ignoreErrors, async () => {
-            const stats = await remote.connection.sftp.stat(filePath);
-            return stats != null && stats.isDirectory();
+            const stats = await remote.connection.sftp.exists(path);
+            return stats && stats.isDirectory();
           }),
 
         // file
         deleteFile: (filePath, options) =>
           execAsync("remote deleteFile", options?.ignoreErrors, async () => {
-            const stats = await remote.connection.sftp.stat(filePath);
+            const stats = await remote.connection.sftp.exists(filePath);
             if (stats == null) {
               return;
             } else if (!stats.isFile()) {
@@ -688,7 +706,7 @@ export class ScriptManager {
           }),
         fileExists: (filePath, options) =>
           execAsync("remote fileExists", options?.ignoreErrors, async () => {
-            const stats = await remote.connection.sftp.stat(filePath);
+            const stats = await remote.connection.sftp.exists(filePath);
             return stats && stats.isFile();
           }),
         readFileText: (filePath, options) =>
@@ -706,9 +724,17 @@ export class ScriptManager {
         downloadFile: (remoteFilePath, localFilePath, options) =>
           execAsync("remote download file", options?.ignoreErrors, async () => {
             // check
-            const stats = await remote.connection.sftp.stat(remoteFilePath);
-            if (stats == null || !stats.isFile()) {
-              throw new Error("File on remote does not exists or is not a file");
+            try {
+              const stats = await remote.connection.sftp.exists(remoteFilePath);
+              if (stats == null || !stats.isFile()) {
+                throw new Error("File on remote does not exists or is not a file");
+              }
+            } catch (err) {
+              if (err == "No such file") {
+                throw new Error("File on remote does not exists");
+              } else {
+                throw err;
+              }
             }
             if (options.overwrite !== true) {
               if (fs.existsSync(localFilePath)) {
@@ -725,9 +751,15 @@ export class ScriptManager {
               throw new Error("Source local file does not exists");
             }
             if (options.overwrite !== true) {
-              const stats = await remote.connection.sftp.stat(remoteFilePath);
-              if (stats != null && (stats.isFile() || stats.isDirectory())) {
-                throw new Error("Target remote file already exists");
+              try {
+                const stats = await remote.connection.sftp.exists(remoteFilePath);
+                if (stats) {
+                  throw new Error("Target remote file already exists");
+                }
+              } catch (err) {
+                if (err != "No such file") {
+                  throw err;
+                }
               }
             }
 
@@ -805,7 +837,6 @@ export class ScriptManager {
     return vm.createContext(context);
   }
 }
-
 
 export interface ScriptExecutionResult {
   success: boolean;

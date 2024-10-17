@@ -13,11 +13,10 @@ export const Scripts = ({ id }: { id: string }) => {
   console.log("RENDER Scripts", id);
   const appDispatch = useAppDispatch();
   const scripts = useScripts(id);
-  const script = scripts.getCurrentScript();
 
   // load scripts if there are none
   useAsyncEffect(async () => {
-    if (scripts.getScripts().length == 0) {
+    if (scripts.scripts.length == 0) {
       await appDispatch(sessionFetchScripts(id));
     }
   }, [appDispatch]);
@@ -37,12 +36,12 @@ export const Scripts = ({ id }: { id: string }) => {
           <Autocomplete
             aria-label="Selected script"
             className="max-w-64"
-            defaultItems={scripts.getScripts()}
+            defaultItems={scripts.scripts}
             placeholder="Select a script"
             variant="bordered"
             allowsCustomValue={false}
             isClearable={true}
-            selectedKey={script?.scriptId}
+            selectedKey={scripts.script?.scriptId}
             onSelectionChange={scripts.selectScript}
           >
             {(script) => (
@@ -52,12 +51,12 @@ export const Scripts = ({ id }: { id: string }) => {
             )}
           </Autocomplete>
           {/* Delete the script */}
-          {script && (
+          {scripts.script?.scriptId && (
             <Tooltip content="Delete the current script">
               <Button
                 isIconOnly={true}
                 variant="flat"
-                onClick={() => scripts.removeScript(script.scriptId)}
+                onClick={() => scripts.removeScript(scripts.script?.scriptId)}
                 className="hover:bg-red-500"
               >
                 <FaTrash></FaTrash>
@@ -67,22 +66,22 @@ export const Scripts = ({ id }: { id: string }) => {
           <div className="flex-1"></div>
 
           {/* Saves the script */}
-          {script && (
+          {scripts.script?.scriptId && (
             <Tooltip content="Saves the current script">
-              <Button isIconOnly={true} variant="flat" onClick={() => scripts.saveScript(script.scriptId)}>
+              <Button isIconOnly={true} variant="flat" onClick={() => scripts.saveScript(scripts.script.scriptId)}>
                 <FaSave></FaSave>
               </Button>
             </Tooltip>
           )}
 
           {/* Execute the script */}
-          {script && (
+          {scripts.script?.scriptId && (
             <Tooltip content="Saves and executes the current script">
               <Button
                 isIconOnly={true}
                 variant="flat"
-                disabled={script.running || !script.content}
-                onClick={() => scripts.saveAndExecuteScript(script.scriptId)}
+                disabled={scripts.script.running || !scripts.script.content}
+                onClick={() => scripts.saveAndExecuteScript(scripts.script.scriptId)}
                 color="success"
               >
                 <FaPlay></FaPlay>
@@ -93,11 +92,11 @@ export const Scripts = ({ id }: { id: string }) => {
       }
       bodyScrollable={false}
       body={
-        script && (
+        scripts.script && (
           <div className="w-full h-full max-h-full flex flex-col gap-4 pb-4">
             <div className="flex-1 relative">
               <div className="absolute top-0 left-0 right-0 bottom-0">
-                <Script key={"script-" + script.scriptId} id={id} scriptId={script.scriptId}></Script>
+                <Script key={"script-" + scripts.script.scriptId} id={id} scriptId={scripts.script.scriptId}></Script>
               </div>
             </div>
           </div>

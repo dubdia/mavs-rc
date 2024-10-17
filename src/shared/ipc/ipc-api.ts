@@ -15,6 +15,7 @@ import { TerminalSize } from "../models/TerminalSize";
 import { RemoteShellDto } from "../models/RemoteShellDto";
 import { ScriptInfo } from "../../main/models/Script";
 import { ScriptExecutionResult } from "../../main/script-manager";
+import { ScriptLog } from "../../renderer/models/ScriptList";
 
 export type AppAction = 'openGithub' | 'openAppData' | 'openLog' | 'openAppConfig' | 'openRemotesConfig';
 
@@ -23,7 +24,7 @@ type Events = {
   shellReceive: (id: string, shellId: string, data: string) => void;
   disposeRemote: (id: string) => void;
   disposeShell: (id: string, shellId: string) => void;
-  scriptLog: (id: string, scriptId: string, message: string) => void;
+  scriptLog: (id: string, scriptId: string, scriptLog: ScriptLog) => void;
 };
 
 /** definition of possible commands that can be invoked on the main by the renderer */

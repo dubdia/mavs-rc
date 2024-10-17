@@ -23,7 +23,7 @@ declare type ScriptContractV1_Shared = {
   mkDir(path: string, options?: { ignoreErrors?: boolean }): Promise<void>;
   rmDir(path: string, options?: { ignoreErrors?: boolean }): Promise<void>;
   listDir(path: string, options?: { recursive?: boolean; ignoreErrors?: boolean }): Promise<string[]>;
-  dirExists(filePath: string, options?: { ignoreErrors?: boolean }): Promise<boolean>;
+  dirExists(path: string, options?: { ignoreErrors?: boolean }): Promise<boolean>;
 
   writeFileText(filePath: string, contents: string,  options?: { ignoreErrors?: boolean }): Promise<void>;
   readFileText(filePath: string, options?: { ignoreErrors?: boolean }): Promise<string>;

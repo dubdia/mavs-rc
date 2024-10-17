@@ -127,7 +127,7 @@ export function registerIpcHandlers() {
     await sshManager.deleteAsync(id, path);
   });
   typedIpcMain.handle("exists", async (_, id, path) => {
-    return await sshManager.existsAsync(id, path);
+    return await sshManager.existsAsync(id, path) != null;
   });
   typedIpcMain.handle("rename", async (_, id, oldPath, newPath) => {
     return await sshManager.renameAsync(id, oldPath, newPath);

@@ -16,7 +16,7 @@ import { processList, ProcessableListParams } from "../models/ProcessableList";
 import { createRemoteSession, Session } from "../models/Session";
 import { State } from "../models/State";
 import { ScriptInfo } from "../../main/models/Script";
-import { createScriptEntry, ScriptEntry } from "../models/ScriptList";
+import { createScriptEntry, ScriptEntry, ScriptLog, ScriptTab } from "../models/ScriptList";
 import { createShellEntry, ShellEntry } from "../models/ShellList";
 
 export const loadRemotes = createAsync("loadRemotes", async () => await ipc.invoke("listRemotes"), {
@@ -443,24 +443,28 @@ export const sessionDestroyShell = createAsync(
   }
 );
 
-export const sessionFetchScripts = createAsync("sessionFetchScripts", async (_id: string) => ipc.invoke("listScripts"), {
-  onPending: (state: State, arg) => {
-    const s = state.data.entities[arg].session.scripts;
-    s.loading = true;
-  },
-  onRejected: (state: State, _error, arg) => {
-    const s = state.data.entities[arg].session.scripts;
-    s.loading = false;
-    scriptsAdapter.removeAll(s.data);
-    toast.error("An error occured while loading the scripts");
-  },
-  onFulfilled: (state: State, data, arg) => {
-    const s = state.data.entities[arg].session.scripts;
-    s.loading = false;
-    const scriptEntries = data.map((x) => createScriptEntry(x));
-    scriptsAdapter.setAll(s.data, scriptEntries);
-  },
-});
+export const sessionFetchScripts = createAsync(
+  "sessionFetchScripts",
+  async (_id: string) => ipc.invoke("listScripts"),
+  {
+    onPending: (state: State, arg) => {
+      const s = state.data.entities[arg].session.scripts;
+      s.loading = true;
+    },
+    onRejected: (state: State, _error, arg) => {
+      const s = state.data.entities[arg].session.scripts;
+      s.loading = false;
+      scriptsAdapter.removeAll(s.data);
+      toast.error("An error occured while loading the scripts");
+    },
+    onFulfilled: (state: State, data, arg) => {
+      const s = state.data.entities[arg].session.scripts;
+      s.loading = false;
+      const scriptEntries = data.map((x) => createScriptEntry(x));
+      scriptsAdapter.setAll(s.data, scriptEntries);
+    },
+  }
+);
 export const sessionCreateScript = createAsync(
   "sessionCreateScript",
   async (params: { id: string; scriptName: string }) => {
@@ -627,7 +631,7 @@ export const appSlice = createSlice({
       const file = s.files.find((x) => x.filePath == action.payload.filePath);
       if (file != null) {
         s.files = s.files.filter((x) => x !== file);
-        if (file.onCloseNavigateBackTo != null && (file.onCloseNavigateBackTo.toString()) != "") {
+        if (file.onCloseNavigateBackTo != null && file.onCloseNavigateBackTo.toString() != "") {
           s.selectedTab = file.onCloseNavigateBackTo;
         } else {
           s.selectedTab = "services";
@@ -722,15 +726,29 @@ export const appSlice = createSlice({
         },
       });
     },
-    appendScriptLog: (state, action: PayloadAction<{ id: string; scriptId: string; message: string }>) => {
+    appendScriptLog: (state, action: PayloadAction<{ id: string; scriptId: string; scriptLog: ScriptLog }>) => {
       const s = state.data.entities[action.payload.id].session;
       const script = selectScriptById(s, action.payload.scriptId);
       scriptsAdapter.updateOne(s.scripts.data, {
         id: action.payload.scriptId,
         changes: {
-          log: [...(script.log ?? []), action.payload.message ?? ""], //append to existing
+          log: [...(script.log ?? []), action.payload.scriptLog], //append to existing
+          selectedTab: "logs", // navigate to log tab
         },
       });
+    },
+    setScriptTab: (state, action: PayloadAction<{ id: string; scriptId: string; tab: ScriptTab }>) => {
+      const s = state.data.entities[action.payload.id].session;
+      scriptsAdapter.updateOne(s.scripts.data, {
+        id: action.payload.scriptId,
+        changes: {
+          selectedTab: action.payload.tab,
+        },
+      });
+    },
+    setScriptsSizes: (state, action: PayloadAction<{ id: string; sizes: number[] }>) => {
+      const s = state.data.entities[action.payload.id].session;
+      s.scripts.sizes = action.payload.sizes;
     },
   },
   extraReducers: (builder) => {
@@ -792,5 +810,7 @@ export const {
   selectScript,
   setScriptContent,
   appendScriptLog,
+  setScriptTab,
+  setScriptsSizes,
 } = appSlice.actions;
 export default appSlice.reducer;

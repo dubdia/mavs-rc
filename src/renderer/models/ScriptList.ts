@@ -11,11 +11,25 @@ export type ScriptList = {
 
   /** all the scripts */
   data: EntityState<ScriptEntry, string>;
+
+  /** default sizes of the panes */
+  sizes: number[];
 };
+
+
+export type ScriptTab = "problems" | "logs";
 
 export type ScriptEntry = ScriptInfo & {
   running: boolean;
-  log: string[];
+  log: ScriptLog[];
+  selectedTab: ScriptTab;
+}
+
+
+export type ScriptLog = {
+  timestamp: number; //ms since 1970
+  message: string;
+  params: string[];
 }
 
 
@@ -26,5 +40,6 @@ export function createScriptEntry(scriptInfo: ScriptInfo): ScriptEntry {
     name: scriptInfo.name,
     running: false,
     log: [],
+    selectedTab: 'problems',
   }
 }
