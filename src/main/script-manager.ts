@@ -429,7 +429,7 @@ export class ScriptManager {
             });
           }),
         writeFileText: (filePath, contents, options) =>
-          execCallback("local readFileText", options?.ignoreErrors, (resolve, reject) => {
+          execCallback("local writeFileText", options?.ignoreErrors, (resolve, reject) => {
             fs.writeFile(filePath, contents, (err) => {
               if (err) {
                 reject(err);
@@ -718,7 +718,7 @@ export class ScriptManager {
             throw new Error("not implemented");
           }),
         writeFileText: (filePath, contents, options) =>
-          execAsync("remote readFileText", options?.ignoreErrors, async () => {
+          execAsync("remote writeFileText", options?.ignoreErrors, async () => {
             await remote.connection.sftp.writeFile(filePath, contents, null);
           }),
         downloadFile: (remoteFilePath, localFilePath, options) =>

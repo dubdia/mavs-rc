@@ -242,7 +242,9 @@ export class SshManager {
       if (result != null && result.toLowerCase().indexOf("linux") >= 0) {
         return OsType.Posix;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     // check for windows
     log.verbose(`Check if Windows...`);
@@ -251,7 +253,9 @@ export class SshManager {
       if (result != null && result.toLowerCase().indexOf("windows") >= 0) {
         return OsType.Windows;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     // unknown
     return OsType.Unknown;
@@ -363,7 +367,9 @@ export class SshManager {
     return await this.shellSendInternalAsync(connection, shellId, text);
   }
   public async shellSendInternalAsync(connection: RemoteConnection, shellId: string, text: string) {
-    log.verbose(`Send text to shell: ${text}`);
+    if (appConfigManager.config.logSsh) {
+      log.verbose(`Send text to shell: ${text}`);
+    }
     const shell = connection.shells.find((x) => x.shellId == shellId);
     if (!shell?.channel) {
       throw new Error("Shell with id not found");
@@ -447,14 +453,14 @@ export class SshManager {
         const dotDotPath = getPathForOsType(remote.connection.osType).dirname(path);
         const dotDotPathStats = await remote.connection.sftp.stat(dotDotPath);
         const dotDot = this.mapFile(dotDotPathStats, dotDotPath, remote);
-        dotDot.name = '..';
+        dotDot.name = "..";
         files.unshift(dotDot);
       }
 
       // add "." to every folder because it is the current dir
       const dotPathStats = await remote.connection.sftp.stat(path);
       const dot = this.mapFile(dotPathStats, path, remote);
-      dot.name = '.';
+      dot.name = ".";
       files.unshift(dot);
     }
 
