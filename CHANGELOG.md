@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.0.5] - 2024-10-17
+## [0.0.6] - 2024-10-18
+
+### Changed
+
+- Removed unused dependencies from package.json which reduces package size
+
+### Fixed
+
+- Fixed bugs in the scripting library
+
+## [0.0.5] - 2024-10-17
 
 ### Added
 
@@ -18,13 +28,13 @@ All notable changes to this project will be documented in this file.
 
 - Fixed bugs in the scripting library
 
-## [1.0.4] - 2024-10-15
+## [0.0.4] - 2024-10-15
 
 ### Fixed
 
 - Fixed monaco code editor in production mode (see Monaco.md for more information)
 
-## [1.0.3] - 2024-10-14
+## [0.0.3] - 2024-10-14
 
 ### Added
 
@@ -46,7 +56,7 @@ All notable changes to this project will be documented in this file.
 
 - Fixed function "Open in Terminal"
 
-## [1.0.2] - 2024-09-27
+## [0.0.2] - 2024-09-27
 
 ### Added
 
@@ -62,7 +72,7 @@ All notable changes to this project will be documented in this file.
 - Centered loading screen
 - Handling of uncaught exceptions
 
-## [1.0.1] - 2024-09-26
+## [0.0.1] - 2024-09-26
 
 ### Added
 
