@@ -1,14 +1,8 @@
 {
   "name": "mavs-rc",
   "productName": "mavs-rc",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Remote control systems via ssh",
-  "keywords": [
-    "Server Remote Control",
-    "SSH",
-    "SFTP",
-    "Shell"
-  ],
   "author": {
     "name": "dubdia"
   },

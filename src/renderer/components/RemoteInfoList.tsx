@@ -1,5 +1,5 @@
-import { Button } from "@nextui-org/react";
-import { FaWifi } from "react-icons/fa";
+import { Button, Divider } from "@nextui-org/react";
+import { FaPlus, FaWifi } from "react-icons/fa";
 import { useAppDispatch, useAppSelector } from "../store/store";
 import { createNewRemote, selectAll, setActiveId } from "../store/remotesSlice";
 import { shallowEqual } from "react-redux";
@@ -18,21 +18,32 @@ export const RemoteInfoList = () => {
         <Button
           key={remote.info.id}
           onClick={() => dispatch(setActiveId({ id: remote.info?.id }))}
-          variant="light"
+          variant={remote.info?.id == activeId ? "faded" : "light"}
           size="lg"
-          color={remote.info?.id == activeId ? "primary" : "default"}
+          /*color={remote.info?.id == activeId ? "success" : "default"}*/
           className="justify-start"
         >
           {remote.connected && <FaWifi className="text-green-400 shrink-0"></FaWifi>}
           {!remote.connected && <FaWifi className="text-gray-300 shrink-0"></FaWifi>}
 
-          <span className="truncate">{remote.info?.name}</span>
+          <span className={`truncate ${remote.info?.id == activeId ? "" : "text-gray-200"}`}>{remote.info?.name}</span>
         </Button>
       ))}
+      {/* Divider */}
+      {list.length > 0 && <Divider></Divider>}
 
       {/* Link to add new remote */}
-      <Button key="add-remote" variant="flat" size="lg" color="success" onClick={() => dispatch(createNewRemote())}>
-        Add remote
+      <Button
+        key="add-remote"
+        variant="light"
+        size="lg"
+        color="default"
+        className="justify-start"
+        
+        onClick={() => dispatch(createNewRemote())}
+      >
+        <FaPlus className="text-green-400 shrink-0"></FaPlus>
+        <span className="truncate">Add</span>
       </Button>
     </div>
   );

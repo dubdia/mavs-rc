@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.7] - Not released yet
+
+### Changed
+
+- Changed style of remotes list on the left
+
+
 ## [0.0.6] - 2024-10-18
 
 ### Changed
