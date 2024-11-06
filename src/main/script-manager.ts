@@ -765,14 +765,36 @@ export class ScriptManager {
         mkDir: (path, options) =>
           execAsync("remote mkDir", options?.ignoreErrors, async () => {
             // check if its already there
-            if (!options?.errorIfAlreadyExists && (await remote.connection.sftp.exists(path))) {
-              const stats = await remote.connection.sftp.stat(path);
-              if (stats == null || !stats.isDirectory()) {
-                throw "Path already exists but is not a directory";
+            let stats = await remote.connection.sftp.exists(path);
+            if (stats) {
+              if (options?.errorIfAlreadyExists) {
+                throw "Directory already exists: " + path;
+              } else if (stats) {
+                if (!stats.isDirectory()) {
+                  throw "Path already exists but is not a directory: " + path;
+                }
+                return;
               }
-              return;
             }
-            await remote.connection.sftp.mkdir(path);
+
+            // make one by one because mkdir is not recursive
+            const delimiter = getPathForOsType(remote.connection.osType).delimiter;
+            const parts = path.split(delimiter).filter((x) => x && x != "");
+            let currentPath = "";
+            for (const part of parts) {
+              // build current path
+              currentPath = getPathForOsType(remote.connection.osType).join(currentPath, part);
+
+              // check if exists
+              stats = await remote.connection.sftp.exists(path);
+              if (stats == null) {
+                // it does not exists, create it
+                await remote.connection.sftp.mkdir(currentPath);
+              } else if (!stats.isDirectory()) {
+                // its does exists but its not a directory
+                throw "Path already exists but is not a directory: " + currentPath;
+              }
+            }
           }),
         rmDir: (path, options) =>
           execAsync("remote rmDir", options?.ignoreErrors, async () => {
