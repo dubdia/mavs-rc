@@ -12,6 +12,7 @@ import {
   selectScriptById,
   setScriptTab,
   setScriptsSizes,
+  clearScriptLog,
 } from "../../store/remotesSlice";
 import { ScriptTab } from "../../models/ScriptList";
 
@@ -117,9 +118,11 @@ export const useScripts = (id: string) => {
         return;
       }
 
+      // clear log
+      appDispatch(clearScriptLog({ id: id, name: scriptById.name }));
+
       // save current
       await appDispatch(sessionUpdateScript({ id: id, name: scriptById.name, contents: scriptById.contents }));
-
       // execute
       await appDispatch(sessionExecuteScript({ id: id, name: scriptById.name }));
     } catch (err) {
@@ -133,6 +136,14 @@ export const useScripts = (id: string) => {
   const setSizes = (sizes: number[]) => {
     appDispatch(setScriptsSizes({ id: id, sizes: sizes }));
   };
+  const clearLog = (name: string) => {
+    // get script
+    const scriptById = scripts.find((x) => x.name == name);
+    if (scriptById == null) {
+      return;
+    }
+    clearScriptLog({ id: id, name: scriptById.name });
+  };
 
   return {
     script,
@@ -145,5 +156,6 @@ export const useScripts = (id: string) => {
     saveAndExecuteScript,
     selectTab,
     setSizes,
+    clearLog,
   };
 };

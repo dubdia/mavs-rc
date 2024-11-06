@@ -736,6 +736,15 @@ export const appSlice = createSlice({
         },
       });
     },
+    clearScriptLog: (state, action: PayloadAction<{ id: string; name: string }>) => {
+      const s = state.data.entities[action.payload.id].session;
+      scriptsAdapter.updateOne(s.scripts.data, {
+        id: action.payload.name,
+        changes: {
+          log: [],
+        },
+      });
+    },
     setScriptTab: (state, action: PayloadAction<{ id: string; name: string; tab: ScriptTab }>) => {
       const s = state.data.entities[action.payload.id].session;
       scriptsAdapter.updateOne(s.scripts.data, {
@@ -809,6 +818,7 @@ export const {
   selectScript,
   setScriptContent,
   appendScriptLog,
+  clearScriptLog,
   setScriptTab,
   setScriptsSizes,
 } = appSlice.actions;
