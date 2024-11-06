@@ -13,6 +13,7 @@ import {
   setScriptTab,
   setScriptsSizes,
   clearScriptLog,
+  appendScriptLog,
 } from "../../store/remotesSlice";
 import { ScriptTab } from "../../models/ScriptList";
 
@@ -118,8 +119,19 @@ export const useScripts = (id: string) => {
         return;
       }
 
-      // clear log
+      // clear log and append message that script will be starting
       appDispatch(clearScriptLog({ id: id, name: scriptById.name }));
+      appDispatch(
+        appendScriptLog({
+          id: id,
+          name: scriptById.name,
+          scriptLog: {
+            timestamp: new Date().getTime(),
+            message: "Start script",
+            params: [scriptById.name],
+          },
+        })
+      );
 
       // save current
       await appDispatch(sessionUpdateScript({ id: id, name: scriptById.name, contents: scriptById.contents }));
@@ -128,6 +140,17 @@ export const useScripts = (id: string) => {
     } catch (err) {
       console.error("failed to execute script", err);
       toast.error("Failed to execute script: " + err?.toString());
+      appDispatch(
+        appendScriptLog({
+          id: id,
+          name: scriptById.name,
+          scriptLog: {
+            timestamp: new Date().getTime(),
+            message: "Failed to execute script",
+            params: [err?.toString()],
+          },
+        })
+      );
     }
   };
   const selectTab = (name: string, tab: ScriptTab) => {

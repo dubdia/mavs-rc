@@ -1,5 +1,5 @@
 import { useAppDispatch } from "../../store/store";
-import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
+import { Autocomplete, AutocompleteItem, Button, Spinner } from "@nextui-org/react";
 import { sessionFetchScripts } from "../../store/remotesSlice";
 import { Script } from "./Script";
 import { useAsyncEffect } from "../../utils/useAsyncEffect";
@@ -84,7 +84,7 @@ export const Scripts = ({ id }: { id: string }) => {
                 onClick={() => scripts.saveAndExecuteScript(scripts.script.name)}
                 color="success"
               >
-                <FaPlay></FaPlay>
+                {scripts.script.running || !scripts.script.contents ? <Spinner></Spinner> : <FaPlay></FaPlay>}
               </Button>
             </Tooltip>
           )}

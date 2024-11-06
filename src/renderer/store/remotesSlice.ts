@@ -483,7 +483,7 @@ export const sessionCreateScript = createAsync(
 );
 export const sessionUpdateScript = createAsync(
   "sessionUpdateScript",
-  async (params: { id: string; name: string, contents: string }) => {
+  async (params: { id: string; name: string; contents: string }) => {
     const result = await ipc.invoke("updateScript", params.name, params.contents);
     return result;
   },
@@ -531,7 +531,7 @@ export const sessionExecuteScript = createAsync(
     onPending: (state: State, arg) => {
       const s = state.data.entities[arg.id].session;
       scriptsAdapter.updateOne(s.scripts.data, {
-        id: arg.id,
+        id: arg.name,
         changes: {
           running: true,
         },
@@ -540,7 +540,7 @@ export const sessionExecuteScript = createAsync(
     onRejected: (state: State, _error, arg) => {
       const s = state.data.entities[arg.id].session;
       scriptsAdapter.updateOne(s.scripts.data, {
-        id: arg.id,
+        id: arg.name,
         changes: {
           running: false,
         },
@@ -548,18 +548,31 @@ export const sessionExecuteScript = createAsync(
       toast.error("An error occured while executing the script");
     },
     onFulfilled: (state: State, data, arg) => {
+      let log: string = "";
+      if (data.success) {
+        log = "Successfully ran script!";
+        toast.success(log);
+      } else {
+        log = data.error;
+        toast.error(log);
+      }
+
       const s = state.data.entities[arg.id].session;
+      const script = selectScriptById(s, arg.name);
       scriptsAdapter.updateOne(s.scripts.data, {
-        id: arg.id,
+        id: arg.name,
         changes: {
           running: false,
+          log: [
+            ...(script.log ?? []),
+            {
+              message: log,
+              params: null,
+              timestamp: new Date().getTime(),
+            },
+          ], //append to existing
         },
       });
-      if (data.success) {
-        toast.success("Successfully ran script!");
-      } else {
-        toast.error(data.error);
-      }
     },
   }
 );
