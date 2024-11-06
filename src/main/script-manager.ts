@@ -424,6 +424,17 @@ export class ScriptManager {
         // folder
         mkDir: (path, options) =>
           execCallback("local mkDir", options?.ignoreErrors, (resolve, reject) => {
+            // check if its already there
+            if (!options.errorIfAlreadyExists && fs.existsSync(path)) {
+              const stats = fs.statSync(path);
+              if (stats == null || !stats.isDirectory()) {
+                reject("Path already exists but is not a directory");
+              } else {
+                resolve();
+              }
+              return;
+            }
+
             fs.mkdir(path, { recursive: true }, (err, _path) => {
               if (err != null) {
                 reject(err);
@@ -434,6 +445,13 @@ export class ScriptManager {
           }),
         rmDir: (path, options) =>
           execCallback("local rmDir", options?.ignoreErrors, (resolve, reject) => {
+            // check if its not there
+            if (!options.errorIfNotFound && !fs.existsSync(path)) {
+              resolve();
+              return;
+            }
+
+            // remove
             fs.rmdir(path, {}, (err) => {
               if (err) {
                 reject(err);
@@ -473,8 +491,13 @@ export class ScriptManager {
           execCallback("local deleteFile", options?.ignoreErrors, (resolve, reject) => {
             const exists = fs.existsSync(filePath);
             if (!exists) {
-              return resolve();
+              if (!options.errorIfNotFound) {
+                return resolve();
+              } else {
+                return reject("File does not exists");
+              }
             }
+
             const stat = fs.statSync(filePath, { throwIfNoEntry: false });
             if (stat == null) {
               reject("Unable to get stats");
@@ -735,10 +758,25 @@ export class ScriptManager {
         // folder
         mkDir: (path, options) =>
           execAsync("remote mkDir", options?.ignoreErrors, async () => {
+            // check if its already there
+            if (!options.errorIfAlreadyExists && (await remote.connection.sftp.exists(path))) {
+              const stats = await remote.connection.sftp.stat(path);
+              if (stats == null || !stats.isDirectory()) {
+                throw "Path already exists but is not a directory";
+              }
+              return;
+            }
             await remote.connection.sftp.mkdir(path);
           }),
         rmDir: (path, options) =>
           execAsync("remote rmDir", options?.ignoreErrors, async () => {
+            // check if its not there
+            if (!options.errorIfNotFound) {
+              const exists = await remote.connection.sftp.exists(path);
+              if (!exists) {
+                return;
+              }
+            }
             await remote.connection.sftp.rmdir(path);
           }),
         listDir: (path, options) =>
@@ -788,8 +826,10 @@ export class ScriptManager {
         deleteFile: (filePath, options) =>
           execAsync("remote deleteFile", options?.ignoreErrors, async () => {
             const stats = await remote.connection.sftp.exists(filePath);
-            if (stats == null) {
+            if (!options.errorIfNotFound && stats == null) {
               return;
+            } else if (stats == null) {
+              throw new Error("File does not exists");
             } else if (!stats.isFile()) {
               throw new Error("Entry at that path is not a file!");
             }

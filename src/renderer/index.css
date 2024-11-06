@@ -3,21 +3,21 @@
 @tailwind utilities;
 @tailwind screens;
 
-
 @layer utilities {
   .grid-span-12-2 {
-    @apply col-span-12 md:col-span-6
+    @apply col-span-12 md:col-span-6;
   }
   .grid-span-s {
-    @apply col-span-12 md:col-span-6 lg:col-span-4
+    @apply col-span-12 md:col-span-6 lg:col-span-4;
   }
   .grid-span-l {
-    @apply col-span-12 md:col-span-8 lg:col-span-8
+    @apply col-span-12 md:col-span-8 lg:col-span-8;
   }
 }
 
 :root {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, Avenir, Helvetica, Arial,
+    sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -26,4 +26,13 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* styles for monaco-code-editor */
+.monaco-code-editor-log-text {
+  font-weight: bold;
+}
+.monaco-code-editor-log-line {
+  font-weight: bold;
+  border-bottom: 1px solid gray;
 }

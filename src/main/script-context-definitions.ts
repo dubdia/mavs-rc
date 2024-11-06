@@ -20,15 +20,15 @@ declare type ScriptContractV1_Stats = {
 }
 
 declare type ScriptContractV1_Shared = {
-  mkDir(path: string, options?: { ignoreErrors?: boolean }): Promise<void>;
-  rmDir(path: string, options?: { ignoreErrors?: boolean }): Promise<void>;
+  mkDir(path: string, options?: { ignoreErrors?: boolean, errorIfAlreadyExists?: boolean }): Promise<void>;
+  rmDir(path: string, options?: { ignoreErrors?: boolean, errorIfNotFound?: boolean }): Promise<void>;
   listDir(path: string, options?: { recursive?: boolean; ignoreErrors?: boolean }): Promise<string[]>;
   dirExists(path: string, options?: { ignoreErrors?: boolean }): Promise<boolean>;
 
   writeFileText(filePath: string, contents: string,  options?: { ignoreErrors?: boolean }): Promise<void>;
   readFileText(filePath: string, options?: { ignoreErrors?: boolean }): Promise<string>;
   readFileBuffer(filePath: string, options?: { ignoreErrors?: boolean }): Promise<Buffer>;
-  deleteFile(filePath: string, options?: { ignoreErrors?: boolean }): Promise<void>;
+  deleteFile(filePath: string, options?: { ignoreErrors?: boolean, errorIfNotFound?: boolean }): Promise<void>;
   fileExists(filePath: string, options?: { ignoreErrors?: boolean }): Promise<boolean>;
 
   stats(path: string, options?: { ignoreErrors?: boolean }): Promise<ScriptContractV1_Stats | null>;

@@ -44,6 +44,7 @@ export const Script = ({ id, name }: { id: string; name: string }) => {
     // This effect does nothing on mount, but on unmount it disposes the editor and model
     return () => {
       if (editorRef?.current) {
+        editorRef.current.decorations?.clear();
         for (const disposable of editorRef.current.disposables) {
           disposable?.dispose();
         }
@@ -141,12 +142,50 @@ export const Script = ({ id, name }: { id: string; name: string }) => {
       setMarkers([...markers]);
     });
 
+    // create decorations collections for custom syntax highlighting
+    const decorationsCollection = editor.createDecorationsCollection([]);
+
     // set editor
     editorRef.current = {
       editor: editor,
       monaco: monaco,
+      decorations: decorationsCollection,
       disposables: [onDidChangeMarkersSub, editor],
     };
+
+    // update
+    updateSyntaxHighlighting();
+  };
+
+  const handleChange = (content: string) => {
+    updateSyntaxHighlighting();
+    dispatch(setScriptContent({ id: id, name: name, contents: content }));
+  };
+
+  const updateSyntaxHighlighting = () => {
+    const editor = editorRef.current?.editor;
+    const decorations = editorRef.current.decorations;
+    const model = editor?.getModel();
+    if (editor == null || decorations == null || model == null) {
+      return;
+    }
+
+    const newDecorations: editor.IModelDeltaDecoration[] = [];
+    const functionsToHighlight = ['^\\s*log\\([^)]*\\)\\s*;?.*$'];
+    functionsToHighlight.forEach((fun) => {
+      const matches = model.findMatches(fun, true, true, true, null, false, undefined);
+      matches.forEach((match) => {
+        newDecorations.push({
+          range: match.range,
+          options: {
+            isWholeLine: true,
+            className: "monaco-code-editor-log-line",
+            inlineClassName: "monaco-code-editor-log-text",
+          },
+        });
+      });
+    });
+    decorations.set(newDecorations);
   };
 
   // functions
@@ -245,7 +284,7 @@ export const Script = ({ id, name }: { id: string; name: string }) => {
               options={{
                 fixedOverflowWidgets: true,
               }}
-              onChange={(x) => dispatch(setScriptContent({ id: id, name: name, contents: x }))}
+              onChange={handleChange}
               onMount={handleEditorWillMount}
             />
           </div>
@@ -301,5 +340,6 @@ export const Script = ({ id, name }: { id: string; name: string }) => {
 export interface ScriptEditorData {
   editor: editor.IStandaloneCodeEditor;
   monaco: Monaco;
+  decorations: editor.IEditorDecorationsCollection;
   disposables: IDisposable[];
 }
