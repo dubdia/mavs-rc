@@ -514,6 +514,12 @@ export class ScriptManager {
           }),
         fileExists: (filePath, options) =>
           execCallback("local fileExists", options?.ignoreErrors, (resolve, reject) => {
+            // check for file or dir
+            if (!fs.statSync(filePath)) {
+              resolve(false);
+            }
+
+            // get stats and check if file
             fs.stat(filePath, (err, stats) => {
               if (err) {
                 reject(err);
