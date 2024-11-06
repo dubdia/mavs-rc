@@ -425,7 +425,7 @@ export class ScriptManager {
         mkDir: (path, options) =>
           execCallback("local mkDir", options?.ignoreErrors, (resolve, reject) => {
             // check if its already there
-            if (!options.errorIfAlreadyExists && fs.existsSync(path)) {
+            if (!options?.errorIfAlreadyExists && fs.existsSync(path)) {
               const stats = fs.statSync(path);
               if (stats == null || !stats.isDirectory()) {
                 reject("Path already exists but is not a directory");
@@ -446,7 +446,7 @@ export class ScriptManager {
         rmDir: (path, options) =>
           execCallback("local rmDir", options?.ignoreErrors, (resolve, reject) => {
             // check if its not there
-            if (!options.errorIfNotFound && !fs.existsSync(path)) {
+            if (!options?.errorIfNotFound && !fs.existsSync(path)) {
               resolve();
               return;
             }
@@ -491,7 +491,7 @@ export class ScriptManager {
           execCallback("local deleteFile", options?.ignoreErrors, (resolve, reject) => {
             const exists = fs.existsSync(filePath);
             if (!exists) {
-              if (!options.errorIfNotFound) {
+              if (!options?.errorIfNotFound) {
                 return resolve();
               } else {
                 return reject("File does not exists");
@@ -759,7 +759,7 @@ export class ScriptManager {
         mkDir: (path, options) =>
           execAsync("remote mkDir", options?.ignoreErrors, async () => {
             // check if its already there
-            if (!options.errorIfAlreadyExists && (await remote.connection.sftp.exists(path))) {
+            if (!options?.errorIfAlreadyExists && (await remote.connection.sftp.exists(path))) {
               const stats = await remote.connection.sftp.stat(path);
               if (stats == null || !stats.isDirectory()) {
                 throw "Path already exists but is not a directory";
@@ -771,7 +771,7 @@ export class ScriptManager {
         rmDir: (path, options) =>
           execAsync("remote rmDir", options?.ignoreErrors, async () => {
             // check if its not there
-            if (!options.errorIfNotFound) {
+            if (!options?.errorIfNotFound) {
               const exists = await remote.connection.sftp.exists(path);
               if (!exists) {
                 return;
@@ -826,7 +826,7 @@ export class ScriptManager {
         deleteFile: (filePath, options) =>
           execAsync("remote deleteFile", options?.ignoreErrors, async () => {
             const stats = await remote.connection.sftp.exists(filePath);
-            if (!options.errorIfNotFound && stats == null) {
+            if (!options?.errorIfNotFound && stats == null) {
               return;
             } else if (stats == null) {
               throw new Error("File does not exists");
