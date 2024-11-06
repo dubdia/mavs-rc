@@ -2,12 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.0.9] - Not yet released
+## [0.0.9] - 2024-11-06
 
 ### Added
 
 - Added highlighting of log() function calls in scripts
 - Added more options to script functions mkDir, rmDir und deleteFile
+
+### Fixed
+
+- Several fixes in local & remote script functions
 
 ## [0.0.8] - 2024-11-06
 
