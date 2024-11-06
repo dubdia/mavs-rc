@@ -119,14 +119,14 @@ export class SFTP extends BaseSFTP {
   /** returns whether given path exists */
   public async exists(path: string): Promise<Stats | null> {
     try {
-      const stats = await this.stat(path);
+      const stats = await this.lstat(path);
       if (stats) {
         return stats;
       } else {
         throw new Error("No stats and no error");
       }
     } catch (err) {
-      if (err && (err.code === "ENOENT" || err.code == 2)) {
+      if (err?.code === "ENOENT" || err?.code == 2 || err == "No such file") {
         return null;
       } else {
         throw err;

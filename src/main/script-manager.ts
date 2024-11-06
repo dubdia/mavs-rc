@@ -861,17 +861,9 @@ export class ScriptManager {
         downloadFile: (remoteFilePath, localFilePath, options) =>
           execAsync("remote download file", options?.ignoreErrors, async () => {
             // check
-            try {
-              const stats = await remote.connection.sftp.exists(remoteFilePath);
-              if (stats == null || !stats.isFile()) {
-                throw new Error("File on remote does not exists or is not a file");
-              }
-            } catch (err) {
-              if (err == "No such file") {
-                throw new Error("File on remote does not exists");
-              } else {
-                throw err;
-              }
+            const stats = await remote.connection.sftp.exists(remoteFilePath);
+            if (stats == null || !stats.isFile()) {
+              throw new Error("File on remote does not exists or is not a file");
             }
             if (options?.overwrite !== true) {
               if (fs.existsSync(localFilePath)) {
@@ -888,15 +880,9 @@ export class ScriptManager {
               throw new Error("Source local file does not exists");
             }
             if (options?.overwrite !== true) {
-              try {
-                const stats = await remote.connection.sftp.exists(remoteFilePath);
-                if (stats) {
-                  throw new Error("Target remote file already exists");
-                }
-              } catch (err) {
-                if (err != "No such file") {
-                  throw err;
-                }
+              const stats = await remote.connection.sftp.exists(remoteFilePath);
+              if (stats) {
+                throw new Error("Target remote file already exists");
               }
             }
 
