@@ -2,7 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.0.7] - Not released yet
+## [0.0.8] - 2024-11-06
+
+### Changed
+
+- Removed max width restriction
+
+### Fixed
+
+- Fixed bug where tunnels were not usable for new remotes
+- Fixed bug where the script-editor has no overflow for widgets
+
+## [0.0.7] - 2024-11-06
 
 ### Changed
 

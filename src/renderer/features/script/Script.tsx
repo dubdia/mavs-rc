@@ -242,6 +242,9 @@ export const Script = ({ id, name }: { id: string; name: string }) => {
               language="javascript"
               height="100%"
               value={scripts.script.contents}
+              options={{
+                fixedOverflowWidgets: true,
+              }}
               onChange={(x) => dispatch(setScriptContent({ id: id, name: name, contents: x }))}
               onMount={handleEditorWillMount}
             />

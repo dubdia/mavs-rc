@@ -82,13 +82,14 @@ export class RemotesManager {
   }
 
   public addNew(): Remote {
-    const newRemote = <Remote>{
+    const newRemote = {
       info: {
         description: "",
         id: v4(),
         name: `Remote #${this.remotes.length + 1}`,
       },
-    };
+    } as Remote;
+    this.normalizeRemoteInfo(newRemote.info);
     this.remotes.unshift(newRemote);
     this.updateConfig();
     log.info(`Added new Remote: ${newRemote.info.name}`);
