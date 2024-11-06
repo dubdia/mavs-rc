@@ -377,8 +377,8 @@ export class ScriptManager {
           const response = await prompt({
             title: message?.toString() ?? "",
             type: "input",
-            value: options.defaultText,
-            label: options.label ?? "Input:",
+            value: options?.defaultText,
+            label: options?.label ?? "Input:",
           });
           if (response == null) {
             return null;
@@ -584,7 +584,7 @@ export class ScriptManager {
             if (!fs.existsSync(sourceFilePath)) {
               reject("Source file does not exists");
             }
-            if (options.overwrite !== true) {
+            if (options?.overwrite !== true) {
               if (fs.existsSync(targetFilePath)) {
                 reject("Target file already exists");
               }
@@ -602,7 +602,7 @@ export class ScriptManager {
             if (!fs.existsSync(sourcePath)) {
               reject("Source dir does not exists");
             }
-            if (options.overwrite !== true) {
+            if (options?.overwrite !== true) {
               if (fs.existsSync(targetPath)) {
                 reject("Target dir already exists");
               }
@@ -670,7 +670,7 @@ export class ScriptManager {
             if (!fs.existsSync(sourcePath)) {
               throw new Error("Directory to zip does not exists");
             }
-            if (options.overwrite !== true) {
+            if (options?.overwrite !== true) {
               if (fs.existsSync(targetZipPath)) {
                 throw new Error("Target zip file already exists");
               }
@@ -700,7 +700,7 @@ export class ScriptManager {
             if (!fs.existsSync(sourceFilePath)) {
               throw new Error("File to zip does not exists");
             }
-            if (options.overwrite !== true) {
+            if (options?.overwrite !== true) {
               if (fs.existsSync(targetZipPath)) {
                 throw new Error("Target zip file already exists");
               }
@@ -786,7 +786,7 @@ export class ScriptManager {
             await remote.connection.sftp.rmdir(path);
           }),
         listDir: (path, options) =>
-          execAsync("remote listDir", options.ignoreErrors, async () => {
+          execAsync("remote listDir", options?.ignoreErrors, async () => {
             const listDir = async (dir: string): Promise<string[]> => {
               const result = await remote.connection.sftp.readdir(dir);
               const entries: string[] = [];
@@ -873,7 +873,7 @@ export class ScriptManager {
                 throw err;
               }
             }
-            if (options.overwrite !== true) {
+            if (options?.overwrite !== true) {
               if (fs.existsSync(localFilePath)) {
                 throw new Error("Target local file already exists");
               }
@@ -887,7 +887,7 @@ export class ScriptManager {
             if (!fs.existsSync(localFilePath)) {
               throw new Error("Source local file does not exists");
             }
-            if (options.overwrite !== true) {
+            if (options?.overwrite !== true) {
               try {
                 const stats = await remote.connection.sftp.exists(remoteFilePath);
                 if (stats) {
