@@ -7,7 +7,7 @@ export type ScriptList = {
   loading: boolean;
 
   /** id of the tunnel that is currently beeing edited */
-  editScriptId: string | null;
+  editScriptName: string | null;
 
   /** all the scripts */
   data: EntityState<ScriptEntry, string>;
@@ -35,8 +35,7 @@ export type ScriptLog = {
 
 export function createScriptEntry(scriptInfo: ScriptInfo): ScriptEntry {
   return  <ScriptEntry>{
-    scriptId: scriptInfo.scriptId,
-    content: scriptInfo.content,
+    contents: scriptInfo.contents,
     name: scriptInfo.name,
     running: false,
     log: [],

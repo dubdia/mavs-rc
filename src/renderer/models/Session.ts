@@ -89,7 +89,7 @@ export const createRemoteSession = (dto: RemoteDto) =>
     },
     scripts: {
       loading: false,
-      editScriptId: null,
+      editScriptName: null,
       sizes: [10000, 120],
       data: scriptsAdapter.getInitialState(),
     },

@@ -41,22 +41,22 @@ export const Scripts = ({ id }: { id: string }) => {
             variant="bordered"
             allowsCustomValue={false}
             isClearable={true}
-            selectedKey={scripts.script?.scriptId}
+            selectedKey={scripts.script?.name}
             onSelectionChange={scripts.selectScript}
           >
             {(script) => (
-              <AutocompleteItem key={script.scriptId} textValue={script.name}>
+              <AutocompleteItem key={script.name} textValue={script.name}>
                 {script.name}
               </AutocompleteItem>
             )}
           </Autocomplete>
           {/* Delete the script */}
-          {scripts.script?.scriptId && (
+          {scripts.script?.name && (
             <Tooltip content="Delete the current script">
               <Button
                 isIconOnly={true}
                 variant="flat"
-                onClick={() => scripts.removeScript(scripts.script?.scriptId)}
+                onClick={() => scripts.removeScript(scripts.script?.name)}
                 className="hover:bg-red-500"
               >
                 <FaTrash></FaTrash>
@@ -66,22 +66,22 @@ export const Scripts = ({ id }: { id: string }) => {
           <div className="flex-1"></div>
 
           {/* Saves the script */}
-          {scripts.script?.scriptId && (
+          {scripts.script?.name && (
             <Tooltip content="Saves the current script">
-              <Button isIconOnly={true} variant="flat" onClick={() => scripts.saveScript(scripts.script.scriptId)}>
+              <Button isIconOnly={true} variant="flat" onClick={() => scripts.saveScript(scripts.script.name)}>
                 <FaSave></FaSave>
               </Button>
             </Tooltip>
           )}
 
           {/* Execute the script */}
-          {scripts.script?.scriptId && (
+          {scripts.script?.name && (
             <Tooltip content="Saves and executes the current script">
               <Button
                 isIconOnly={true}
                 variant="flat"
-                disabled={scripts.script.running || !scripts.script.content}
-                onClick={() => scripts.saveAndExecuteScript(scripts.script.scriptId)}
+                disabled={scripts.script.running || !scripts.script.contents}
+                onClick={() => scripts.saveAndExecuteScript(scripts.script.name)}
                 color="success"
               >
                 <FaPlay></FaPlay>
@@ -96,7 +96,7 @@ export const Scripts = ({ id }: { id: string }) => {
           <div className="w-full h-full max-h-full flex flex-col gap-4 pb-4">
             <div className="flex-1 relative">
               <div className="absolute top-0 left-0 right-0 bottom-0">
-                <Script key={"script-" + scripts.script.scriptId} id={id} scriptId={scripts.script.scriptId}></Script>
+                <Script key={"script-" + scripts.script.name} id={id} name={scripts.script.name}></Script>
               </div>
             </div>
           </div>

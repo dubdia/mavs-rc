@@ -10,4 +10,7 @@ export class AppConfig {
 
   /** whether to open dev tools at start */
   devTools: boolean = false;
+
+  /** directory where the scripts are saved. Leave empty for default directory in home */
+  scriptsDir: string = ''
 }

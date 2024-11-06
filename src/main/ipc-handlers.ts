@@ -127,7 +127,7 @@ export function registerIpcHandlers() {
     await sshManager.deleteAsync(id, path);
   });
   typedIpcMain.handle("exists", async (_, id, path) => {
-    return await sshManager.existsAsync(id, path) != null;
+    return (await sshManager.existsAsync(id, path)) != null;
   });
   typedIpcMain.handle("rename", async (_, id, oldPath, newPath) => {
     return await sshManager.renameAsync(id, oldPath, newPath);
@@ -187,18 +187,18 @@ export function registerIpcHandlers() {
 
   // scripts
   typedIpcMain.handle("listScripts", (_) => {
-    return scriptManager.listScripts().map((x) => x.info);
+    return scriptManager.listScripts({ withContents: true });
   });
   typedIpcMain.handle("createScript", (_, name) => {
-    return scriptManager.addNew(name).info;
+    return scriptManager.addNew(name);
   });
-  typedIpcMain.handle("deleteScript", async (_, scriptId) => {
-    await scriptManager.deleteByIdAsync(scriptId);
+  typedIpcMain.handle("deleteScript", async (_, name) => {
+    scriptManager.delete(name);
   });
-  typedIpcMain.handle("updateScript", (_, script) => {
-    return scriptManager.update(script);
+  typedIpcMain.handle("updateScript", (_, name, contents) => {
+    return scriptManager.update(name, contents);
   });
-  typedIpcMain.handle("executeScript", async (_, id, scriptId) => {
-    return await scriptManager.executeAsync(id, scriptId);
+  typedIpcMain.handle("executeScript", async (_, id, name) => {
+    return await scriptManager.executeAsync(id, name);
   });
 }

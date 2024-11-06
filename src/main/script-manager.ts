@@ -3,11 +3,9 @@ import archiver from "archiver/index";
 import prompt from "custom-electron-prompt";
 import fs from "fs";
 import ts from "typescript";
-import { BrowserWindow, dialog } from "electron";
-import { ScriptConfigManager } from "./config/script-config-manager";
-import { Script, ScriptInfo } from "./models/Script";
+import { app, BrowserWindow, dialog } from "electron";
+import { ScriptInfo } from "./models/Script";
 import log from "electron-log/main";
-import { v4 } from "uuid";
 import { RemotesManager } from "./remotes-manager";
 import { Remote } from "./models/Remote";
 import { SshManager } from "./ssh-manager";
@@ -16,111 +14,203 @@ import { OsType } from "../shared/models/OsType";
 import { mainWindow } from "./main";
 import { currentPath, getPathForOsType } from "../shared/utils/path-utils";
 import { ScriptLog } from "../renderer/models/ScriptList";
+import { AppConfigManager } from "./config/app-config-manager";
 
 /** used to transcompile and run scripts */
 export class ScriptManager {
-  private config = new ScriptConfigManager();
-  private scripts: Script[] = [];
+  private scriptsDir: string;
 
-  constructor(private remotesManager: RemotesManager, private sshManager: SshManager) {
-    // load remotes from config
-    this.scripts = this.config.config.scripts
-      .filter((x) => x != null && x.scriptId != null && x.scriptId != "")
-      .map((x) => {
-        return <Script>{
-          info: x,
-          running: false,
-        };
-      });
-    log.info(`Loaded ${this.scripts.length} scripts from config`);
+  constructor(
+    private remotesManager: RemotesManager,
+    private sshManager: SshManager,
+    private appConfigManager: AppConfigManager
+  ) {
+    // set the scripts directory
+    this.scriptsDir = this.getScriptsDir();
+
+    // ensure the dir also exists
+    this.ensureScriptsDir();
   }
 
-  private updateConfig() {
-    // update and save config
-    log.verbose("Update config");
-    this.config.config.scripts = this.scripts.filter((x) => x?.info?.scriptId != null).map((x) => x.info);
-    this.config.saveConfig();
-  }
-
-  public findOrError(id: string, { mustBeRunning }: { mustBeRunning?: boolean } = {}): Script {
-    if (id == null || id == "") {
-      throw new Error(`Could not find script with empty id`);
+  private getScriptsDir() {
+    let scriptsDir = this.appConfigManager.config.scriptsDir;
+    if (scriptsDir == null || scriptsDir == "") {
+      // use default dir in home
+      const userDataPath = app.getPath("userData");
+      scriptsDir = currentPath().join(userDataPath, "scripts");
     }
-    const element = this.scripts.find((x) => x.info.scriptId == id);
-    if (element == null) {
-      throw new Error(`Could not find script with id ${id}`);
-    } else if (mustBeRunning == true && !element.running) {
-      throw new Error(`Script with id ${id} is not running`);
-    } else if (mustBeRunning == false && element.running) {
-      throw new Error(`Script with id ${id} is running`);
-    }
-    return element;
+    return scriptsDir;
   }
 
-  public listScripts(): Script[] {
-    return this.scripts;
+  /** ensures that the scripts folder exists */
+  public ensureScriptsDir() {
+    if (!fs.existsSync(this.scriptsDir)) {
+      // create it
+      fs.mkdirSync(this.scriptsDir);
+      log.info(`Created scripts directory: ${this.scriptsDir}`);
+    }
+
+    // check if its a folder
+    const scriptsDirStats = fs.statSync(this.scriptsDir);
+    if (scriptsDirStats == null || !scriptsDirStats.isDirectory()) {
+      throw new Error(`Path to scripts is not a directory: ${this.scriptsDir}`);
+    }
+    log.info(`Use scripts directory: ${this.scriptsDir}`);
   }
-  public addNew(name?: string): Script {
+
+  /** returns a list of all scripts */
+  public listScripts({ withContents }: { withContents?: boolean } = {}): ScriptInfo[] {
+    // get folder
+    if (!fs.existsSync(this.scriptsDir)) {
+      log.warn(`Scripts directory does not exists: ${this.scriptsDir}`);
+      return [];
+    }
+
+    // get all folders
+    const entries = fs.readdirSync(this.scriptsDir, {
+      recursive: false,
+      withFileTypes: true,
+    });
+
+    // get all folders containing a script.ts
+    const scripts: ScriptInfo[] = [];
+    for (const dir of entries) {
+      // check if its a folder
+      if (!dir.isDirectory()) {
+        continue;
+      }
+      if (dir.name.startsWith(".")) {
+        continue;
+      }
+
+      // read script
+      const script = this.readScript(dir.name, { withContents: withContents });
+      if (script) {
+        scripts.push(script);
+      }
+    }
+    return scripts;
+  }
+
+  public readScript(name: string, { withContents }: { withContents?: boolean } = {}): ScriptInfo | null {
     if (name == null || name == "") {
-      name = `Script #${this.scripts.length + 1}`;
+      return null;
     }
-    const newScript = <Script>{
-      info: {
-        content: "async function run() {\n    // write your typescript code here:\n    \n}",
-        name: name,
-        scriptId: v4(),
-      },
-      running: false,
+    const paths = this.getScriptPath(name);
+    if (!fs.existsSync(paths.dir)) {
+      return null;
+    }
+    const scriptFileStats = fs.statSync(paths.filePath);
+    if (scriptFileStats == null || !scriptFileStats.isFile()) {
+      return null;
+    }
+
+    /** read optional contents */
+    let contents: string | null = null;
+    if (withContents) {
+      contents = fs.readFileSync(paths.filePath, {
+        encoding: "utf-8",
+      });
+    }
+
+    // yes
+    return {
+      scriptFilePath: paths.filePath,
+      scriptDir: paths.dir,
+      name: name,
+      normalizedName: this.normalizeScriptName(name),
+      contents: contents,
     };
-    this.scripts.unshift(newScript);
-    this.updateConfig();
-    log.info(`Added new Script: ${newScript.info.name}`);
-    return newScript;
   }
-  public async deleteByIdAsync(id: string) {
-    log.info("Delete script");
-    this.scripts = this.scripts.filter((x) => x.info.scriptId !== id);
-    this.updateConfig();
+  public readScriptOrError(name: string, { withContents }: { withContents?: boolean } = {}): ScriptInfo {
+    const script = this.readScript(name, { withContents: withContents });
+    if (script == null) {
+      throw new Error("Script not found");
+    }
+    return script;
   }
-  public update(scriptInfo: ScriptInfo): ScriptInfo {
-    log.info("Update script");
-    // check
-    if (scriptInfo == null || scriptInfo.scriptId == null) {
-      throw new Error("no or invalid script info given");
+
+  private normalizeScriptName(name: string): string {
+    return name.trim().toLowerCase();
+  }
+  private getScriptPath(name: string): { dir: string; filePath: string } {
+    const scriptDir = currentPath().join(this.scriptsDir, name);
+    const scriptFilePath = currentPath().join(scriptDir, "script.ts");
+    return { dir: scriptDir, filePath: scriptFilePath };
+  }
+
+  public addNew(name: string): ScriptInfo {
+    // check name
+    const normalizedName = this.normalizeScriptName(name ?? "");
+    if (
+      normalizedName == null ||
+      normalizedName == "" ||
+      normalizedName.startsWith(".") ||
+      normalizedName.length > 64
+    ) {
+      throw new Error("No valid name was given");
     }
 
-    // find by id and update
-    const remote = this.findOrError(scriptInfo.scriptId);
-    remote.info = scriptInfo;
+    // list all scripts
+    const scripts = this.listScripts();
+    if (scripts.find((x) => x.normalizedName == normalizedName)) {
+      throw new Error("A script with this name already exists");
+    }
 
-    // save config
-    this.updateConfig();
-    return scriptInfo;
+    // create folder
+    const paths = this.getScriptPath(name);
+    if (fs.existsSync(paths.dir) || fs.existsSync(paths.filePath)) {
+      throw new Error("A folder with the name of the script already exists");
+    }
+    fs.mkdirSync(paths.dir);
+
+    // write script file
+    const content = "// " + name + "\nasync function run() {\n    // write your typescript code here:\n    \n}";
+    fs.writeFileSync(paths.filePath, content, {
+      flush: true,
+    });
+
+    log.info(`Created new Script: ${paths.filePath}`);
+    return this.readScriptOrError(name, { withContents: true });
+  }
+  public delete(name: string, { hardDelete }: { hardDelete?: boolean } = {}) {
+    const script = this.readScriptOrError(name);
+
+    // rename directory => prefix it with a dot to hide it
+    if (hardDelete === true) {
+      fs.rmSync(script.scriptDir, { recursive: true, force: true });
+    } else {
+      const oldDir = script.scriptDir;
+      const newDir = this.getScriptPath("." + script.name).dir;
+      fs.renameSync(oldDir, newDir);
+    }
+  }
+  public update(name: string, contents: string) {
+    const script = this.readScriptOrError(name);
+    fs.writeFileSync(script.scriptFilePath, contents);
   }
 
   /** transpiles and executes and contents of given script for given remote */
-  public async executeAsync(remoteId: string, scriptId: string): Promise<ScriptExecutionResult> {
+  public async executeAsync(remoteId: string, name: string): Promise<ScriptExecutionResult> {
     // find remote and script
     const remote = this.remotesManager.findOrError(remoteId, { mustBeConnected: true });
     if (remote == null || remote.connection == null) {
       return { success: false, error: "Remote cannot be found or is not connected" };
     }
 
-    const script = this.findOrError(scriptId, { mustBeRunning: false });
-    if (script == null || script.info == null) {
-      return { success: false, error: "Script cannot be found" };
-    } else if (script.running) {
-      return { success: false, error: "Script is already running" };
-    } else if (script.info.content == null || script.info.content == "") {
-      return { success: false, error: "Script is empty" };
+    const script = this.readScript(name, { withContents: true });
+    if (!script) {
+      return { success: false, error: "The script was not found" };
     }
-
+    if (script.contents == null || script.contents == "") {
+      return { success: false, error: "The script is empty" };
+    }
     //Todo set script to running
 
     // transpile
     let transpilation: ts.TranspileOutput;
     try {
-      transpilation = this.transpile(script.info.content);
+      transpilation = this.transpile(script.contents);
       if (transpilation == null) {
         return { success: false, error: "Transpilation failed without error" };
       } else if (transpilation.outputText == null || transpilation.outputText == "") {
@@ -132,14 +222,14 @@ export class ScriptManager {
         }
       }
     } catch (err) {
-      log.error("Failed to transpile", err, script.info.content);
+      log.error("Failed to transpile", err, script.contents);
       return { success: false, error: "An error occured during typescript transpilation: " + err?.toString() };
     }
 
     // create context
     let context: vm.Context;
     try {
-      context = this.createContext(remote, script.info);
+      context = this.createContext(remote, script);
       if (context == null) {
         throw new Error("createContext returned null");
       }
@@ -256,8 +346,9 @@ export class ScriptManager {
       remoteId: remote.info.id,
       remoteName: remote.info.name,
 
-      scriptId: script.scriptId,
+      scriptDirectory: script.scriptDir,
       scriptName: script.name,
+      scriptFilePath: script.scriptFilePath,
 
       remotePosixType: remote.connection?.osType == OsType.Windows ? "windows" : "posix",
 
@@ -315,7 +406,7 @@ export class ScriptManager {
                 ? optionalParams.map((x) => stringify(x)).filter((x) => x && x != "")
                 : [],
           };
-          mainWindow.webContents.send("scriptLog", remote.info.id, script.scriptId, scriptLog);
+          mainWindow.webContents.send("scriptLog", remote.info.id, script.name, scriptLog);
         }),
       delay: (timeInMs) =>
         execAsync("delay", false, async () => {

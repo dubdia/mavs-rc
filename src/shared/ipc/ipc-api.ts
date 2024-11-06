@@ -24,7 +24,7 @@ type Events = {
   shellReceive: (id: string, shellId: string, data: string) => void;
   disposeRemote: (id: string) => void;
   disposeShell: (id: string, shellId: string) => void;
-  scriptLog: (id: string, scriptId: string, scriptLog: ScriptLog) => void;
+  scriptLog: (id: string, name: string, scriptLog: ScriptLog) => void;
 };
 
 /** definition of possible commands that can be invoked on the main by the renderer */
@@ -91,9 +91,9 @@ type Commands = {
   // shells
   listScripts: () => ScriptInfo[];
   createScript: (name: string) => ScriptInfo;
-  deleteScript: (scriptId: string) => void;
-  updateScript: (script: ScriptInfo) => ScriptInfo;
-  executeScript: (id: string, scriptId: string) => ScriptExecutionResult;
+  deleteScript: (name: string) => void;
+  updateScript: (name: string, contents: string) => void;
+  executeScript: (id: string, name: string) => ScriptExecutionResult;
 };
 
 export const typedIpcMain = ipcMain as TypedIpcMain<Events, Commands>;

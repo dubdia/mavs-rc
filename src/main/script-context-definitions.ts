@@ -44,18 +44,18 @@ declare type ScriptContractV1_Shared = {
   getExtension(path: string): string;
 };
 declare type ScriptContractV1_Remote = ScriptContractV1_Shared & {
-    downloadFile(remoteFilePath: string, localFilePath: string, options?: {ignoreErrors?: boolean, overwrite?: boolean}): Promise<void>
-    uploadFile(localFilePath: string, remoteFilePath: string, options?: {ignoreErrors?: boolean, overwrite?: boolean}): Promise<void>
+  downloadFile(remoteFilePath: string, localFilePath: string, options?: {ignoreErrors?: boolean, overwrite?: boolean}): Promise<void>
+  uploadFile(localFilePath: string, remoteFilePath: string, options?: {ignoreErrors?: boolean, overwrite?: boolean}): Promise<void>
 };
 declare type ScriptContractV1_Local = ScriptContractV1_Shared & {
-    zipDirectory(sourcePath: string, targetZipPath: string, options?: {ignoreErrors?: boolean, overwrite?: boolean}): Promise<void>
-    zipFile(sourceFilePath: string, targetZipPath: string, options?: {ignoreErrors?: boolean, overwrite?: boolean}): Promise<void>
+  zipDirectory(sourcePath: string, targetZipPath: string, options?: {ignoreErrors?: boolean, overwrite?: boolean}): Promise<void>
+  zipFile(sourceFilePath: string, targetZipPath: string, options?: {ignoreErrors?: boolean, overwrite?: boolean}): Promise<void>
 
-    copyDir(sourcePath: string, targetPath: string, options?: { ignoreErrors?: boolean, overwrite?: boolean }): Promise<void>;
-    copyFile(sourceFilePath: string, targetFilePath: string, options?: { ignoreErrors?: boolean, overwrite?: boolean }): Promise<void>;
-  
-    resolvePath(...paths: string[]): string;
-    normalizePath(path: string): string;
+  copyDir(sourcePath: string, targetPath: string, options?: { ignoreErrors?: boolean, overwrite?: boolean }): Promise<void>;
+  copyFile(sourceFilePath: string, targetFilePath: string, options?: { ignoreErrors?: boolean, overwrite?: boolean }): Promise<void>;
+
+  resolvePath(...paths: string[]): string;
+  normalizePath(path: string): string;
 };
 
 declare namespace ScriptContractV1 { //global
@@ -64,7 +64,8 @@ declare namespace ScriptContractV1 { //global
   const remoteName: string;
   const remotePosixType: ('posix' | 'windows');
   
-  const scriptId: string;
+  const scriptFilePath: string;
+  const scriptDirectory: string;
   const scriptName: string;
 
 

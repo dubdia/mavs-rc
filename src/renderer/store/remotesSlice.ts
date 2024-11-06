@@ -15,7 +15,6 @@ import { RemoteTunnelInfo } from "../../shared/models/RemoteTunnelInfo";
 import { processList, ProcessableListParams } from "../models/ProcessableList";
 import { createRemoteSession, Session } from "../models/Session";
 import { State } from "../models/State";
-import { ScriptInfo } from "../../main/models/Script";
 import { createScriptEntry, ScriptEntry, ScriptLog, ScriptTab } from "../models/ScriptList";
 import { createShellEntry, ShellEntry } from "../models/ShellList";
 
@@ -478,30 +477,30 @@ export const sessionCreateScript = createAsync(
     onFulfilled: (state: State, data, arg) => {
       const session = state.data.entities[arg.id].session;
       scriptsAdapter.addOne(session.scripts.data, createScriptEntry(data));
-      session.scripts.editScriptId = data.scriptId;
+      session.scripts.editScriptName = data.name;
     },
   }
 );
 export const sessionUpdateScript = createAsync(
   "sessionUpdateScript",
-  async (params: { id: string; script: ScriptInfo }) => {
-    const result = await ipc.invoke("updateScript", params.script);
+  async (params: { id: string; name: string, contents: string }) => {
+    const result = await ipc.invoke("updateScript", params.name, params.contents);
     return result;
   },
   {
     onRejected: (_state: State, _error, _arg) => {
       toast.error("An error occured while updating the script");
     },
-    onFulfilled: (state: State, data, arg) => {
+    /*onFulfilled: (state: State, data, arg) => {
       const session = state.data.entities[arg.id].session;
       scriptsAdapter.setOne(session.scripts.data, createScriptEntry(data));
-    },
+    }*/
   }
 );
 export const sessionDeleteScript = createAsync(
   "sessionDeleteScript",
-  async (params: { id: string; scriptId: string }) => {
-    const result = await ipc.invoke("deleteScript", params.scriptId);
+  async (params: { id: string; name: string }) => {
+    const result = await ipc.invoke("deleteScript", params.name);
     return result;
   },
   {
@@ -510,13 +509,13 @@ export const sessionDeleteScript = createAsync(
     },
     onFulfilled: (state: State, data, arg) => {
       const session = state.data.entities[arg.id].session;
-      scriptsAdapter.removeOne(session.scripts.data, arg.scriptId);
+      scriptsAdapter.removeOne(session.scripts.data, arg.name);
 
       // select another?
-      if (arg.scriptId == session.scripts.editScriptId) {
+      if (arg.name == session.scripts.editScriptName) {
         // select next one
         if (session.scripts.data.ids.length > 0) {
-          session.scripts.editScriptId = session.scripts.data.ids.find((x) => x != arg.scriptId);
+          session.scripts.editScriptName = session.scripts.data.ids.find((x) => x != arg.name);
         }
       }
     },
@@ -524,8 +523,8 @@ export const sessionDeleteScript = createAsync(
 );
 export const sessionExecuteScript = createAsync(
   "sessionExecuteScript",
-  async (params: { id: string; scriptId: string }) => {
-    const result = await ipc.invoke("executeScript", params.id, params.scriptId);
+  async (params: { id: string; name: string }) => {
+    const result = await ipc.invoke("executeScript", params.id, params.name);
     return result;
   },
   {
@@ -574,7 +573,7 @@ export const { selectAll, selectById, selectTotal } = remotesAdapter.getSelector
 
 // create adapter for managing the scripts array
 export const scriptsAdapter = createEntityAdapter<ScriptEntry, string>({
-  selectId: (x) => x.scriptId,
+  selectId: (x) => x.name,
   sortComparer: (a, b) => (a?.name ?? "").localeCompare(b.name ?? ""),
 });
 export const { selectAll: selectAllScripts, selectById: selectScriptById } = scriptsAdapter.getSelectors<Session>(
@@ -713,34 +712,34 @@ export const appSlice = createSlice({
       });
     },
 
-    selectScript: (state, action: PayloadAction<{ id: string; scriptId: string }>) => {
+    selectScript: (state, action: PayloadAction<{ id: string; name: string }>) => {
       const s = state.data.entities[action.payload.id].session;
-      s.scripts.editScriptId = action.payload.scriptId;
+      s.scripts.editScriptName = action.payload.name;
     },
-    setScriptContent: (state, action: PayloadAction<{ id: string; scriptId: string; content: string }>) => {
+    setScriptContent: (state, action: PayloadAction<{ id: string; name: string; contents: string }>) => {
       const s = state.data.entities[action.payload.id].session;
       scriptsAdapter.updateOne(s.scripts.data, {
-        id: action.payload.scriptId,
+        id: action.payload.name,
         changes: {
-          content: action.payload.content,
+          contents: action.payload.contents,
         },
       });
     },
-    appendScriptLog: (state, action: PayloadAction<{ id: string; scriptId: string; scriptLog: ScriptLog }>) => {
+    appendScriptLog: (state, action: PayloadAction<{ id: string; name: string; scriptLog: ScriptLog }>) => {
       const s = state.data.entities[action.payload.id].session;
-      const script = selectScriptById(s, action.payload.scriptId);
+      const script = selectScriptById(s, action.payload.name);
       scriptsAdapter.updateOne(s.scripts.data, {
-        id: action.payload.scriptId,
+        id: action.payload.name,
         changes: {
           log: [...(script.log ?? []), action.payload.scriptLog], //append to existing
           selectedTab: "logs", // navigate to log tab
         },
       });
     },
-    setScriptTab: (state, action: PayloadAction<{ id: string; scriptId: string; tab: ScriptTab }>) => {
+    setScriptTab: (state, action: PayloadAction<{ id: string; name: string; tab: ScriptTab }>) => {
       const s = state.data.entities[action.payload.id].session;
       scriptsAdapter.updateOne(s.scripts.data, {
-        id: action.payload.scriptId,
+        id: action.payload.name,
         changes: {
           selectedTab: action.payload.tab,
         },

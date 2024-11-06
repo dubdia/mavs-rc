@@ -22,7 +22,7 @@ export const useScripts = (id: string) => {
   const defaultSizes = useRemoteSelector(id, (remote) => remote.session.scripts.sizes);
   const scripts = useRemoteSelector(id, (remote) => selectAllScripts(remote.session));
   const script = useRemoteSelector(id, (remote) =>
-    selectScriptById(remote.session, remote.session.scripts.editScriptId)
+    selectScriptById(remote.session, remote.session.scripts.editScriptName)
   );
 
   const addScript = async () => {
@@ -60,9 +60,9 @@ export const useScripts = (id: string) => {
       toast.error("Failed to create new script");
     }
   };
-  const removeScript = async (scriptId: string) => {
-    const scriptById = scripts.find((x) => x.scriptId == scriptId);
-    if (scriptById == null || scriptById.scriptId == null) {
+  const removeScript = async (name: string) => {
+    const scriptById = scripts.find((x) => x.name == name);
+    if (scriptById == null || scriptById.name == null) {
       return;
     }
     try {
@@ -76,35 +76,35 @@ export const useScripts = (id: string) => {
       }
 
       // remove
-      await appDispatch(sessionDeleteScript({ id: id, scriptId: scriptById.scriptId }));
+      await appDispatch(sessionDeleteScript({ id: id, name: scriptById.name }));
       toast.success("Deleted " + scriptById.name);
     } catch (err) {
       console.error("failed to delete script", script, err);
       toast.error("Failed to delete");
     }
   };
-  const selectScript = (scriptId: string) => {
-    appDispatch(selectScriptLib({ id: id, scriptId: scriptId }));
+  const selectScript = (name: string) => {
+    appDispatch(selectScriptLib({ id: id, name: name }));
   };
-  const saveScript = async (scriptId: string) => {
+  const saveScript = async (name: string) => {
     // get script
-    const scriptById = scripts.find((x) => x.scriptId == scriptId);
+    const scriptById = scripts.find((x) => x.name == name);
     if (scriptById == null) {
       return;
     }
     // try to save
     try {
       // save current
-      await appDispatch(sessionUpdateScript({ id: id, script: scriptById }));
+      await appDispatch(sessionUpdateScript({ id: id, name: scriptById.name, contents: scriptById.contents }));
       toast.success("Script saved");
     } catch (err) {
       console.error("failed to save script", err);
       toast.error("Failed to save script: " + err?.toString());
     }
   };
-  const saveAndExecuteScript = async (scriptId: string) => {
+  const saveAndExecuteScript = async (name: string) => {
     // get script
-    const scriptById = scripts.find((x) => x.scriptId == scriptId);
+    const scriptById = scripts.find((x) => x.name == name);
     if (scriptById == null) {
       return;
     }
@@ -112,23 +112,23 @@ export const useScripts = (id: string) => {
     // try to execute
     try {
       // check
-      if (scriptById.content == "") {
+      if (scriptById.contents == "") {
         toast.warn("Your script seems empty!");
         return;
       }
 
       // save current
-      await appDispatch(sessionUpdateScript({ id: id, script: scriptById }));
+      await appDispatch(sessionUpdateScript({ id: id, name: scriptById.name, contents: scriptById.contents }));
 
       // execute
-      await appDispatch(sessionExecuteScript({ id: id, scriptId: scriptById.scriptId }));
+      await appDispatch(sessionExecuteScript({ id: id, name: scriptById.name }));
     } catch (err) {
       console.error("failed to execute script", err);
       toast.error("Failed to execute script: " + err?.toString());
     }
   };
-  const selectTab = (scriptId: string, tab: ScriptTab) => {
-    appDispatch(setScriptTab({ id: id, scriptId: scriptId, tab: tab }));
+  const selectTab = (name: string, tab: ScriptTab) => {
+    appDispatch(setScriptTab({ id: id, name: name, tab: tab }));
   };
   const setSizes = (sizes: number[]) => {
     appDispatch(setScriptsSizes({ id: id, sizes: sizes }));

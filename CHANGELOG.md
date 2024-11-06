@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Changed style of remotes list on the left
-
+- Scripts are now stored in seperate files in the app-data directory instead of a single json file (path is adjustable in config)
 
 ## [0.0.6] - 2024-10-18
 

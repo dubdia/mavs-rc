@@ -13,7 +13,7 @@ import { ScriptLog, ScriptTab } from "../../models/ScriptList";
 import { Allotment } from "allotment";
 import { Tab, Tabs } from "@nextui-org/react";
 
-export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
+export const Script = ({ id, name }: { id: string; name: string }) => {
   const dispatch = useAppDispatch();
 
   const editorRef = useRef<ScriptEditorData>(null);
@@ -31,7 +31,7 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
       label: "Logs",
     },
   ];
-  console.log("RENDER Script", id, scriptId);
+  console.log("RENDER Script", id, name);
 
   // keep a script ref for the monaco editor..
   const scriptsRef = useRef(scripts);
@@ -109,13 +109,13 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
 
     // register shortcuts for this editor instance
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function () {
-      scriptsRef.current.saveScript(scripts.script.scriptId);
+      scriptsRef.current.saveScript(scripts.script.name);
     });
     editor.addCommand(monaco.KeyCode.F5, function () {
-      scriptsRef.current.saveAndExecuteScript(scripts.script.scriptId);
+      scriptsRef.current.saveAndExecuteScript(scripts.script.name);
     });
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyR, function () {
-      scriptsRef.current.saveAndExecuteScript(scripts.script.scriptId);
+      scriptsRef.current.saveAndExecuteScript(scripts.script.name);
     });
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyN, function () {
       scriptsRef.current.addScript();
@@ -241,8 +241,8 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
               theme="vs-dark"
               language="javascript"
               height="100%"
-              value={scripts.script.content}
-              onChange={(x) => dispatch(setScriptContent({ id: id, scriptId: scriptId, content: x }))}
+              value={scripts.script.contents}
+              onChange={(x) => dispatch(setScriptContent({ id: id, name: name, contents: x }))}
               onMount={handleEditorWillMount}
             />
           </div>
@@ -255,7 +255,7 @@ export const Script = ({ id, scriptId }: { id: string; scriptId: string }) => {
             className="max-w-full overflow-auto"
             size="sm"
             selectedKey={scripts.script.selectedTab}
-            onSelectionChange={(key) => scripts.selectTab(scripts.script.scriptId, key as ScriptTab)}
+            onSelectionChange={(key) => scripts.selectTab(scripts.script.name, key as ScriptTab)}
             items={tabs}
           >
             {(item) => <Tab key={item.name} title={item.label}></Tab>}

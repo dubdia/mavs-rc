@@ -38,7 +38,7 @@ log.verbose(`Create managers...`);
 export const remotesManager = new RemotesManager();
 export const sshCertManager = new SshCertManager();
 export const sshManager = new SshManager(remotesManager, sshCertManager);
-export const scriptManager = new ScriptManager(remotesManager, sshManager);
+export const scriptManager = new ScriptManager(remotesManager, sshManager, appConfigManager);
 export let mainWindow!: BrowserWindow; // will be assigned later
 
 // configure close/dispose
