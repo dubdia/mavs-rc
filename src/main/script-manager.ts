@@ -778,15 +778,15 @@ export class ScriptManager {
             }
 
             // make one by one because mkdir is not recursive
-            const delimiter = getPathForOsType(remote.connection.osType).delimiter;
-            const parts = path.split(delimiter).filter((x) => x && x != "");
-            let currentPath = "";
+            const pathSep = getPathForOsType(remote.connection.osType).sep;
+            const parts = path.split(pathSep).filter((x) => x && x != "");
+            let currentPath = path.startsWith(pathSep) ? pathSep : '';
             for (const part of parts) {
               // build current path
               currentPath = getPathForOsType(remote.connection.osType).join(currentPath, part);
 
               // check if exists
-              stats = await remote.connection.sftp.exists(path);
+              stats = await remote.connection.sftp.exists(currentPath);
               if (stats == null) {
                 // it does not exists, create it
                 await remote.connection.sftp.mkdir(currentPath);
