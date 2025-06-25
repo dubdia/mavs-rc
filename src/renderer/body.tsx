@@ -11,7 +11,7 @@ import { Center } from "./components/Center";
 import { FaBars } from "react-icons/fa6";
 import { AppAction } from "../shared/ipc/ipc-api";
 export default function Body() {
-  console.log("RENDER Body");
+  //console.log("RENDER Body");
 
   const dispatch = useAppDispatch();
   const status = useAppSelector((state) => state.data.dataStatus);
@@ -20,7 +20,7 @@ export default function Body() {
   // initial fetch
   useEffect(() => {
     if (status == "new" || status == "rejected") {
-      console.log("RENDER Body => START LOAD REMOTES", status);
+      //console.log("RENDER Body => START LOAD REMOTES", status);
       dispatch(loadRemotes());
     }
   }, [dispatch]);

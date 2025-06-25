@@ -10,7 +10,7 @@ export const RemoteSessionExecuteCommand = ({ id }: { id: string }) => {
   const remote = useRemote(id)
   const result = remote.session.commandResult;
 
-  console.log("RENDER RemoteSessionExecuteCommand", remote);
+  //console.log("RENDER RemoteSessionExecuteCommand", remote);
 
   return (
     <div className="w-full">

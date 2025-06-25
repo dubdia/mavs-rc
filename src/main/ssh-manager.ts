@@ -29,7 +29,7 @@ import { currentPath, getPathForOsType } from "../shared/utils/path-utils";
 
 /** used to do everyting related to ssh and sftp */
 export class SshManager {
-  constructor(private remotesManager: RemotesManager, private sshCertManager: SshCertManager) {}
+  constructor(private remotesManager: RemotesManager, private sshCertManager: SshCertManager) { }
 
   // CONNECTION -----------------------------
 
@@ -160,8 +160,7 @@ export class SshManager {
 
       // return success
       log.info(
-        `Successfully connected to ssh ${remote.info.host}:${remote.info.port}. OS: ${
-          connection.osType ?? OsType.Unknown
+        `Successfully connected to ssh ${remote.info.host}:${remote.info.port}. OS: ${connection.osType ?? OsType.Unknown
         }`
       );
       return {
@@ -263,11 +262,11 @@ export class SshManager {
 
   // SHELL -----------------------------
 
-  public async createShellAsync(id: string): Promise<RemoteShell> {
+  public async createShellAsync(id: string, initialCommand?: string): Promise<RemoteShell> {
     const remote = this.remotesManager.findOrError(id, { mustBeConnected: true });
-    return await this.createShellInternalAsync(remote);
+    return await this.createShellInternalAsync(remote, initialCommand);
   }
-  private async createShellInternalAsync(remote: Remote): Promise<RemoteShell> {
+  private async createShellInternalAsync(remote: Remote, initialCommand?: string): Promise<RemoteShell> {
     // create new shell object
     const shell: RemoteShell = {
       shellId: v4(),
@@ -338,6 +337,17 @@ export class SshManager {
 
       // add shell to remote
       remote.connection.shells.push(shell);
+
+      // add initial command
+      if (initialCommand && initialCommand.trim() != "") {
+        log.verbose(`Send initial command to shell: ${initialCommand}`);
+        try {
+          await this.shellSendInternalAsync(remote.connection, shell.shellId, initialCommand);
+        } catch (err) {
+          log.warn("failed to send initial command to shell", err, shell.shellId, initialCommand);
+        }
+      }
+
       return shell;
     } catch (err) {
       log.error("failed to create shell, dispose now", err);
@@ -1124,8 +1134,7 @@ export class SshManager {
 
     // establish a connection
     log.info(
-      `Create Tunnel from local port ${tunnel.localPort} to remote ${tunnel.remoteAddress}:${tunnel.remotePort} ${
-        tunnel.socks == true ? "(socks)" : "(no socks)"
+      `Create Tunnel from local port ${tunnel.localPort} to remote ${tunnel.remoteAddress}:${tunnel.remotePort} ${tunnel.socks == true ? "(socks)" : "(no socks)"
       }`
     );
     const tunnelConnection = await connection.ssh.addTunnel(<TunnelConfig>{

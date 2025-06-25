@@ -27,7 +27,7 @@ export const Shell = forwardRef(({ id, shellId }: { id: string; shellId: string 
     return <p>Shell not found: {shellId}</p>;
   }
   const data = remoteShell.data ?? [];
-  console.log("RENDER Shell", remoteShell);
+  //console.log("RENDER Shell", remoteShell);
 
   // register events on terminal
   useEffect(() => {

@@ -31,7 +31,7 @@ export const Script = ({ id, name }: { id: string; name: string }) => {
       label: "Logs",
     },
   ];
-  console.log("RENDER Script", id, name);
+  //console.log("RENDER Script", id, name);
 
   // keep a script ref for the monaco editor..
   const scriptsRef = useRef(scripts);

@@ -22,7 +22,7 @@ import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 import { Tooltip } from "../../components/Tooltip";
 
 export const RemoteDisconnected = memo(({ id }: { id: string }) => {
-  console.log("RENDER RemoteDisconnected", id);
+  //console.log("RENDER RemoteDisconnected", id);
 
   const dispatch = useAppDispatch();
   const confirm = useConfirm();

@@ -25,7 +25,7 @@ import { RemoteTunnelDto } from "../../../shared/models/RemoteTunnelDto";
 import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
 
 export const Tunnels = ({ id }: { id: string }) => {
-  console.log("RENDER Tunnels");
+  //console.log("RENDER Tunnels");
 
   // use store
   const dispatch = useAppDispatch();
@@ -33,7 +33,7 @@ export const Tunnels = ({ id }: { id: string }) => {
   const editTunnelId = useRemoteSelector(id, (r) => r.session.tunnels.editTunnelId);
 
   const actions = useTunnels(id);
-  console.log("RENDER Tunnels", editTunnelId);
+  //console.log("RENDER Tunnels", editTunnelId);
   const isEditingThis = (tunnel: RemoteTunnelDto): boolean => {
     return editTunnelId != null && editTunnelId == tunnel?.info?.id;
   };

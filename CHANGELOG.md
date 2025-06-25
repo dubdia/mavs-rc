@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.10] - 2025-06-25
+
+### Fixed
+
+- Fixed the local rmDir function which threw an error when the directory was not empty
+- Fixed functionality to open folder in a new shell
+
+### Changed
+
+- Updated all npm packages
+- Used package `ssh2-electron-no-cpu-features` instead of `ssh2` to remove optional cpu-features dependency
+
 ## [0.0.9] - 2024-11-06
 
 ### Added

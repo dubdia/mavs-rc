@@ -13,7 +13,7 @@ import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout"
 import { FileDropdown } from "./FileDropdown";
 
 export const FileEditor = ({ id, fileTab }: { id: string; fileTab: TabName }) => {
-  console.log("RENDER FileEditor", id, fileTab);
+  //console.log("RENDER FileEditor", id, fileTab);
 
   // use hooks
   const dispatch = useAppDispatch();

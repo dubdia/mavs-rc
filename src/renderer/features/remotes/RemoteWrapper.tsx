@@ -4,7 +4,7 @@ import { RemoteConnected } from "./RemoteConnected";
 import { RemoteDisconnected } from "./RemoteDisconnected";
 
 export const RemoteWrapper = ({ id }: { id: string }) => {
-  console.log("RENDER RemoteWrapper", id);
+  //console.log("RENDER RemoteWrapper", id);
 
   const isActive = useAppSelector((state) => state.data.activeId == id);
   const remoteConnected = useRemoteSelector(id, (r) => r?.dto?.connected);

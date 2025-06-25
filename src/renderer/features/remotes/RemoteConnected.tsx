@@ -32,7 +32,7 @@ export interface TabInfo {
 }
 
 export const RemoteConnected = memo(({ id }: { id: string }) => {
-  console.log("RENDER RemoteConnected");
+  //console.log("RENDER RemoteConnected");
 
   const dispatch = useAppDispatch();
   const name = useRemoteSelector(id, (r) => r.dto.info?.name ?? "Unnamed");

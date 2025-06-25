@@ -10,7 +10,6 @@ import { Server } from "net";
 import { SSHConfig } from "./sshConfig";
 import { SSHConstants } from "./sshConstants";
 import { TunnelConfig } from "./tunnelConfig";
-import { rejects } from "assert";
 
 const socks = require("@heroku/socksv5");
 

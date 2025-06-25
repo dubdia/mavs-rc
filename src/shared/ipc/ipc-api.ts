@@ -53,7 +53,7 @@ type Commands = {
 
   // shell
   listShells: (id: string) => RemoteShellDto[];
-  createShell: (id: string) => RemoteShellDto;
+  createShell: (id: string, initialCommand?: string) => RemoteShellDto;
   destroyShell: (id: string, shellId: string) => void;
   sendShell: (id: string, shellId: string, text: string) => void;
   shellResize: (id: string, shellId: string, size: TerminalSize) => void;

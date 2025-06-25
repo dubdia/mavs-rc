@@ -35,7 +35,7 @@ declare type ScriptContractV1_Shared = {
   move(oldPath: string, newPath: string, options?: { ignoreErrors?: boolean }): Promise<void>;
   chown(path: string, uid: number, gid: number, options?: { ignoreErrors?: boolean }): Promise<void>;
   chmod(path: string, mode: number | string, options?: { ignoreErrors?: boolean }): Promise<void>;
-  exec(command: string, options?: { ignoreErrors?: boolean }): Promise<{ stdout: string; stderr: string }>;
+  exec(command: string, options?: { ignoreErrors?: boolean }): Promise<{ stdout?: string; stderr?: string }>;
 
   isAbsolutePath(path: string): boolean;
   joinPath(...paths: string[]): string;

@@ -33,7 +33,7 @@ export const PermissionModal = ({
   fileInput: RemoteFile;
   onClose: () => void;
 }) => {
-  console.log("RENDER PermissionModal", id, fileInput);
+  //console.log("RENDER PermissionModal", id, fileInput);
 
   const confirm = useConfirm();
   const dispatch = useAppDispatch();

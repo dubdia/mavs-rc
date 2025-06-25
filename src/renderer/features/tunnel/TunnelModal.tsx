@@ -4,7 +4,7 @@ import { useTunnels } from "./tunnels.hook";
 import { useState } from "react";
 
 export const TunnelModal = ({ id, tunnelId, onClose }: { id: string; tunnelId: string; onClose: () => void }) => {
-  console.log("RENDER TunnelModal", id);
+  //console.log("RENDER TunnelModal", id);
   const actions = useTunnels(id);
 
   // get tunnel

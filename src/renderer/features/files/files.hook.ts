@@ -3,9 +3,13 @@ import { useConfirm } from "../../components/dialogs/ConfirmDialog";
 import { useInput } from "../../components/dialogs/InputDialog";
 import {
   addSessionFile,
+  appendShellData,
   closeSessionFile,
   selectSessionFile,
+  selectShell,
+  selectShellById,
   sessionList,
+  setSelectedTab,
 } from "../../store/remotesSlice";
 import { useAppDispatch, useRemote } from "../../store/store";
 import { escapeUnixShellArg } from "../../../shared/utils/escapeUnixShellArg";
@@ -16,6 +20,7 @@ import { getFileTabName } from "../../utils/getFileTabName";
 import { createFile } from "../../models/SessionFile";
 import { TabName } from "../../models/TabName";
 import { getPathForOsType } from "../../../shared/utils/path-utils";
+import { useShells } from "../shell/shells.hook";
 
 export const useFiles = (id: string) => {
   const input = useInput();
@@ -23,6 +28,7 @@ export const useFiles = (id: string) => {
   const dispatch = useAppDispatch();
   const confirm = useConfirm();
   const remote = useRemote(id);
+  const shells = useShells(id);
 
   const openFile = async (filePath: string, onCloseNavigateBackTo?: TabName) => {
     try {
@@ -394,13 +400,15 @@ export const useFiles = (id: string) => {
       if (path == null || path == "") {
         path = "/";
       }
-      //const command = "\x15" + "cd " + escapeUnixShellArg(path) + "\r"; //TODO
 
-      // get open shells
+      // add new shell and select it (which the add method does by default)
+      console.log('id before: ', remote.session.shells.selectedShellId);
+      const command = "\x15" + "cd " + escapeUnixShellArg(path) + "\r";
+      await shells.add(command);
 
       // go to terminal and cd into the path
-      //dispatch(setSelectedTab({ id: id, key: "shell" }));
-      //ipc.invoke("sendShell", id, command); //TODO
+      dispatch(setSelectedTab({ id: id, key: 'shells' }));
+      //dispatch(selectShell({ id: id, shellId: shellId }));
     } catch (err) {
       console.error("failed to cd into dir in terminal", err);
       toast.error("Failed to cd into path");

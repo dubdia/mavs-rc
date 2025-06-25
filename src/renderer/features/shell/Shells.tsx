@@ -10,7 +10,7 @@ import { useRef, useState } from "react";
 import { useAsyncEffect } from "../../utils/useAsyncEffect";
 
 export const Shells = ({ id }: { id: string }) => {
-  console.log("RENDER Shells", id);
+  //console.log("RENDER Shells", id);
   const appDispatch = useAppDispatch();
   const shells = useShells(id);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -22,8 +22,8 @@ export const useShells = (id: string) => {
   const get = () => {
     return shell;
   };
-  const add = async () => {
-    await appDispatch(sessionCreateShell({ id: id }));
+  const add = async (initialCommand?:string) => {
+    await appDispatch(sessionCreateShell({ id: id, initialCommand: initialCommand }));
   };
   const addFirstOrDoNothing = async () => {
     if (shells.length == 0 && !remote.session.shells.initializedFirstShell) {
@@ -39,7 +39,6 @@ export const useShells = (id: string) => {
   };
   const select = (shellId: string) => {
     try {
-      // remove
       appDispatch(selectShell({ id: id, shellId: shellId }));
     } catch (err) {
       console.error("failed to select shell", shellId, err);

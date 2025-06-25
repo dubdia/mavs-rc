@@ -92,8 +92,8 @@ export function registerIpcHandlers() {
   typedIpcMain.handle("listShells", (_, id) => {
     return sshManager.listShells(id);
   });
-  typedIpcMain.handle("createShell", async (_, id) => {
-    const shell = await sshManager.createShellAsync(id);
+  typedIpcMain.handle("createShell", async (_, id, initialCommand) => {
+    const shell = await sshManager.createShellAsync(id, initialCommand);
     return {
       shellId: shell.shellId,
       size: { rows: shell.config.rows, cols: shell.config.cols },

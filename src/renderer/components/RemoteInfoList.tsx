@@ -6,7 +6,7 @@ import { shallowEqual } from "react-redux";
 import { RemoteDto } from "../../shared/models/RemoteDto";
 
 export const RemoteInfoList = () => {
-  console.log("RENDER RemoteInfoList");
+  //onsole.log("RENDER RemoteInfoList");
   const dispatch = useAppDispatch();
   const list = useAppSelector((state) => selectAll(state.data).map((x) => x.dto), shallowEqual) as RemoteDto[];
   const activeId = useAppSelector((state) => state.data.activeId);

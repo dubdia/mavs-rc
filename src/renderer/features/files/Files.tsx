@@ -123,7 +123,7 @@ export const Files = ({ id }: { id: string }) => {
     }
   }
 
-  console.log("RENDER Files", explorer);
+  //console.log("RENDER Files", explorer);
 
   // modals
   const [showPermissionsOf, setShowPermissionsOf] = useState<RemoteFile | null>(null);

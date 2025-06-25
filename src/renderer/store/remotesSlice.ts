@@ -397,8 +397,8 @@ export const sessionDestroyTunnel = createAsync(
 
 export const sessionCreateShell = createAsync(
   "sessionCreateShell",
-  async (params: { id: string }) => {
-    return await ipc.invoke("createShell", params.id);
+  async (params: { id: string, initialCommand?:string }) => {
+    return await ipc.invoke("createShell", params.id, params.initialCommand);
   },
   {
     onPending(state: State, arg) {

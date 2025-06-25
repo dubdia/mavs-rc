@@ -10,7 +10,7 @@ import { FaSave } from "react-icons/fa";
 import { useScripts } from "./scripts.hook";
 
 export const Scripts = ({ id }: { id: string }) => {
-  console.log("RENDER Scripts", id);
+  //console.log("RENDER Scripts", id);
   const appDispatch = useAppDispatch();
   const scripts = useScripts(id);
 

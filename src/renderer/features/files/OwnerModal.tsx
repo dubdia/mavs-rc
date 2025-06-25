@@ -23,7 +23,7 @@ import { UserGroup } from "../../../shared/models/UserGroup";
 import { ipc } from "../../app";
 
 export const OwnerModal = ({ id, file, onClose }: { id: string; file: RemoteFile; onClose: () => void }) => {
-  console.log("RENDER OwnerModal", id, file);
+  //console.log("RENDER OwnerModal", id, file);
 
   const confirm = useConfirm();
   const dispatch = useAppDispatch();

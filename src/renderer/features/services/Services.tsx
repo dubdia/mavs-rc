@@ -22,7 +22,7 @@ import { ShortcutsDropdown } from "../shortcuts/ShortcutsDropdown";
 import { HeaderScrollBodyLayout } from "../../components/HeaderScrollBodyLayout";
 
 export const Services = ({ id }: { id: string }) => {
-  console.log("RENDER Services");
+  //console.log("RENDER Services");
 
   // use store
   const dispatch = useAppDispatch();

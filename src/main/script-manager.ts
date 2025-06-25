@@ -451,8 +451,15 @@ export class ScriptManager {
               return;
             }
 
+            // check if its a directory
+            const stats = fs.statSync(path);
+            if(stats == null || !stats.isDirectory()) {
+              reject("Path is not a directory");
+              return;
+            }
+
             // remove
-            fs.rmdir(path, {}, (err) => {
+            fs.rm(path, { recursive: true, force: true }, (err) => {
               if (err) {
                 reject(err);
               } else {
@@ -949,9 +956,9 @@ export class ScriptManager {
           execAsync("remote exec", options?.ignoreErrors, async () => {
             try {
               const result = await remote.connection.ssh.exec(command);
-              return { stdout: result, stderr: null };
+              return { stdout: result };
             } catch (err) {
-              return { stdout: null, stderr: err };
+              return { stderr: err };
             }
           }),
 

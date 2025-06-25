@@ -10,7 +10,7 @@ export const Info = ({ id }: { id: string }) => {
   const [info, setInfo] = useState<SystemInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  console.log("RENDER Info", id);
+  //console.log("RENDER Info", id);
 
   useAsyncEffect(async () => {
     setLoading(true);
