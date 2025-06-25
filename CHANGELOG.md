@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.11] - 2025-06-25
+
+### Fixed
+
+- Resolve runtime error where node modules were not found at startup. Fixed it by downgrading `@electron-forge/plugin-vite` to `7.4.0` (https://github.com/nklayman/vue-cli-plugin-electron-builder/issues/1618)
+
+### Changed
+
+- Used package `stateful-electron-window` instead of `electron-window-state`
+
 ## [0.0.10] - 2025-06-25
 
 ### Fixed

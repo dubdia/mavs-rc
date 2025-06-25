@@ -1,7 +1,7 @@
 {
   "name": "mavs-rc",
   "productName": "mavs-rc",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Remote control linux systems via ssh",
   "author": {
     "name": "dubdia"
@@ -38,7 +38,6 @@
     "custom-electron-prompt": "^1.5.8",
     "electron-log": "^5.2.0",
     "electron-squirrel-startup": "^1.0.1",
-    "electron-window-state": "^5.0.3",
     "filesize": "^10.1.6",
     "immer": "^10.1.1",
     "monaco-editor": "^0.52.0",
@@ -51,6 +50,7 @@
     "react-redux": "^9.1.2",
     "react-toastify": "^10.0.5",
     "ssh2": "npm:ssh2-electron-no-cpu-features@^1.16.0",
+    "stateful-electron-window": "^1.0.0",
     "uuid": "^10.0.0",
     "vm": "^0.1.0",
     "xterm": "^5.3.0"
@@ -61,9 +61,9 @@
     "@electron-forge/maker-rpm": "^7.4.0",
     "@electron-forge/maker-squirrel": "^7.4.0",
     "@electron-forge/maker-zip": "^7.4.0",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.4.0",
-    "@electron-forge/plugin-fuses": "^7.4.0",
-    "@electron-forge/plugin-vite": "^7.4.0",
+    "@electron-forge/plugin-auto-unpack-natives": "7.4.0",
+    "@electron-forge/plugin-fuses": "7.4.0",
+    "@electron-forge/plugin-vite": "7.4.0",
     "@electron/fuses": "^1.8.0",
     "@types/archiver": "^6.0.2",
     "@types/node": "^22.5.5",

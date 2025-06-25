@@ -1,5 +1,5 @@
 import { app, BrowserWindow, globalShortcut, session } from "electron";
-import windowStateKeeper from "electron-window-state";
+import { StatefullBrowserWindow } from "stateful-electron-window";
 import { SshManager } from "./ssh-manager";
 import log from "electron-log/main";
 import { RemotesManager } from "./remotes-manager";
@@ -134,18 +134,9 @@ app.on("ready", () => {
   log.verbose("Register IPC handlers...");
   registerIpcHandlers();
 
-  // load the previous state with fallback to defaults
-  log.verbose("Restore window state...");
-  const mainWindowState = windowStateKeeper({
-    defaultWidth: 1100,
-    defaultHeight: 740,
-    fullScreen: false,
-    maximize: false,
-  });
-
   // create window
   log.info("Creating window...");
-  mainWindow = new BrowserWindow({
+  mainWindow = new StatefullBrowserWindow({
     // configure window
     title: "Mav's RC",
     darkTheme: true,
@@ -175,12 +166,6 @@ app.on("ready", () => {
       sandbox: true,
     },
 
-    // set cached size and position
-    width: mainWindowState.width,
-    height: mainWindowState.height,
-    x: mainWindowState.x,
-    y: mainWindowState.y,
-    fullscreen: mainWindowState.isFullScreen,
     show: false,
     backgroundColor: "#000",
     //  backgroundMaterial: 'auto',
@@ -219,11 +204,6 @@ app.on("ready", () => {
       });
     }, 1000);
   }
-
-  // let us register listeners on the window, so we can update the state
-  // automatically (the listeners will be removed when the window is closed)
-  // and restore the maximized or full screen state
-  mainWindowState.manage(mainWindow);
 
   // seems good
   log.info("Seems good");
