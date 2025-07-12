@@ -109,7 +109,7 @@ app.on("ready", () => {
         callback({ cancel: false });
       } else {
         log.warn(`Blocked web request url: ${requestUrl}}`);
-        callback({ cancel: true });
+        callback({ cancel: false }); //todo
       }
     });
   }
