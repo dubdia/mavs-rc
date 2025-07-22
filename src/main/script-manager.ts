@@ -60,67 +60,77 @@ export class ScriptManager {
 
   /** returns a list of all scripts */
   public listScripts({ withContents }: { withContents?: boolean } = {}): ScriptInfo[] {
-    // get folder
-    if (!fs.existsSync(this.scriptsDir)) {
-      log.warn(`Scripts directory does not exists: ${this.scriptsDir}`);
-      return [];
+    try {
+      // get folder
+      if (!fs.existsSync(this.scriptsDir)) {
+        log.warn(`Scripts directory does not exists: ${this.scriptsDir}`);
+        return [];
+      }
+
+      // get all folders
+      const entries = fs.readdirSync(this.scriptsDir, {
+        recursive: false,
+        withFileTypes: true,
+      });
+
+      // get all folders containing a script.ts
+      const scripts: ScriptInfo[] = [];
+      for (const dir of entries) {
+        // check if its a folder
+        if (!dir.isDirectory()) {
+          continue;
+        }
+        if (dir.name.startsWith(".")) {
+          continue;
+        }
+
+        // read script
+        const script = this.readScript(dir.name, { withContents: withContents });
+        if (script) {
+          scripts.push(script);
+        }
+      }
+      return scripts;
+    } catch (err) {
+      log.error('Failed to list scripts', { withContents }, err);
+      throw err;
     }
-
-    // get all folders
-    const entries = fs.readdirSync(this.scriptsDir, {
-      recursive: false,
-      withFileTypes: true,
-    });
-
-    // get all folders containing a script.ts
-    const scripts: ScriptInfo[] = [];
-    for (const dir of entries) {
-      // check if its a folder
-      if (!dir.isDirectory()) {
-        continue;
-      }
-      if (dir.name.startsWith(".")) {
-        continue;
-      }
-
-      // read script
-      const script = this.readScript(dir.name, { withContents: withContents });
-      if (script) {
-        scripts.push(script);
-      }
-    }
-    return scripts;
   }
 
   public readScript(name: string, { withContents }: { withContents?: boolean } = {}): ScriptInfo | null {
-    if (name == null || name == "") {
-      return null;
-    }
-    const paths = this.getScriptPath(name);
-    if (!fs.existsSync(paths.dir)) {
-      return null;
-    }
-    const scriptFileStats = fs.statSync(paths.filePath);
-    if (scriptFileStats == null || !scriptFileStats.isFile()) {
-      return null;
-    }
+    try {
+      if (name == null || name == "") {
+        return null;
+      }
+      const paths = this.getScriptPath(name);
+      if (!fs.existsSync(paths.dir)) {
+        return null;
+      }
+      const scriptFileStats = fs.statSync(paths.filePath);
+      if (scriptFileStats == null || !scriptFileStats.isFile()) {
+        return null;
+      }
 
-    /** read optional contents */
-    let contents: string | null = null;
-    if (withContents) {
-      contents = fs.readFileSync(paths.filePath, {
-        encoding: "utf-8",
-      });
-    }
+      /** read optional contents */
+      let contents: string | null = null;
+      if (withContents) {
+        contents = fs.readFileSync(paths.filePath, {
+          encoding: "utf-8",
+        });
+      }
 
-    // yes
-    return {
-      scriptFilePath: paths.filePath,
-      scriptDir: paths.dir,
-      name: name,
-      normalizedName: this.normalizeScriptName(name),
-      contents: contents,
-    };
+      // yes
+      return {
+        scriptFilePath: paths.filePath,
+        scriptDir: paths.dir,
+        name: name,
+        normalizedName: this.normalizeScriptName(name),
+        contents: contents,
+      };
+    } catch (err) {
+      log.error('Failed to read script', { name, withContents }, err);
+      throw err;
+    }
   }
   public readScriptOrError(name: string, { withContents }: { withContents?: boolean } = {}): ScriptInfo {
     const script = this.readScript(name, { withContents: withContents });
@@ -140,54 +150,69 @@ export class ScriptManager {
   }
 
   public addNew(name: string): ScriptInfo {
-    // check name
-    const normalizedName = this.normalizeScriptName(name ?? "");
-    if (
-      normalizedName == null ||
-      normalizedName == "" ||
-      normalizedName.startsWith(".") ||
-      normalizedName.length > 64
-    ) {
-      throw new Error("No valid name was given");
+    try {
+      // check name
+      const normalizedName = this.normalizeScriptName(name ?? "");
+      if (
+        normalizedName == null ||
+        normalizedName == "" ||
+        normalizedName.startsWith(".") ||
+        normalizedName.length > 64
+      ) {
+        throw new Error("No valid name was given");
+      }
+
+      // list all scripts
+      const scripts = this.listScripts();
+      if (scripts.find((x) => x.normalizedName == normalizedName)) {
+        throw new Error("A script with this name already exists");
+      }
+
+      // create folder
+      const paths = this.getScriptPath(name);
+      if (fs.existsSync(paths.dir) || fs.existsSync(paths.filePath)) {
+        throw new Error("A folder with the name of the script already exists");
+      }
+      fs.mkdirSync(paths.dir);
+
+      // write script file
+      const content = "// " + name + "\nasync function run() {\n    // write your typescript code here:\n    \n}";
+      fs.writeFileSync(paths.filePath, content, {
+        flush: true,
+      });
+
+      log.info(`Created new Script: ${paths.filePath}`);
+      return this.readScriptOrError(name, { withContents: true });
+    } catch (err) {
+      log.error('Failed to create new script', { name }, err);
+      throw err;
     }
-
-    // list all scripts
-    const scripts = this.listScripts();
-    if (scripts.find((x) => x.normalizedName == normalizedName)) {
-      throw new Error("A script with this name already exists");
-    }
-
-    // create folder
-    const paths = this.getScriptPath(name);
-    if (fs.existsSync(paths.dir) || fs.existsSync(paths.filePath)) {
-      throw new Error("A folder with the name of the script already exists");
-    }
-    fs.mkdirSync(paths.dir);
-
-    // write script file
-    const content = "// " + name + "\nasync function run() {\n    // write your typescript code here:\n    \n}";
-    fs.writeFileSync(paths.filePath, content, {
-      flush: true,
-    });
-
-    log.info(`Created new Script: ${paths.filePath}`);
-    return this.readScriptOrError(name, { withContents: true });
   }
   public delete(name: string, { hardDelete }: { hardDelete?: boolean } = {}) {
-    const script = this.readScriptOrError(name);
+    try {
+      const script = this.readScriptOrError(name);
 
-    // rename directory => prefix it with a dot to hide it
-    if (hardDelete === true) {
-      fs.rmSync(script.scriptDir, { recursive: true, force: true });
-    } else {
-      const oldDir = script.scriptDir;
-      const newDir = this.getScriptPath("." + script.name).dir;
-      fs.renameSync(oldDir, newDir);
+      // rename directory => prefix it with a dot to hide it
+      if (hardDelete === true) {
+        fs.rmSync(script.scriptDir, { recursive: true, force: true });
+      } else {
+        const oldDir = script.scriptDir;
+        const newDir = this.getScriptPath("." + script.name).dir;
+        fs.renameSync(oldDir, newDir);
+      }
+    } catch (err) {
+      log.error('Failed to delete script', { name, hardDelete }, err);
+      throw err;
     }
   }
   public update(name: string, contents: string) {
-    const script = this.readScriptOrError(name);
-    fs.writeFileSync(script.scriptFilePath, contents);
+    try {
+      const script = this.readScriptOrError(name);
+      fs.writeFileSync(script.scriptFilePath, contents);
+    } catch (err) {
+      log.error('Failed to update script', { name, length: contents?.length }, err);
+      throw err;
+    }
   }
 
   /** transpiles and executes and contents of given script for given remote */
@@ -453,7 +478,7 @@ export class ScriptManager {
 
             // check if its a directory
             const stats = fs.statSync(path);
-            if(stats == null || !stats.isDirectory()) {
+            if (stats == null || !stats.isDirectory()) {
               reject("Path is not a directory");
               return;
             }

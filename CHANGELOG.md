@@ -2,11 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.0.13] - 2025-07-22
+## [0.0.14] - 2025-07-22
 
 ### Changed
 
-- Added logging to AsyncThunks
+- Added logging (`createAsync.cs` in renderer and `script-manager.ts` in main)
 
 ## [0.0.11] - 2025-06-25
 
