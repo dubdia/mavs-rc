@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.13] - 2025-07-22
+
+### Changed
+
+- Added logging to AsyncThunks
+
 ## [0.0.11] - 2025-06-25
 
 ### Fixed
