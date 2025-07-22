@@ -57,13 +57,13 @@ export const createAsync = <S, Returned, ThunkArg = null>(
     const handler = (builder: ActionReducerMapBuilder<S>) => {
         builder
             .addCase(thunk.pending, (state, action) => {
-                //console.log('PENDING', name, action);
+                console.trace('Thunk: Pending', name, action);
                 if (onPending != null) {
                     onPending(state, action.meta.arg);
                 }
             })
             .addCase(thunk.fulfilled, (state, action) => {
-                //console.log('FULFILLED', name, action);
+                console.trace('Thunk: Completed', name, action);
                 if (onFulfilled != null) {
                     onFulfilled(state, action.payload, action.meta.arg);
                 }
@@ -74,7 +74,7 @@ export const createAsync = <S, Returned, ThunkArg = null>(
             })
             .addCase(thunk.rejected, (state, action) => {
                 const error = action.payload ?? action.error;
-                //console.log('REJECTED', name, error);
+                console.warn('Thunk: An error occured', name, action);
                 if (onRejected != null) {
 
                     onRejected(state, error, action.meta.arg);
